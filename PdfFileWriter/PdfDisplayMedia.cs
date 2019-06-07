@@ -389,7 +389,7 @@ public class PdfDisplayMedia : PdfObject
 	/// </remarks>
 	public void RepeatCount
 			(
-			Single		Count
+			float		Count
 			)
 		{
 		MediaPlayBE.AddReal("/RC", Count); 

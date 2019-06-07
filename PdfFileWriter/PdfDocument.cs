@@ -151,6 +151,8 @@
 //		Add support for sticky notes.
 //	Version 1.23.0 2019/05/26
 //		Add support for sticky notes.
+//	Version 1.24.0 2019/06/06
+//		Support for layers control of images and annotations.
 //
 /////////////////////////////////////////////////////////////////////
 
@@ -374,7 +376,7 @@ public class PdfDocument : IDisposable
 		{
 		get
 			{
-			return(PageArray.Count);
+			return PageArray.Count;
 			}
 		}
 
@@ -389,7 +391,7 @@ public class PdfDocument : IDisposable
 			)
 		{
 		if(Index < 0 || Index >= PageArray.Count) throw new ApplicationException("GetPage invalid argument");
-		return(PageArray[Index]);
+		return PageArray[Index];
 		}
 
 	internal	string			FileName;			// PDF document file name
@@ -397,7 +399,7 @@ public class PdfDocument : IDisposable
 	internal	SizeD			PageSize;			// in points
 	internal	List<PdfObject>	ObjectArray = new List<PdfObject>(); // list of all PDF indirect objects for this document
 	internal	List<PdfPage>	PageArray = new List<PdfPage>();
-	internal	PdfLayers Layers;		// Layers control
+	internal	PdfLayers		Layers;				// Layers control
 	internal 	PdfObject		CatalogObject;		// catalog object
 	internal 	PdfObject		PagesObject;		// parent object of all pages
 	internal	PdfDictionary	TrailerDict;		// trailer dictionary
@@ -896,7 +898,7 @@ public class PdfDocument : IDisposable
 		if(BookmarksRoot == null) BookmarksRoot = new PdfBookmark(this);
 
 		// return bookmarks node to the user
-		return(BookmarksRoot);
+		return BookmarksRoot;
 		}
 
 	/// <summary>

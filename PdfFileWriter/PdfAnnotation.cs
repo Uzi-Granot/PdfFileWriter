@@ -28,11 +28,16 @@ using System.Collections.Generic;
 
 namespace PdfFileWriter
 {
-	/// <summary>
-	/// PDF Annotation class
-	/// </summary>
-	public class PdfAnnotation : PdfObject
+/// <summary>
+/// PDF Annotation class
+/// </summary>
+public class PdfAnnotation : PdfObject
 	{
+	/// <summary>
+	/// Layer control
+	/// </summary>
+	public PdfLayer LayerControl = null;
+
 	internal PdfPage AnnotPage;
 	internal PdfRectangle AnnotRect;
 	internal AnnotAction AnnotAction;
@@ -45,9 +50,9 @@ namespace PdfFileWriter
 	/// <param name="AnnotAction">Annotation action</param>
 	internal PdfAnnotation
 			(
-			PdfPage			AnnotPage,
-			PdfRectangle	AnnotRect,
-			AnnotAction		AnnotAction
+			PdfPage AnnotPage,
+			PdfRectangle AnnotRect,
+			AnnotAction AnnotAction
 			) : base(AnnotPage.Document)
 		{
 		// save arguments
@@ -151,7 +156,7 @@ namespace PdfFileWriter
 		{
 		get
 			{
-			return(new PdfRectangle(AnnotRect));
+			return new PdfRectangle(AnnotRect);
 			}
 		}
 
@@ -198,6 +203,21 @@ namespace PdfFileWriter
 			)
 		{
 		Dictionary.AddFormat("/AP", "<</N {0} 0 R>>", AppearanceDixtionary.ObjectNumber);
+		return;
+		}
+
+	////////////////////////////////////////////////////////////////////
+	// Write object to PDF file
+	////////////////////////////////////////////////////////////////////
+	internal override void WriteObjectToPdfFile()
+		{
+		// layer control
+		if(LayerControl != null) Dictionary.AddIndirectReference("/OC", LayerControl);
+
+		// call PdfObject routine
+		base.WriteObjectToPdfFile();
+
+		// exit
 		return;
 		}
 	}

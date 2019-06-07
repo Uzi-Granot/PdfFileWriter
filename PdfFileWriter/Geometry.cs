@@ -235,17 +235,17 @@ public class LineD
 	/// <summary>
 	/// Delta X
 	/// </summary>
-	public double DX {get {return(P2.X - P1.X);}}
+	public double DX {get {return P2.X - P1.X;}}
 
 	/// <summary>
 	/// Delta Y
 	/// </summary>
-	public double DY {get {return(P2.Y - P1.Y);}}
+	public double DY {get {return P2.Y - P1.Y;}}
 
 	/// <summary>
 	/// Line length
 	/// </summary>
-	public double Length {get {return(Math.Sqrt(DX * DX + DY * DY));}}
+	public double Length {get {return Math.Sqrt(DX * DX + DY * DY);}}
 	}
 
 /////////////////////////////////////////////////////////////////////
@@ -418,7 +418,7 @@ public class BezierD
 			double		Radius
 			)
 		{
-		return(new BezierD(X + Radius, Y, X + Radius, Y + CircleFactor * Radius, X + CircleFactor * Radius, Y + Radius, X, Y + Radius));
+		return new BezierD(X + Radius, Y, X + Radius, Y + CircleFactor * Radius, X + CircleFactor * Radius, Y + Radius, X, Y + Radius);
 		}
 
 	/// <summary>
@@ -435,7 +435,7 @@ public class BezierD
 			double		Radius
 			)
 		{
-		return(new BezierD(X, Y + Radius, X - CircleFactor * Radius, Y + Radius, X - Radius, Y + CircleFactor * Radius, X - Radius, Y));
+		return new BezierD(X, Y + Radius, X - CircleFactor * Radius, Y + Radius, X - Radius, Y + CircleFactor * Radius, X - Radius, Y);
 		}
 
 	/// <summary>
@@ -452,7 +452,7 @@ public class BezierD
 			double		Radius
 			)
 		{
-		return(new BezierD(X - Radius, Y, X - Radius, Y - CircleFactor * Radius, X - CircleFactor * Radius, Y - Radius, X, Y - Radius));
+		return new BezierD(X - Radius, Y, X - Radius, Y - CircleFactor * Radius, X - CircleFactor * Radius, Y - Radius, X, Y - Radius);
 		}
 
 	/// <summary>
@@ -469,7 +469,7 @@ public class BezierD
 			double		Radius
 			)
 		{
-		return(new BezierD(X, Y - Radius, X +CircleFactor * Radius, Y - Radius, X + Radius, Y - CircleFactor * Radius, X + Radius, Y));
+		return new BezierD(X, Y - Radius, X +CircleFactor * Radius, Y - Radius, X + Radius, Y - CircleFactor * Radius, X + Radius, Y);
 		}
 
 	/// <summary>
@@ -488,7 +488,7 @@ public class BezierD
 			double		Height
 			)
 		{
-		return(new BezierD(X + Width, Y, X + Width, Y + CircleFactor * Height, X + CircleFactor * Width, Y + Height, X, Y + Height));
+		return new BezierD(X + Width, Y, X + Width, Y + CircleFactor * Height, X + CircleFactor * Width, Y + Height, X, Y + Height);
 		}
 
 	/// <summary>
@@ -507,7 +507,7 @@ public class BezierD
 			double		Height
 			)
 		{
-		return(new BezierD(X, Y + Height, X - CircleFactor * Width, Y + Height, X - Width, Y + CircleFactor * Height, X - Width, Y));
+		return new BezierD(X, Y + Height, X - CircleFactor * Width, Y + Height, X - Width, Y + CircleFactor * Height, X - Width, Y);
 		}
 
 	/// <summary>
@@ -526,7 +526,7 @@ public class BezierD
 			double		Height
 			)
 		{
-		return(new BezierD(X - Width, Y, X - Width, Y - CircleFactor * Height, X - CircleFactor * Width, Y - Height, X, Y - Height));
+		return new BezierD(X - Width, Y, X - Width, Y - CircleFactor * Height, X - CircleFactor * Width, Y - Height, X, Y - Height);
 		}
 
 	/// <summary>
@@ -545,7 +545,7 @@ public class BezierD
 			double		Height
 			)
 		{
-		return(new BezierD(X, Y - Height, X +CircleFactor * Width, Y - Height, X + Width, Y - CircleFactor * Height, X + Width, Y));
+		return new BezierD(X, Y - Height, X +CircleFactor * Width, Y - Height, X + Width, Y - CircleFactor * Height, X + Width, Y);
 		}
 	}
 }

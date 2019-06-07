@@ -103,7 +103,7 @@ public class PdfWebLink : PdfObject, IComparable<PdfWebLink>
 		int Index = Document.WebLinkArray.BinarySearch(new PdfWebLink(WebLinkStr));
 
 		// this string is a duplicate
-		if(Index >= 0) return(Document.WebLinkArray[Index]);
+		if(Index >= 0) return Document.WebLinkArray[Index];
 
 		// new link
 		PdfWebLink WebLink = new PdfWebLink(Document, WebLinkStr);
@@ -112,7 +112,7 @@ public class PdfWebLink : PdfObject, IComparable<PdfWebLink>
 		Document.WebLinkArray.Insert(~Index, WebLink);
 
 		// exit
-		return(WebLink);
+		return WebLink;
 		}
 
 	/// <summary>
@@ -125,7 +125,7 @@ public class PdfWebLink : PdfObject, IComparable<PdfWebLink>
 			PdfWebLink	Other
 			)
 		{
-		return(string.Compare(this.WebLinkStr, Other.WebLinkStr));
+		return string.Compare(WebLinkStr, Other.WebLinkStr);
 		}
 	}
 }

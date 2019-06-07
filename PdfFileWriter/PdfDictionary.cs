@@ -82,10 +82,10 @@ public class PdfDictionary
 			)
 		{
 		// look through the dictionary
-		for(int Index = 0; Index < KeyValue.Count; Index++) if(KeyValue[Index].Key == Key) return(Index);
+		for(int Index = 0; Index < KeyValue.Count; Index++) if(KeyValue[Index].Key == Key) return Index;
 
 		// not found
-		return(-1);
+		return -1;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -145,7 +145,7 @@ public class PdfDictionary
 			)
 		{
 		if(Math.Abs(Real) < 0.0001) Real = 0;
-		Add(Key, string.Format(NFI.PeriodDecSep, "{0}", (Single) Real), ValueType.Other);
+		Add(Key, string.Format(NFI.PeriodDecSep, "{0}", (float) Real), ValueType.Other);
 		return;
 		}
 
@@ -157,7 +157,7 @@ public class PdfDictionary
 	internal void AddReal
 			(
 			string			Key,		// key (first character must be forward slash /)
-			Single			Real
+			float			Real
 			)
 		{
 		if(Math.Abs(Real) < 0.0001) Real = 0;
@@ -319,7 +319,7 @@ public class PdfDictionary
 			)
 		{
 		int Index = Find(Key);
-		return(Index >= 0 ? KeyValue[Index] : null);
+		return Index >= 0 ? KeyValue[Index] : null;
 		}
 
 	////////////////////////////////////////////////////////////////////

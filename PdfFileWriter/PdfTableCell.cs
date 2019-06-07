@@ -324,7 +324,7 @@ public class PdfTableCell
 		get
 			{
 			if(FrameWidth == 0.0) Parent.PdfTableInitialization();
-			return(FrameWidth - Style.Margin.Left - Style.Margin.Right);
+			return FrameWidth - Style.Margin.Left - Style.Margin.Right;
 			}
 		}
 
@@ -370,7 +370,7 @@ public class PdfTableCell
 	public TextBox CreateTextBox()
 		{
 		Value = new TextBox(ClientWidth, Style.TextBoxFirstLineIndent, Style.TextBoxLineBreakFactor);
-		return((TextBox) Value);
+		return (TextBox) Value;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -498,7 +498,7 @@ public class PdfTableCell
 				string Format = Style.Format;
 				NumberFormatInfo NumberFormat = Style.NumberFormatInfo;
 				if(ValueType == typeof(int)) FormattedText = ((int) Value).ToString(Format, NumberFormat);
-				else if(ValueType == typeof(Single)) FormattedText = ((Single) Value).ToString(Format, NumberFormat);
+				else if(ValueType == typeof(float)) FormattedText = ((float) Value).ToString(Format, NumberFormat);
 				else if(ValueType == typeof(double)) FormattedText = ((double) Value).ToString(Format, NumberFormat);
 				else if(ValueType == typeof(bool)) FormattedText = ((bool) Value).ToString();
 				else if(ValueType == typeof(char)) FormattedText = ((char) Value).ToString();
@@ -653,20 +653,20 @@ public class PdfTableCell
 		if((Style.Alignment & (ContentAlignment.TopLeft | ContentAlignment.MiddleLeft | ContentAlignment.BottomLeft)) != 0)
 			{
 			Justify = TextJustify.Left;
-			return(ClientLeft);
+			return ClientLeft;
 			}
 		if((Style.Alignment & (ContentAlignment.TopRight | ContentAlignment.MiddleRight | ContentAlignment.BottomRight)) != 0)
 			{
 			Justify = TextJustify.Right;
-			return(ClientRight);
+			return ClientRight;
 			}
 		if((Style.Alignment & (ContentAlignment.TopCenter | ContentAlignment.MiddleCenter | ContentAlignment.BottomCenter)) != 0)
 			{
 			Justify = TextJustify.Center;
-			return(0.5 * (ClientLeft + ClientRight));
+			return 0.5 * (ClientLeft + ClientRight);
 			}
 		Justify = TextJustify.Left;
-		return(ClientLeft);
+		return ClientLeft;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -677,10 +677,13 @@ public class PdfTableCell
 			double	Width
 			)
 		{
-		if((Style.Alignment & (ContentAlignment.TopLeft | ContentAlignment.MiddleLeft | ContentAlignment.BottomLeft)) != 0) return(ClientLeft);
-		if((Style.Alignment & (ContentAlignment.TopCenter | ContentAlignment.MiddleCenter | ContentAlignment.BottomCenter)) != 0) return(0.5 * (ClientLeft + ClientRight - Width));
-		if((Style.Alignment & (ContentAlignment.TopRight | ContentAlignment.MiddleRight | ContentAlignment.BottomRight)) != 0) return(ClientRight - Width);
-		return(ClientLeft);
+		if((Style.Alignment & (ContentAlignment.TopLeft | ContentAlignment.MiddleLeft | ContentAlignment.BottomLeft)) != 0)
+				return ClientLeft;
+		if((Style.Alignment & (ContentAlignment.TopCenter | ContentAlignment.MiddleCenter | ContentAlignment.BottomCenter)) != 0)
+				return 0.5 * (ClientLeft + ClientRight - Width);
+		if((Style.Alignment & (ContentAlignment.TopRight | ContentAlignment.MiddleRight | ContentAlignment.BottomRight)) != 0)
+				return ClientRight - Width;
+		return ClientLeft;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -688,10 +691,13 @@ public class PdfTableCell
 	////////////////////////////////////////////////////////////////////
 	private double TextVerPos()
 		{
-		if((Style.Alignment & (ContentAlignment.TopLeft | ContentAlignment.TopCenter | ContentAlignment.TopRight)) != 0) return(ClientTop - Style.FontAscent);
-		if((Style.Alignment & (ContentAlignment.BottomLeft | ContentAlignment.BottomCenter | ContentAlignment.BottomRight)) != 0) return(ClientBottom + Style.FontDescent);
-		if((Style.Alignment & (ContentAlignment.MiddleLeft | ContentAlignment.MiddleCenter | ContentAlignment.MiddleRight)) != 0) return(0.5 * (ClientTop + ClientBottom - Style.FontAscent + Style.FontDescent));
-		return(ClientTop - Style.FontAscent);
+		if((Style.Alignment & (ContentAlignment.TopLeft | ContentAlignment.TopCenter | ContentAlignment.TopRight)) != 0)
+				return ClientTop - Style.FontAscent;
+		if((Style.Alignment & (ContentAlignment.BottomLeft | ContentAlignment.BottomCenter | ContentAlignment.BottomRight)) != 0)
+				return ClientBottom + Style.FontDescent;
+		if((Style.Alignment & (ContentAlignment.MiddleLeft | ContentAlignment.MiddleCenter | ContentAlignment.MiddleRight)) != 0)
+				return 0.5 * (ClientTop + ClientBottom - Style.FontAscent + Style.FontDescent);
+		return ClientTop - Style.FontAscent;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -702,10 +708,13 @@ public class PdfTableCell
 			double	Height
 			)
 		{
-		if((Style.Alignment & (ContentAlignment.TopLeft | ContentAlignment.TopCenter | ContentAlignment.TopRight)) != 0) return(ClientTop);
-		if((Style.Alignment & (ContentAlignment.MiddleLeft | ContentAlignment.MiddleCenter | ContentAlignment.MiddleRight)) != 0) return(0.5 * (ClientTop + ClientBottom + Height));
-		if((Style.Alignment & (ContentAlignment.BottomLeft | ContentAlignment.BottomCenter | ContentAlignment.BottomRight)) != 0) return(ClientBottom + Height);
-		return(ClientTop);
+		if((Style.Alignment & (ContentAlignment.TopLeft | ContentAlignment.TopCenter | ContentAlignment.TopRight)) != 0)
+				return ClientTop;
+		if((Style.Alignment & (ContentAlignment.MiddleLeft | ContentAlignment.MiddleCenter | ContentAlignment.MiddleRight)) != 0)
+				return 0.5 * (ClientTop + ClientBottom + Height);
+		if((Style.Alignment & (ContentAlignment.BottomLeft | ContentAlignment.BottomCenter | ContentAlignment.BottomRight)) != 0)
+				return ClientBottom + Height;
+		return ClientTop;
 		}
 
 	////////////////////////////////////////////////////////////////////

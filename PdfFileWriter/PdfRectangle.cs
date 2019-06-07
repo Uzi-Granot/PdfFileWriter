@@ -143,7 +143,7 @@ public class PdfRectangle
 		{
 		get
 			{
-			return(Right - Left);
+			return Right - Left;
 			}
 		}
 
@@ -154,7 +154,7 @@ public class PdfRectangle
 		{
 		get
 			{
-			return(Top - Bottom);
+			return Top - Bottom;
 			}
 		}
 	}

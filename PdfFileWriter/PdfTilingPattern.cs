@@ -73,7 +73,7 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public PdfTilingPattern
 			(
-			PdfDocument		Document
+			PdfDocument Document
 			) : base(Document, "/Pattern")
 		{
 		// create resource code
@@ -97,7 +97,7 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public void SetTilingType
 			(
-			TilingType	TilingType
+			TilingType TilingType
 			)
 		{
 		// by default the constructor set tiling type to 1 = constant
@@ -116,7 +116,7 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public void SetTileBox
 			(
-			double			Side
+			double Side
 			)
 		{
 		SetTileBox(Side, Side, Side, Side);
@@ -135,8 +135,8 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public void SetTileBox
 			(
-			double			Width,
-			double			Height
+			double Width,
+			double Height
 			)
 		{
 		SetTileBox(Width, Height, Width, Height);
@@ -157,10 +157,10 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public void SetTileBox
 			(
-			double			Width,
-			double			Height,
-			double			StepX,
-			double			StepY
+			double Width,
+			double Height,
+			double StepX,
+			double StepY
 			)
 		{
 		// by default XStep == Width
@@ -182,7 +182,7 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public void SetScale
 			(
-			double			Scale
+			double Scale
 			)
 		{
 		// add items to dictionary
@@ -203,8 +203,8 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public void SetScale
 			(
-			double			ScaleX,
-			double			ScaleY
+			double ScaleX,
+			double ScaleY
 			)
 		{
 		// add items to dictionary
@@ -227,10 +227,10 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public void SetScaleAndOrigin
 			(
-			double			OriginX,
-			double			OriginY,
-			double			ScaleX,
-			double			ScaleY
+			double OriginX,
+			double  OriginY,
+			double ScaleX,
+			double ScaleY
 			)
 		{
 		// add items to dictionary
@@ -255,12 +255,12 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public void SetPatternMatrix
 			(
-			double		a,
-			double		b,
-			double		c,
-			double		d,
-			double		e,
-			double		f
+			double a,
+			double b,
+			double c,
+			double d,
+			double e,
+			double f
 			)
 		{
 		// create full pattern transformation matrix
@@ -300,10 +300,10 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public static PdfTilingPattern SetBrickPattern
 			(
-			PdfDocument		Document,
-			double			Scale,
-			Color			Stroking,
-			Color			NonStroking
+			PdfDocument Document,
+			double Scale,
+			Color Stroking,
+			Color NonStroking
 			)
 		{
 		PdfTilingPattern Pattern = new PdfTilingPattern(Document);
@@ -316,7 +316,7 @@ public class PdfTilingPattern : PdfContents
 		Pattern.DrawRectangle(-0.475, 0.525, 0.95, 0.45, PaintOp.CloseFillStroke);
 		Pattern.DrawRectangle(0.525, 0.525, 0.95, 0.45, PaintOp.CloseFillStroke);
 		Pattern.RestoreGraphicsState();
-		return(Pattern);
+		return Pattern;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -340,11 +340,11 @@ public class PdfTilingPattern : PdfContents
 	////////////////////////////////////////////////////////////////////
 	public static PdfTilingPattern SetWeavePattern
 			(
-			PdfDocument		Document,
-			double			Scale,
-			Color			Background,
-			Color			Horizontal,
-			Color			Vertical
+			PdfDocument Document,
+			double Scale,
+			Color Background,
+			Color Horizontal,
+			Color Vertical
 			)
 		{
 		const double RectSide1 = 4.0 / 6.0;
@@ -372,7 +372,7 @@ public class PdfTilingPattern : PdfContents
 		Pattern.DrawRectangle(1.0 / 6.0 + HalfWidth, 3.0 / 6.0 + HalfWidth, RectSide2 - LineWidth, RectSide1 - LineWidth, PaintOp.CloseFillStroke);
 
 		Pattern.RestoreGraphicsState();
-		return(Pattern);
+		return Pattern;
 		}
 	}
 }

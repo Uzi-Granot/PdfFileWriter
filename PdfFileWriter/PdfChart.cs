@@ -86,7 +86,7 @@ public class PdfChart : PdfImage
 	/// <summary>
 	/// Chart object (.NET).
 	/// </summary>
-	public Chart Chart {get; private set;}			// chart object
+	public Chart MSChart {get; private set;}			// chart object
 
 	/// <summary>
 	/// Chart width in user units.
@@ -98,13 +98,44 @@ public class PdfChart : PdfImage
 	/// </summary>
 	public double Height {get; private set;}		// height in user units
 
+	/// <summary>
+	/// Set output resolution 
+	/// </summary>
+	public override double Resolution
+			{
+			get
+				{
+				return _Resolution;
+				}
+			set
+				{ 
+				if(value < 0) throw new ApplicationException("Resolution must be greater than zero, or zero for default");
+
+				// save resolution
+				_Resolution = value;
+
+				// take resolution from MS chart
+				if(_Resolution == 0)
+					{ 
+					_Resolution = MSChart.RenderingDpiY;
+					}
+				else
+					{
+					MSChart.RenderingDpiY = _Resolution;
+					}
+
+				// calculate chart size in user coordinates
+				Width = WidthPix * 72.0 / (Resolution * Document.ScaleFactor);
+				Height = HeightPix * 72.0 / (Resolution * Document.ScaleFactor);
+				}
+			}
+
 	////////////////////////////////////////////////////////////////////
 	/// <summary>
 	/// PDF chart constructor
 	/// </summary>
 	/// <param name="Document">Document object parent of this chart.</param>
-	/// <param name="Chart">.NET Chart object.</param>
-	/// <param name="ImageControl">Chart display image control</param>
+	/// <param name="MSChart">.NET Chart object.</param>
 	/// <remarks>
 	/// It is the responsibility of the calling program to release
 	/// the resources of the input chart object. After PdfChart
@@ -128,33 +159,20 @@ public class PdfChart : PdfImage
 	public PdfChart
 			(
 			PdfDocument		Document,
-			Chart			Chart,
-			PdfImageControl	ImageControl = null
+			Chart			MSChart
 			) : base(Document)
 		{
-		// image control
-		if(ImageControl == null) ImageControl = new PdfImageControl();
-		this.ImageControl = ImageControl;
-
 		// save chart
-		this.Chart = Chart;
-		this.WidthPix = Chart.Width;
-		this.HeightPix = Chart.Height;
+		this.MSChart = MSChart;
+		WidthPix = MSChart.Width;
+		HeightPix = MSChart.Height;
 
-		// save resolution
-		if(ImageControl.Resolution != 0)
-			{
-			// chart resolution in pixels per inch
-			this.Chart.RenderingDpiY = ImageControl.Resolution;
-			}
-		else
-			{
-			ImageControl.Resolution = this.Chart.RenderingDpiY;
-			}
+		// take resolution from MS chart
+		Resolution = MSChart.RenderingDpiY;
 
 		// calculate chart size in user coordinates
-		Width = (double) WidthPix * 72.0 / (ImageControl.Resolution * Document.ScaleFactor);
-		Height = (double) HeightPix * 72.0 / (ImageControl.Resolution * Document.ScaleFactor);
+		Width = (double) WidthPix * 72.0 / (Resolution * Document.ScaleFactor);
+		Height = (double) HeightPix * 72.0 / (Resolution * Document.ScaleFactor);
 
 		// exit
 		return;
@@ -182,17 +200,17 @@ public class PdfChart : PdfImage
 			)
 		{
 		// create chart
-		Chart Chart = new Chart();
+		Chart MSChart = new Chart();
 
 		// save resolution
-		if(Resolution != 0) Chart.RenderingDpiY = Resolution;
+		if(Resolution != 0) MSChart.RenderingDpiY = Resolution;
 
 		// image size in pixels
-		Chart.Width = (int) (Chart.RenderingDpiY * Width * Document.ScaleFactor / 72.0 + 0.5);
-		Chart.Height = (int) (Chart.RenderingDpiY * Height * Document.ScaleFactor / 72.0 + 0.5);
+		MSChart.Width = (int) (MSChart.RenderingDpiY * Width * Document.ScaleFactor / 72.0 + 0.5);
+		MSChart.Height = (int) (MSChart.RenderingDpiY * Height * Document.ScaleFactor / 72.0 + 0.5);
 
 		// return chart
-		return(Chart);
+		return MSChart;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -222,28 +240,28 @@ public class PdfChart : PdfImage
 				break;
 
 			case FontSizeUnit.Point:
-				SizeInPixels = (int) (FontSize * ImageControl.Resolution / 72.0 + 0.5);
+				SizeInPixels = (int) (FontSize * _Resolution / 72.0 + 0.5);
 				break;
 
 			case FontSizeUnit.UserUnit:
-				SizeInPixels = (int) (FontSize * ImageControl.Resolution * Document.ScaleFactor / 72.0 + 0.5);
+				SizeInPixels = (int) (FontSize * _Resolution * Document.ScaleFactor / 72.0 + 0.5);
 				break;
 
 			case FontSizeUnit.Inch:
-				SizeInPixels = (int) (FontSize * ImageControl.Resolution + 0.5);
+				SizeInPixels = (int) (FontSize * _Resolution + 0.5);
 				break;
 
 			case FontSizeUnit.cm:
-				SizeInPixels = (int) (FontSize * ImageControl.Resolution / 2.54 + 0.5);
+				SizeInPixels = (int) (FontSize * _Resolution / 2.54 + 0.5);
 				break;
 
 			case FontSizeUnit.mm:
-				SizeInPixels = (int) (FontSize * ImageControl.Resolution / 25.4 + 0.5);
+				SizeInPixels = (int) (FontSize * _Resolution / 25.4 + 0.5);
 				break;
 			}
 
 		// create font
-		return(new Font(FontFamilyName, SizeInPixels, FontStyle, GraphicsUnit.Pixel));
+		return new Font(FontFamilyName, SizeInPixels, FontStyle, GraphicsUnit.Pixel);
 		}
 
 	/// <summary>
@@ -266,8 +284,8 @@ public class PdfChart : PdfImage
 			// dispose chart
 			if(DisposeChart)
 				{
-				Chart.Dispose();
-				Chart = null;
+				MSChart.Dispose();
+				MSChart = null;
 				}
 
 			// activate garbage collector
@@ -286,7 +304,7 @@ public class PdfChart : PdfImage
 		{
 		// convert chart to bitmap
 		Picture = new Bitmap(WidthPix, HeightPix);
-		Chart.DrawToBitmap(Picture, new Rectangle(0, 0, WidthPix, HeightPix));
+		MSChart.DrawToBitmap(Picture, new Rectangle(0, 0, WidthPix, HeightPix));
 		DisposePicture = true;
 
 		// call Image class WriteObjectToPdfFile

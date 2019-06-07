@@ -153,7 +153,7 @@ public class CharInfo : IComparable<CharInfo>
 			CharInfo Other
 			)
 		{
-		return(this.GlyphIndex - Other.GlyphIndex);
+		return GlyphIndex - Other.GlyphIndex;
 		}
 	}
 
@@ -169,7 +169,7 @@ internal class SortByNewIndex : IComparer<CharInfo>
 			CharInfo CharTwo
 			)
 		{
-		return(CharOne.NewGlyphIndex - CharTwo.NewGlyphIndex);
+		return CharOne.NewGlyphIndex - CharTwo.NewGlyphIndex;
 		}
 	}
 
@@ -357,7 +357,7 @@ public class WinKerningPair : IComparable<WinKerningPair>
 			WinKerningPair	Other
 			)
 		{
-		return(this.First != Other.First ? this.First - Other.First : this.Second - Other.Second);
+		return First != Other.First ? First - Other.First : Second - Other.Second;
 		}
 	}
 
@@ -796,7 +796,7 @@ public class FontApi : IDisposable
 		Info.CharCode = CharCode;
 
 		// exit
-		return(Info);
+		return Info;
 		}
 
 	/// <summary>
@@ -829,7 +829,7 @@ public class FontApi : IDisposable
 		Marshal.FreeHGlobal(UnitMatrix);
 		
 		// exit
-		return(Info);
+		return Info;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -857,7 +857,7 @@ public class FontApi : IDisposable
 		// test for at least one valid glyph
 		int Start;
 		for(Start = 0; Start < 256 && GlyphIndexArray[Start] == 0; Start++);
-		if(Start == 256) return(null);
+		if(Start == 256) return null;
 
 		// build unit matrix
 		IntPtr UnitMatrix = BuildUnitMarix();
@@ -893,7 +893,7 @@ public class FontApi : IDisposable
 		Marshal.FreeHGlobal(UnitMatrix);
 		
 		// exit
-		return(CharInfoArray);
+		return CharInfoArray;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -917,7 +917,7 @@ public class FontApi : IDisposable
 		{
 		// get number of pairs
 		int Pairs = (int) GetKerningPairs(GDIHandle, 0, IntPtr.Zero);
-		if(Pairs == 0) return(null);
+		if(Pairs == 0) return null;
 
 		// allocate buffer to receive outline text metrics information
 		AllocateBuffer(8 * Pairs);
@@ -939,13 +939,13 @@ public class FontApi : IDisposable
 		FreeBuffer();
 
 		// list is empty
-		if(TempList.Count == 0) return(null);
+		if(TempList.Count == 0) return null;
 
 		// sort list
 		TempList.Sort();
 
 		// exit
-		return(TempList.ToArray());
+		return TempList.ToArray();
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -978,7 +978,7 @@ public class FontApi : IDisposable
 		FreeBuffer();
 
 		// exit
-		return(WOTM);
+		return WOTM;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1007,7 +1007,7 @@ public class FontApi : IDisposable
 		FreeBuffer();
 
 		// exit
-		return(WTM);
+		return WTM;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1030,7 +1030,7 @@ public class FontApi : IDisposable
 			)
 		{
 		// empty table
-		if(BufSize == 0) return(null);
+		if(BufSize == 0) return null;
 
 		// allocate buffer to receive outline text metrics information
 		AllocateBuffer((int) BufSize);
@@ -1047,7 +1047,7 @@ public class FontApi : IDisposable
 		FreeBuffer();
 
 		// exit
-		return(DataBuffer);
+		return DataBuffer;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1099,7 +1099,7 @@ public class FontApi : IDisposable
 		for(int Index = 0; Index < GlyphIndex16.Length; Index++) GlyphIndex32[Index] = (ushort) GlyphIndex16[Index];
 
 		// exit
-		return(GlyphIndex32);
+		return GlyphIndex32;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1145,7 +1145,7 @@ public class FontApi : IDisposable
 
 	internal Point ReadWinPoint()
 		{
-		return(new Point(ReadInt32(), ReadInt32()));
+		return new Point(ReadInt32(), ReadInt32());
 		} 
 
 	////////////////////////////////////////////////////////////////////
@@ -1154,7 +1154,7 @@ public class FontApi : IDisposable
 
 	internal byte ReadByte()
 		{
-		return(Marshal.ReadByte(Buffer, BufPtr++));
+		return Marshal.ReadByte(Buffer, BufPtr++);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1165,7 +1165,7 @@ public class FontApi : IDisposable
 		{
 		char Value = (char) Marshal.ReadInt16(Buffer, BufPtr);
 		BufPtr += 2;
-		return(Value);
+		return Value;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1176,7 +1176,7 @@ public class FontApi : IDisposable
 		{
 		short Value = Marshal.ReadInt16(Buffer, BufPtr);
 		BufPtr += 2;
-		return(Value);
+		return Value;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1187,7 +1187,7 @@ public class FontApi : IDisposable
 		{
 		ushort Value = (ushort) Marshal.ReadInt16(Buffer, BufPtr);
 		BufPtr += 2;
-		return(Value);
+		return Value;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1202,7 +1202,7 @@ public class FontApi : IDisposable
 		// create active characters array
 		short[] Result = new short[Size];
 		Marshal.Copy(Buffer, Result, 0, Size);
-		return(Result);
+		return Result;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1213,7 +1213,7 @@ public class FontApi : IDisposable
 		{
 		int Value = Marshal.ReadInt32(Buffer, BufPtr);
 		BufPtr += 4;
-		return(Value);
+		return Value;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1228,7 +1228,7 @@ public class FontApi : IDisposable
 		// create active characters array
 		int[] Result = new int[Size];
 		Marshal.Copy(Buffer, Result, 0, Size);
-		return(Result);
+		return Result;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1239,7 +1239,7 @@ public class FontApi : IDisposable
 		{
 		uint Value = (uint) Marshal.ReadInt32(Buffer, BufPtr);
 		BufPtr += 4;
-		return(Value);
+		return Value;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1258,7 +1258,7 @@ public class FontApi : IDisposable
 			Str.Append(Chr);
 			Ptr += 2;
 			}
-		return(Str.ToString());
+		return Str.ToString();
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1326,7 +1326,7 @@ public class FontApi : IDisposable
 		Marshal.WriteInt32(UnitMatrix, 4, 0);			
 		Marshal.WriteInt32(UnitMatrix, 8, 0);			
 		Marshal.WriteInt32(UnitMatrix, 12, 0x10000);			
-		return(UnitMatrix);
+		return UnitMatrix;
 		}
 
 	////////////////////////////////////////////////////////////////////

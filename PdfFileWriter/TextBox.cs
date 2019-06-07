@@ -61,7 +61,7 @@ public class TextBoxLine
 		{
 		get
 			{
-			return(Ascent + Descent);
+			return Ascent + Descent;
 			}
 		}
 
@@ -74,10 +74,10 @@ public class TextBoxLine
 	/// <param name="SegArray">Segments' array.</param>
 	public TextBoxLine
 			(
-			double			Ascent,
-			double			Descent,
-			bool			EndOfParagraph,
-			TextBoxSeg[]	SegArray
+			double Ascent,
+			double Descent,
+			bool EndOfParagraph,
+			TextBoxSeg[] SegArray
 			)
 		{
 		this.Ascent = Ascent;
@@ -214,37 +214,37 @@ public class TextBox
 	/// <summary>
 	/// Gets box width.
 	/// </summary>
-	public double			BoxWidth {get; internal set;}
+	public double BoxWidth {get; internal set;}
 
 	/// <summary>
 	/// Gets box height.
 	/// </summary>
-	public double			BoxHeight {get; internal set;}
+	public double BoxHeight {get; internal set;}
 
 	/// <summary>
 	/// Gets line count.
 	/// </summary>
-	public int			LineCount {get { return(LineArray.Count); }}
+	public int LineCount {get { return LineArray.Count; }}
 
 	/// <summary>
 	/// Gets paragraph count.
 	/// </summary>
-	public int			ParagraphCount {get; internal set;}
+	public int ParagraphCount {get; internal set;}
 
 	/// <summary>
 	/// Gets first line is indented.
 	/// </summary>
-	public double			FirstLineIndent {get; internal set;}	
+	public double FirstLineIndent {get; internal set;}	
 
-	private double			LineBreakFactor;	 // should be >= 0.1 and <= 0.9
-	private char			PrevChar;
-	private double			LineWidth;
-	private double			LineBreakWidth;
-	private int			BreakSegIndex;
-	private int			BreakPtr;
-	private double			BreakWidth;
-	private List<TextBoxSeg>	SegArray;
-	private List<TextBoxLine>	LineArray;
+	private double LineBreakFactor;	 // should be >= 0.1 and <= 0.9
+	private char PrevChar;
+	private double LineWidth;
+	private double LineBreakWidth;
+	private int BreakSegIndex;
+	private int BreakPtr;
+	private double BreakWidth;
+	private List<TextBoxSeg> SegArray;
+	private List<TextBoxLine> LineArray;
 
 	/// <summary>
 	/// TextBox constructor
@@ -297,7 +297,7 @@ public class TextBox
 		{
 		get
 			{
-			return(LineArray[Index]);
+			return LineArray[Index];
 			}
 		}
 
@@ -309,14 +309,14 @@ public class TextBox
 	/// <returns>Height</returns>
 	public double BoxHeightExtra
 			(
-			double		LineExtraSpace,
-			double		ParagraphExtraSpace
+			double LineExtraSpace,
+			double ParagraphExtraSpace
 			)
 		{
 		double Height = BoxHeight;
 		if(LineArray.Count > 1 && LineExtraSpace != 0.0) Height += LineExtraSpace * (LineArray.Count - 1);
 		if(ParagraphCount > 1 && ParagraphExtraSpace != 0.0) Height += ParagraphExtraSpace * (ParagraphCount - 1);
-		return(Height);
+		return Height;
 		}
 
 	/// <summary>
@@ -328,18 +328,18 @@ public class TextBox
 	/// <returns>Height</returns>
 	public double BoxHeightExtra
 			(
-			int		LineCount,
-			double		LineExtraSpace,
-			double		ParagraphExtraSpace
+			int LineCount,
+			double LineExtraSpace,
+			double ParagraphExtraSpace
 			)
 		{
 		// textbox is empty
-		if(LineArray.Count == 0) return(0.0);
+		if(LineArray.Count == 0) return 0.0;
 
 		// line count is greater than available lines
 		if(LineCount >= LineArray.Count)
 			{
-			return(BoxHeightExtra(LineExtraSpace, ParagraphExtraSpace));
+			return BoxHeightExtra(LineExtraSpace, ParagraphExtraSpace);
 			}
 
 		// calculate height for requested line count
@@ -352,7 +352,7 @@ public class TextBox
 			Height += LineExtraSpace;
 			if(Line.EndOfParagraph) Height += ParagraphExtraSpace;
 			}
-		return(Height);
+		return Height;
 		}
 
 	/// <summary>
@@ -388,7 +388,7 @@ public class TextBox
 		if(LineStart >= LineArray.Count)
 			{
 			LineStart = LineEnd = LineArray.Count;
-			return(0.0);
+			return 0.0;
 			}
 
 		// calculate height for requested line count
@@ -413,7 +413,7 @@ public class TextBox
 			if(Line.EndOfParagraph) Total += ParagraphExtraSpace;
 			}
 
-		return(Height);
+		return Height;
 		}
 
 	/// <summary>
@@ -430,7 +430,7 @@ public class TextBox
 				foreach(TextBoxSeg Seg in Line.SegArray) LineWidth += Seg.SegWidth;
 				if(LineWidth > MaxWidth) MaxWidth = LineWidth;
 				}
-			return(MaxWidth);
+			return MaxWidth;
 			}
 		}
 

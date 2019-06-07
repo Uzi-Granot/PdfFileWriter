@@ -185,7 +185,7 @@ internal class PdfFontFile : PdfObject
 		BuildEmbeddedFile();
 
 		// exit
-		return(Buffer);
+		return Buffer;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -439,18 +439,18 @@ internal class PdfFontFile : PdfObject
 
 	private cmapSubTbl SelectcmapSubTable
 			(
-			cmapSubTbl[]	SubTblArray
+			cmapSubTbl[] SubTblArray
 			)
 		{
 		// search for platform ID = 3 Windows, encoding ID = 0 or 1 Unicode and format 4
 		cmapSubTbl SearchSubTbl = new cmapSubTbl(3, (ushort) (SymbolicFont ? 0 : 1), 4);
 		int Index = Array.BinarySearch(SubTblArray, SearchSubTbl);
-		if(Index >= 0) return(SubTblArray[Index]);
+		if(Index >= 0) return SubTblArray[Index];
 
 		// search for platform ID = 3 Windows, encoding ID = 0 or 1 Unicode and format 0
 		SearchSubTbl.Format = 0;
 		Index = Array.BinarySearch(SubTblArray, SearchSubTbl);
-		if(Index >= 0) return(SubTblArray[Index]);
+		if(Index >= 0) return SubTblArray[Index];
 
 		// not found
 		throw new ApplicationException("Required cmap sub-table is missing");
@@ -683,7 +683,7 @@ internal class PdfFontFile : PdfObject
 		GlyphList.Add(CharInfo);
 		AddGlyph(CharInfo, GlyphList, CompList);
 
-		return(GlyphList);
+		return GlyphList;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -692,8 +692,8 @@ internal class PdfFontFile : PdfObject
 
 	private void AddCompositeGlyphs
 			(
-			List<CharInfo>	GlyphList,
-			List<int>		ExtraList
+			List<CharInfo> GlyphList,
+			List<int> ExtraList
 			)
 		{
 		// create a temp list of components of composite glyphs
@@ -1348,7 +1348,7 @@ internal class PdfFontFile : PdfObject
 		WriteUInt32BigEndian(ChecksumAdjustment);
 
 		// write 
-		return(Buffer);
+		return Buffer;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1357,7 +1357,7 @@ internal class PdfFontFile : PdfObject
 
 	private short ReadInt16BigEndian()
 		{
-		return((short) (((int) Buffer[BufPtr++] << 8) | (int) Buffer[BufPtr++]));
+		return (short) ((Buffer[BufPtr++] << 8) | Buffer[BufPtr++]);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1366,7 +1366,7 @@ internal class PdfFontFile : PdfObject
 
 	private ushort ReadUInt16BigEndian()
 		{
-		return((ushort) (((uint) Buffer[BufPtr++] << 8) | (uint) Buffer[BufPtr++]));
+		return (ushort) (((uint) Buffer[BufPtr++] << 8) | Buffer[BufPtr++]);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1375,7 +1375,7 @@ internal class PdfFontFile : PdfObject
 
 	private uint ReadUInt32BigEndian()
 		{
-		return(((uint) Buffer[BufPtr++] << 24) | ((uint) Buffer[BufPtr++] << 16) | ((uint) Buffer[BufPtr++] << 8) | (uint) Buffer[BufPtr++]);
+		return ((uint) Buffer[BufPtr++] << 24) | ((uint) Buffer[BufPtr++] << 16) | ((uint) Buffer[BufPtr++] << 8) | Buffer[BufPtr++];
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1384,8 +1384,8 @@ internal class PdfFontFile : PdfObject
 
 	private long ReadInt64BigEndian()
 		{
-		return(((uint) Buffer[BufPtr++] << 56) | ((uint) Buffer[BufPtr++] << 48) | ((uint) Buffer[BufPtr++] << 40) | ((uint) Buffer[BufPtr++] << 32) | 
-			((uint) Buffer[BufPtr++] << 24) | ((uint) Buffer[BufPtr++] << 16) | ((uint) Buffer[BufPtr++] << 8) | (uint) Buffer[BufPtr++]);
+		return ((uint) Buffer[BufPtr++] << 56) | ((uint) Buffer[BufPtr++] << 48) | ((uint) Buffer[BufPtr++] << 40) | ((uint) Buffer[BufPtr++] << 32) | 
+			((uint) Buffer[BufPtr++] << 24) | ((uint) Buffer[BufPtr++] << 16) | ((uint) Buffer[BufPtr++] << 8) | Buffer[BufPtr++];
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1463,7 +1463,7 @@ internal class PdfFontFile : PdfObject
 		{
 		uint ChkSum = 0;
 		for(int Ptr = 0; Ptr < Table.Length; Ptr++) ChkSum += (uint) Table[Ptr] << (24 - 8 * (Ptr & 3));
-		return(ChkSum);
+		return ChkSum;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1481,7 +1481,7 @@ internal class PdfFontFile : PdfObject
 			byte Ch = (byte) (BinTag >> (24 - 8 * Index));
 			if(Ch >= 32 && Ch <= 126) StrTag[Index] = (char) Ch;
 			}
-		return(StrTag.ToString());			
+		return StrTag.ToString();			
 		}
 	}
 }

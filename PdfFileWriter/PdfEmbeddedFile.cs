@@ -208,7 +208,7 @@ internal class ExtToMime : IComparable<ExtToMime>
 			)
 		{
 		int Index = Array.BinarySearch(ExtToMimeArray, new ExtToMime(Ext, null));
-		return(Index >= 0 ? ExtToMimeArray[Index].Mime : null);
+		return Index >= 0 ? ExtToMimeArray[Index].Mime : null;
 		}
 
 	/// <summary>
@@ -221,7 +221,7 @@ internal class ExtToMime : IComparable<ExtToMime>
 			ExtToMime Other
 			)
 		{
-		return(string.Compare(this.Ext, Other.Ext, true));
+		return string.Compare(this.Ext, Other.Ext, true);
 		}
 
 	private static ExtToMime[]	ExtToMimeArray =

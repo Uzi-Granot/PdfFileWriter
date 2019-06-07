@@ -61,7 +61,7 @@ public class PdfTableBorderStyle
 		{
 		get
 			{
-			return(Display ? 0.5 * Width : 0.0);
+			return Display ? 0.5 * Width : 0.0;
 			}
 		}
 	/// <summary>
@@ -697,11 +697,11 @@ public class PdfTableBorder
 
 			double TotalWidth = VertBorderHalfWidth[0] + VertBorderHalfWidth[Columns];
 			for(int Index = 1; Index < Columns; Index++) TotalWidth += 2.0 * VertBorderHalfWidth[Index];
-			return(TotalWidth);
+			return TotalWidth;
 			}
 
 		// no borders
-		return(0.0);
+		return 0.0;
 		}
 
 	internal void TestInit()

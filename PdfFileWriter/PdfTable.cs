@@ -100,7 +100,7 @@ public class PdfTable
 		{
 		get
 			{
-			return(_Cell);
+			return _Cell;
 			}
 		}
 	internal PdfTableCell[] _Cell;
@@ -112,7 +112,7 @@ public class PdfTable
 		{
 		get
 			{
-			return(new PdfTableStyle(DefaultCellStyle));
+			return new PdfTableStyle(DefaultCellStyle);
 			}
 		}
 
@@ -134,7 +134,7 @@ public class PdfTable
 		{
 		get
 			{
-			return((double[]) _ColumnPosition.Clone());
+			return (double[]) _ColumnPosition.Clone();
 			}
 		}
 	internal double[] _ColumnPosition;
@@ -162,7 +162,7 @@ public class PdfTable
 		{
 		get
 			{
-			return((double[]) _ColumnWidth.Clone());
+			return (double[]) _ColumnWidth.Clone();
 			}
 		}
 	internal double[] _ColumnWidth;
@@ -237,7 +237,7 @@ public class PdfTable
 		{
 		get
 			{
-			return(_Header);
+			return _Header;
 			}
 		}
 	internal PdfTableCell[] _Header;
@@ -268,7 +268,7 @@ public class PdfTable
 		{
 		get
 			{
-			return(new PdfTableStyle(DefaultHeaderStyle));
+			return new PdfTableStyle(DefaultHeaderStyle);
 			}
 		}
 
@@ -343,7 +343,7 @@ public class PdfTable
 		{
 		get
 			{
-			return((double[]) BorderYPos.ToArray());
+			return  (double[]) BorderYPos.ToArray();
 			}
 		}
 
@@ -365,7 +365,7 @@ public class PdfTable
 		{
 		get
 			{
-			return(_RowTopPosition);
+			return _RowTopPosition;
 			}
 		set
 			{
@@ -393,7 +393,7 @@ public class PdfTable
 		{
 		get
 			{
-			return(new PdfRectangle(_TableArea));
+			return new PdfRectangle(_TableArea);
 			}
 		set
 			{

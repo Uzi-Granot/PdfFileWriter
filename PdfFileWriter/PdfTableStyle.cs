@@ -219,7 +219,7 @@ public class PdfTableStyle
 		get
 			{
 			if(Font == null) throw new ApplicationException("PdfTableStyle: Font is not defined.");
-			return(Font.AscentPlusLeading(FontSize));
+			return Font.AscentPlusLeading(FontSize);
 			}
 		}
 
@@ -231,7 +231,7 @@ public class PdfTableStyle
 		get
 			{
 			if(Font == null) throw new ApplicationException("PdfTableStyle: Font is not defined.");
-			return(Font.DescentPlusLeading(FontSize));
+			return Font.DescentPlusLeading(FontSize);
 			}
 		}
 
@@ -243,7 +243,7 @@ public class PdfTableStyle
 		get
 			{
 			if(Font == null) throw new ApplicationException("PdfTableStyle: Font is not defined.");
-			return(Font.LineSpacing(FontSize));
+			return Font.LineSpacing(FontSize);
 			}
 		}
 

@@ -32,69 +32,33 @@ using System.Text;
 namespace PdfFileWriter
 {
 /// <summary>
-/// Save image as enumeration
-/// </summary>
-public enum SaveImageAs
-	{
-	/// <summary>
-	/// Jpeg format (default)
-	/// </summary>
-	Jpeg,
-
-	/// <summary>
-	/// PDF indexed bitmap format
-	/// </summary>
-	IndexedImage,
-
-	/// <summary>
-	/// convert to gray image
-	/// </summary>
-	GrayImage,
-
-	/// <summary>
-	/// Black and white format from bool array
-	/// </summary>
-	BWImage,
-	}
-
-/// <summary>
-/// Image drawing control
+/// PdfImageControl is obolete. See latest documentation
 /// </summary>
 public class PdfImageControl
 	{
-	/// <summary>
-	/// Crop image rectangle (image pixels)
-	/// </summary>
+	#pragma warning disable 1591
+	private const bool ObsoleteError = false;
+	private const string ObsoleteMsg = "This PdfImageControl class is obsolete. See latest documentation.";
+
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
 	public Rectangle CropRect;
 
-	/// <summary>
-	/// Crop image rectangle (percent of image size)
-	/// </summary>
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
 	public RectangleF CropPercent;
 
-	/// <summary>
-	/// Reverse black and white (SaveImageAs.BWImage)
-	/// </summary>
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
 	public bool ReverseBW;
 
-	/// <summary>
-	/// Set output resolution 
-	/// </summary>
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
 	public double Resolution;
 
-	/// <summary>
-	/// Save image as
-	/// </summary>
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
 	public SaveImageAs SaveAs;
 
-	/// <summary>
-	/// Default Jpeg image quality
-	/// </summary>
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
 	public const int DefaultQuality = -1;
 
-	/// <summary>
-	/// Image control default constructor
-	/// </summary>
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
 	public PdfImageControl()
 		{
 		CropRect = Rectangle.Empty;
@@ -107,14 +71,12 @@ public class PdfImageControl
 		return;
 		}
 
-	/// <summary>
-	/// Gets or sets Jpeg image quality
-	/// </summary>
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
 	public int ImageQuality
 		{
 		get
 			{
-			return(_ImageQuality);
+			return _ImageQuality;
 			}
 		set
 			{
@@ -126,14 +88,12 @@ public class PdfImageControl
 		}
 	internal int _ImageQuality;
 
-	/// <summary>
-	/// Gray to BW cutoff level
-	/// </summary>
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
 	public int GrayToBWCutoff
 		{
 		get
 			{
-			return(_GrayToBWCutoff);
+			return _GrayToBWCutoff;
 			}
 		set
 			{

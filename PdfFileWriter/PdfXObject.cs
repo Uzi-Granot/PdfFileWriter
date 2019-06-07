@@ -40,7 +40,7 @@ public class PdfXObject : PdfContents
 		{
 		get
 			{
-			return(new PdfRectangle(BBox));
+			return new PdfRectangle(BBox);
 			}
 		set
 			{
@@ -56,7 +56,7 @@ public class PdfXObject : PdfContents
 		{
 		get
 			{
-			return(BBox.Left);
+			return BBox.Left;
 			}
 		set
 			{
@@ -72,7 +72,7 @@ public class PdfXObject : PdfContents
 		{
 		get
 			{
-			return(BBox.Bottom);
+			return BBox.Bottom;
 			}
 		set
 			{
@@ -88,7 +88,7 @@ public class PdfXObject : PdfContents
 		{
 		get
 			{
-			return(BBox.Right);
+			return BBox.Right;
 			}
 		set
 			{
@@ -104,7 +104,7 @@ public class PdfXObject : PdfContents
 		{
 		get
 			{
-			return(BBox.Top);
+			return BBox.Top;
 			}
 		set
 			{
@@ -140,6 +140,19 @@ public class PdfXObject : PdfContents
 
 		// bounding box
 		Dictionary.AddRectangle("/BBox", BBox);
+		return;
+		}
+
+	/// <summary>
+	/// Layer control
+	/// </summary>
+	/// <param name="Layer">PdfLayer object</param>
+	public void LayerControl
+			(
+			PdfObject Layer
+			)
+		{
+		Dictionary.AddIndirectReference("/OC", Layer);
 		return;
 		}
 	}

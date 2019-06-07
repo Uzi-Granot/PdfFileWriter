@@ -78,7 +78,7 @@ internal class PdfExtGState : PdfObject, IComparable<PdfExtGState>
 		int Index = Document.ExtGStateArray.BinarySearch(new PdfExtGState(Key, Value));
 
 		// this value is a duplicate
-		if(Index >= 0) return(Document.ExtGStateArray[Index]);
+		if(Index >= 0) return Document.ExtGStateArray[Index];
 
 		// new blend object
 		PdfExtGState ExtGState = new PdfExtGState(Document, Key, Value);

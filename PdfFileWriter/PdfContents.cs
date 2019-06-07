@@ -482,7 +482,7 @@ public class PdfContents : PdfObject
 			)
 		{
 		// apply paint operator
-		return(PaintStr[(int) PP]);
+		return PaintStr[(int) PP];
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1733,7 +1733,7 @@ public class PdfContents : PdfObject
 	////////////////////////////////////////////////////////////////////
 	public void DrawPolygon
 			(
-			Single[]	PathArray,	// pairs of x and y values
+			float[]	PathArray,	// pairs of x and y values
 			PaintOp		PP
 			)
 		{
@@ -2065,7 +2065,7 @@ public class PdfContents : PdfObject
 		{
 		char[] RevText = Text.ToCharArray();
 		Array.Reverse(RevText);
-		return(new string(RevText));
+		return new string(RevText);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2089,13 +2089,13 @@ public class PdfContents : PdfObject
 			)
 		{
 		// text is null or empty
-		if(string.IsNullOrEmpty(Text)) return(0);
+		if(string.IsNullOrEmpty(Text)) return 0;
 
 		// add font code to current list of font codes
 		AddToUsedResources(Font);
 
 		// draw text
-		return(DrawTextInternal(Font, FontSize, Text));
+		return DrawTextInternal(Font, FontSize, Text);
 		}
 
 	internal double DrawTextInternal
@@ -2185,7 +2185,7 @@ public class PdfContents : PdfObject
 		ObjectValueList.Add((byte) 'T');
 		ObjectValueList.Add((byte) 'j');
 		ObjectValueList.Add((byte) '\n');
-		return(Font.FontDesignToUserUnits(FontSize, Width));
+		return Font.FontDesignToUserUnits(FontSize, Width);
 		}
 
 	internal void OutputOneByte
@@ -2218,7 +2218,7 @@ public class PdfContents : PdfObject
 		FontRes[Index++] = (byte) ' ';
 		FontRes[Index++] = (byte) 'T';
 		FontRes[Index++] = (byte) 'f';
-		return(FontRes);
+		return FontRes;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2241,7 +2241,7 @@ public class PdfContents : PdfObject
 			string		Text
 			)
 		{
-		return(DrawText(Font, FontSize, PosX, PosY, TextJustify.Left, Text));
+		return DrawText(Font, FontSize, PosX, PosY, TextJustify.Left, Text);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2267,7 +2267,7 @@ public class PdfContents : PdfObject
 			)
 		{
 		// text is null or empty
-		if(string.IsNullOrEmpty(Text)) return(0);
+		if(string.IsNullOrEmpty(Text)) return 0;
 
 		// add font code to current list of font codes
 		AddToUsedResources(Font);
@@ -2293,7 +2293,7 @@ public class PdfContents : PdfObject
 		EndTextMode();
 
 		// return text width
-		return(Width);
+		return Width;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2318,7 +2318,7 @@ public class PdfContents : PdfObject
 			string		Text
 			)
 		{
-		return(DrawText(Font, FontSize, PosX, PosY, TextJustify.Left, DrawStyle, Color.Empty, Text));
+		return DrawText(Font, FontSize, PosX, PosY, TextJustify.Left, DrawStyle, Color.Empty, Text);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2343,7 +2343,7 @@ public class PdfContents : PdfObject
 			string		Text
 			)
 		{
-		return(DrawText(Font, FontSize, PosX, PosY, TextJustify.Left, DrawStyle.Normal, TextColor, Text));
+		return DrawText(Font, FontSize, PosX, PosY, TextJustify.Left, DrawStyle.Normal, TextColor, Text);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2374,7 +2374,7 @@ public class PdfContents : PdfObject
 			)
 		{
 		// text is null or empty
-		if(string.IsNullOrEmpty(Text)) return(0);
+		if(string.IsNullOrEmpty(Text)) return 0;
 
 		// text width
 		double TextWidth = 0;
@@ -2465,7 +2465,7 @@ public class PdfContents : PdfObject
 			}
 
 		// return text width
-		return(TextWidth);
+		return TextWidth;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2493,7 +2493,7 @@ public class PdfContents : PdfObject
 			)
 		{
 		// text is null or empty
-		if(KerningArray == null || KerningArray.Length == 0) return(0);
+		if(KerningArray == null || KerningArray.Length == 0) return 0;
 
 		// add font code to current list of font codes
 		AddToUsedResources(Font);
@@ -2509,7 +2509,7 @@ public class PdfContents : PdfObject
 		EndTextMode();
 
 		// exit
-		return(Width);
+		return Width;
 		}
 
 	internal double DrawTextWithKerning
@@ -2632,7 +2632,7 @@ public class PdfContents : PdfObject
 		ObjectValueList.Add((byte) 'T');
 		ObjectValueList.Add((byte) 'J');
 		ObjectValueList.Add((byte) '\n');
-		return(Font.FontDesignToUserUnits(FontSize, Width));
+		return Font.FontDesignToUserUnits(FontSize, Width);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2656,16 +2656,16 @@ public class PdfContents : PdfObject
 			)
 		{
 		// text is null or empty
-		if(string.IsNullOrEmpty(Text)) return(0);
+		if(string.IsNullOrEmpty(Text)) return 0;
 
 		// create text position adjustment array based on kerning information
 		KerningAdjust[] KernArray = Font.TextKerning(Text);
 
 		// no kerning
-		if(KernArray == null) return(DrawText(Font, FontSize, PosX, PosY, Text));
+		if(KernArray == null) return DrawText(Font, FontSize, PosX, PosY, Text);
 
 		// draw text with adjustment
-		return(DrawText(Font, FontSize, PosX, PosY, KernArray));
+		return DrawText(Font, FontSize, PosX, PosY, KernArray);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2697,7 +2697,7 @@ public class PdfContents : PdfObject
 			)
 		{
 		// text is null or empty
-		if(string.IsNullOrEmpty(Text)) return(0);
+		if(string.IsNullOrEmpty(Text)) return 0;
 
 		// add font code to current list of font codes
 		AddToUsedResources(Font);
@@ -2763,7 +2763,7 @@ public class PdfContents : PdfObject
 		RestoreGraphicsState();
 
 		// exit
-		return(Width);
+		return Width;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2794,7 +2794,7 @@ public class PdfContents : PdfObject
 			AnnotAction AnnotAction
 			)
 		{
-		return(DrawTextWithAnnotation(Page, Font, FontSize, TextAbsPosX, TextAbsPosY, TextJustify.Left, DrawStyle.Underline, Color.DarkBlue, Text, AnnotAction));
+		return DrawTextWithAnnotation(Page, Font, FontSize, TextAbsPosX, TextAbsPosY, TextJustify.Left, DrawStyle.Underline, Color.DarkBlue, Text, AnnotAction);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2826,7 +2826,8 @@ public class PdfContents : PdfObject
 			string		WebLinkStr
 			)
 		{
-		return(DrawTextWithAnnotation(Page, Font, FontSize, TextAbsPosX, TextAbsPosY, TextJustify.Left, DrawStyle.Underline, Color.DarkBlue, Text, new AnnotWebLink(WebLinkStr)));
+		return DrawTextWithAnnotation(Page, Font, FontSize, TextAbsPosX, TextAbsPosY, TextJustify.Left,
+			DrawStyle.Underline, Color.DarkBlue, Text, new AnnotWebLink(WebLinkStr));
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2863,7 +2864,7 @@ public class PdfContents : PdfObject
 			string		WebLinkStr
 			)
 		{
-		return(DrawTextWithAnnotation(Page, Font, FontSize, TextAbsPosX, TextAbsPosY, Justify, DrawStyle, TextColor, Text, new AnnotWebLink(WebLinkStr)));
+		return DrawTextWithAnnotation(Page, Font, FontSize, TextAbsPosX, TextAbsPosY, Justify, DrawStyle, TextColor, Text, new AnnotWebLink(WebLinkStr));
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2901,7 +2902,7 @@ public class PdfContents : PdfObject
 			)
 		{
 		double Width = DrawText(Font, FontSize, TextAbsPosX, TextAbsPosY, Justify, DrawStyle, TextColor, Text);
-		if(Width == 0.0) return(0.0);
+		if(Width == 0.0) return 0.0;
 
 		// adjust position
 		switch(Justify)
@@ -2919,7 +2920,7 @@ public class PdfContents : PdfObject
 
 		PdfRectangle AnnotRect = new PdfRectangle(TextAbsPosX, TextAbsPosY - Font.DescentPlusLeading(FontSize), TextAbsPosX + Width, TextAbsPosY + Font.AscentPlusLeading(FontSize));
 		Page.AddAnnotInternal(AnnotRect, AnnotAction);
-		return(Width);
+		return Width;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -2976,7 +2977,7 @@ public class PdfContents : PdfObject
 			PdfPage			Page = null
 			)
 		{
-		return(DrawText(PosX, ref PosYTop, PosYBottom, LineNo, 0.0, 0.0, TextBoxJustify.Left, TextBox, Page));
+		return DrawText(PosX, ref PosYTop, PosYBottom, LineNo, 0.0, 0.0, TextBoxJustify.Left, TextBox, Page);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -3091,7 +3092,7 @@ public class PdfContents : PdfObject
 			PosYTop -= Line.Descent + LineExtraSpace;
 			if(Line.EndOfParagraph) PosYTop -= ParagraphExtraSpace;
 			}
-		return(LineNo);
+		return LineNo;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -3120,7 +3121,7 @@ public class PdfContents : PdfObject
 			SegPosX += SegWidth;
 			}
 
-		return(SegPosX - PosX);
+		return SegPosX - PosX;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -3156,7 +3157,7 @@ public class PdfContents : PdfObject
 			SegPosX += SegWidth;
 			}
 
-		return(SegPosX - PosX);
+		return SegPosX - PosX;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -3172,7 +3173,7 @@ public class PdfContents : PdfObject
 			PdfPage		Page
 			)
 		{
-		if(!TextFitToWidth(Width, out double WordSpacing, out double CharSpacing, Line)) return(DrawText(PosX, PosY, Line, Page));
+		if(!TextFitToWidth(Width, out double WordSpacing, out double CharSpacing, Line)) return DrawText(PosX, PosY, Line, Page);
 		SaveGraphicsState();
 		SetWordSpacing(WordSpacing);
 		SetCharacterSpacing(CharSpacing);
@@ -3190,7 +3191,7 @@ public class PdfContents : PdfObject
 			SegPosX += SegWidth;
 			}
 		RestoreGraphicsState();
-		return(SegPosX - PosX);
+		return SegPosX - PosX;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -3227,7 +3228,7 @@ public class PdfContents : PdfObject
 
 		// reduce character count by one
 		CharCount--;
-		if(CharCount <= 0) return(false);
+		if(CharCount <= 0) return false;
 
 		// extra spacing required
 		double ExtraSpace = ReqWidth - Width;
@@ -3236,29 +3237,29 @@ public class PdfContents : PdfObject
 		double MaxRes = 0.006 / ScaleFactor;
 
 		// string is too wide
-		if(ExtraSpace < (-MaxRes)) return(false);
+		if(ExtraSpace < (-MaxRes)) return false;
 
 		// string is just right
-		if(ExtraSpace < MaxRes) return(true);
+		if(ExtraSpace < MaxRes) return true;
 
 		// String does not have any blank characters
 		if(SpaceCount == 0)
 			{
 			CharSpacing = ExtraSpace / CharCount;
-			return(true);
+			return true;
 			}
 
 		// extra space per word
 		WordSpacing = ExtraSpace / SpaceCount;
 
 		// extra space is equal or less than one blank
-		if(WordSpacing <= SpaceWidth / SpaceCount) return(true);
+		if(WordSpacing <= SpaceWidth / SpaceCount) return true;
 
 		// extra space is larger that one blank
 		// increase character and word spacing
 		CharSpacing = ExtraSpace / (10 * SpaceCount + CharCount);
 		WordSpacing = 10 * CharSpacing;
-		return(true);
+		return true;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -3353,7 +3354,7 @@ public class PdfContents : PdfObject
 			double		FontSize = 0.0
 			)
 		{
-		return(DrawBarcode(PosX, PosY, TextJustify.Left, BarWidth, BarHeight, Color.Black, Barcode, TextFont, FontSize));
+		return DrawBarcode(PosX, PosY, TextJustify.Left, BarWidth, BarHeight, Color.Black, Barcode, TextFont, FontSize);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -3416,7 +3417,7 @@ public class PdfContents : PdfObject
 			double		FontSize = 0.0
 			)
 		{
-		return(DrawBarcode(PosX, PosY, Justify, BarWidth, BarcodeHeight, Color.Black, Barcode, TextFont, FontSize));
+		return DrawBarcode(PosX, PosY, Justify, BarWidth, BarcodeHeight, Color.Black, Barcode, TextFont, FontSize);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -3585,7 +3586,7 @@ public class PdfContents : PdfObject
 		RestoreGraphicsState();
 
 		// return width
-		return(TotalWidth);
+		return TotalWidth;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -3826,7 +3827,7 @@ public class PdfContents : PdfObject
 	////////////////////////////////////////////////////////////////////
 	public void DrawXObject
 			(
-			PdfXObject	XObject
+			PdfXObject XObject
 			)
 		{
 		// add image code to current list of resources
@@ -3850,9 +3851,9 @@ public class PdfContents : PdfObject
 	////////////////////////////////////////////////////////////////////
 	public void DrawXObject
 			(
-			PdfXObject	XObject,
-			double		OriginX,
-			double		OriginY
+			PdfXObject XObject,
+			double OriginX,
+			double OriginY
 			)
 		{
 		SaveGraphicsState();
@@ -3874,11 +3875,11 @@ public class PdfContents : PdfObject
 	////////////////////////////////////////////////////////////////////
 	public void DrawXObject
 			(
-			PdfXObject	XObject,
-			double		OriginX,
-			double		OriginY,
-			double		ScaleX,
-			double		ScaleY
+			PdfXObject XObject,
+			double OriginX,
+			double OriginY,
+			double ScaleX,
+			double ScaleY
 			)
 		{
 		SaveGraphicsState();
@@ -3901,12 +3902,12 @@ public class PdfContents : PdfObject
 	////////////////////////////////////////////////////////////////////
 	public void DrawXObject
 			(
-			PdfXObject	XObject,
-			double		OriginX,
-			double		OriginY,
-			double		ScaleX,
-			double		ScaleY,
-			double		Alpha
+			PdfXObject XObject,
+			double OriginX,
+			double OriginY,
+			double ScaleX,
+			double ScaleY,
+			double Alpha
 			)
 		{
 		SaveGraphicsState();
@@ -3922,7 +3923,7 @@ public class PdfContents : PdfObject
 
 	internal void AddToUsedResources
 			(
-			PdfObject	ResObject
+			PdfObject ResObject
 			)
 		{
 		if(ResObjects == null) ResObjects = new List<PdfObject>();

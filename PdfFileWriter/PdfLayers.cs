@@ -232,26 +232,5 @@ namespace PdfFileWriter
 			Dictionary.AddDictionary("/D", DefaultDict);
 			return;
 			}
-/*
-		private void BuildOrderArray
-				(
-				PdfLayer CurLayer,
-				StringBuilder OrderArray
-				)
-			{
-			OrderArray.Append("[");
-			for(; CurLayer != null; CurLayer = CurLayer.SiblingLink)
-				{
-				// add current layer to the list
-				OrderArray.AppendFormat("{0} 0 R ", CurLayer.ObjectNumber);
-
-				// we have a child
-				if(CurLayer.ChildLink != null) BuildOrderArray(CurLayer.ChildLink, OrderArray);
-				}
-			if(OrderArray[OrderArray.Length - 1] == ' ') OrderArray.Length--;
-			OrderArray.Append("]");
-			return;
-			}
-*/
 		}
 	}

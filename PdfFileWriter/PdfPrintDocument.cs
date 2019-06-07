@@ -46,17 +46,59 @@ namespace PdfFileWriter
 public class PdfPrintDocument : PrintDocument
 	{
 	/// <summary>
-	/// Image control
-	/// </summary>
-	public PdfImageControl ImageControl;
-
-	/// <summary>
 	/// Document page crop rectangle
 	/// </summary>
 	/// <remarks>
 	/// Dimensions are in user units. The origin is top left corner.
 	/// </remarks>
 	public RectangleF PageCropRect {get; set;}
+
+	/// <summary>
+	/// Image resolution in pixels per inch (default is 96)
+	/// </summary>
+	public double Resolution { get; set; }
+
+	/// <summary>
+	/// Save image as (default is jpeg)
+	/// </summary>
+	public SaveImageAs SaveAs { get; set; }
+
+	/// <summary>
+	/// Gets or sets Jpeg image quality
+	/// </summary>
+	public int ImageQuality
+		{
+		get
+			{
+			return _ImageQuality;
+			}
+		set
+			{
+			// set image quality
+			if(value != PdfImage.DefaultQuality && (value < 0 || value > 100))
+					throw new ApplicationException("PdfImageControl.ImageQuality must be PdfImage.DefaultQuality or 0 to 100");
+			_ImageQuality = value;
+			return;
+			}
+		}
+	internal int _ImageQuality = PdfImage.DefaultQuality;
+
+	/// <summary>
+	/// Gray to BW cutoff level
+	/// </summary>
+	public int GrayToBWCutoff
+		{
+		get
+			{
+			return _GrayToBWCutoff;
+			}
+		set
+			{
+			if(value < 1 || value > 99) throw new ApplicationException("PdfImageControl.GrayToBWCutoff must be 1 to 99");
+			_GrayToBWCutoff = value;
+			}
+		}
+	internal int _GrayToBWCutoff = 50;
 
 	/// <summary>
 	/// Current PDF document
@@ -68,41 +110,20 @@ public class PdfPrintDocument : PrintDocument
 	/// PDF print document constructor
 	/// </summary>
 	/// <param name="Document">Current PDF document</param>
-	/// <remarks>
-	/// Set resolution to 96 pixels per inch
-	/// </remarks>
 	////////////////////////////////////////////////////////////////////
 	public PdfPrintDocument
 			(
-			PdfDocument Document
-			) : this(Document, null) {}
-
-	////////////////////////////////////////////////////////////////////
-	/// <summary>
-	/// PDF print document constructor
-	/// </summary>
-	/// <param name="Document">Current PDF document</param>
-	/// <param name="ImageControl">Image control</param>
-	////////////////////////////////////////////////////////////////////
-	public PdfPrintDocument
-			(
-			PdfDocument		Document,
-			PdfImageControl ImageControl
+			PdfDocument		Document
 			)
 		{
 		// save document
 		this.Document = Document;
 
-		// save image control
-		if(ImageControl == null) ImageControl = new PdfImageControl();
-		this.ImageControl = ImageControl;
-
 		// set default resolution to 96 pixels per inch
-		if(ImageControl.Resolution == 0) ImageControl.Resolution = 96.0;
+		Resolution = 96.0;
 
-		// make sure image control crop rectangles are empty
-		this.ImageControl.CropRect = Rectangle.Empty;
-		this.ImageControl.CropPercent = RectangleF.Empty;
+		// save as jpeg
+		SaveAs = SaveImageAs.Jpeg;
 
 		// create print document and preview controller objects
 		PrintController = new PreviewPrintController();
@@ -134,7 +155,7 @@ public class PdfPrintDocument : PrintDocument
 			}
 		get
 			{
-			return(DefaultPageSettings.Color);
+			return DefaultPageSettings.Color;
 			}
 		}
 
@@ -147,7 +168,7 @@ public class PdfPrintDocument : PrintDocument
 		{
 		get
 			{
-			return(DefaultPageSettings.Margins);
+			return DefaultPageSettings.Margins;
 			}
 		}
 
@@ -211,14 +232,23 @@ public class PdfPrintDocument : PrintDocument
 			// page image
 			Image PageImage = PageInfo[ImageIndex].Image;
 
+			// empty pdf image
+			PdfImage PdfImage = new PdfImage(Contents.Document);
+			PdfImage.Resolution = Resolution;
+			PdfImage.SaveAs = SaveAs;
+			PdfImage.ImageQuality = ImageQuality;
+			PdfImage.GrayToBWCutoff = GrayToBWCutoff;
+			PdfImage.CropRect = Rectangle.Empty;
+			PdfImage.CropPercent = RectangleF.Empty;
+	
 			// no crop
 			if(PageCropRect.IsEmpty)
 				{
 				// convert metafile image to PdfImage
-				PdfImage Image = new PdfImage(Contents.Document, PageImage, ImageControl);
+				PdfImage.LoadImage(PageImage);
 
 				// draw the image
-				Contents.DrawImage(Image, 0.0, 0.0, PageWidth, PageHeight);
+				Contents.DrawImage(PdfImage, 0.0, 0.0, PageWidth, PageHeight);
 				}
 
 			// crop
@@ -226,16 +256,16 @@ public class PdfPrintDocument : PrintDocument
 				{
 				int ImageWidth = PageImage.Width;
 				int ImageHeight = PageImage.Height;
-				ImageControl.CropRect.X = (int) (ImageWidth * PageCropRect.X / PageWidth + 0.5);
-				ImageControl.CropRect.Y = (int) (ImageHeight * PageCropRect.Y / PageHeight + 0.5);
-				ImageControl.CropRect.Width = (int) (ImageWidth * PageCropRect.Width / PageWidth + 0.5);
-				ImageControl.CropRect.Height = (int) (ImageHeight * PageCropRect.Height / PageHeight + 0.5);
+				PdfImage.CropRect.X = (int) (ImageWidth * PageCropRect.X / PageWidth + 0.5);
+				PdfImage.CropRect.Y = (int) (ImageHeight * PageCropRect.Y / PageHeight + 0.5);
+				PdfImage.CropRect.Width = (int) (ImageWidth * PageCropRect.Width / PageWidth + 0.5);
+				PdfImage.CropRect.Height = (int) (ImageHeight * PageCropRect.Height / PageHeight + 0.5);
 				
 				// convert metafile image to PdfImage
-				PdfImage PdfPageImage = new PdfImage(Contents.Document, PageImage, ImageControl);
+				PdfImage.LoadImage(PageImage);
 
 				// draw the image
-				Contents.DrawImage(PdfPageImage, PageCropRect.X, PageHeight - PageCropRect.Y - PageCropRect.Height, PageCropRect.Width, PageCropRect.Height);
+				Contents.DrawImage(PdfImage, PageCropRect.X, PageHeight - PageCropRect.Y - PageCropRect.Height, PageCropRect.Width, PageCropRect.Height);
 				}
 			}
 		return;

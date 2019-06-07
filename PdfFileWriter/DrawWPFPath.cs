@@ -808,7 +808,7 @@ public class DrawWPFPath
 			SysWin.Point PathPoint
 			)
 		{
-		return(new PointD(ScaleX * PathPoint.X + TransX, ScaleY * PathPoint.Y + TransY));
+		return new PointD(ScaleX * PathPoint.X + TransX, ScaleY * PathPoint.Y + TransY);
 		}
 
 	internal SizeD SizeToDrawing
@@ -816,7 +816,7 @@ public class DrawWPFPath
 			SysWin.Size PathSize
 			)
 		{
-		return(new SizeD(Math.Abs(ScaleX) * PathSize.Width, Math.Abs(ScaleY) * PathSize.Height));
+		return new SizeD(Math.Abs(ScaleX) * PathSize.Width, Math.Abs(ScaleY) * PathSize.Height);
 		}
 	}
 }

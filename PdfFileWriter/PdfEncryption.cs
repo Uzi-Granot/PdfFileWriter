@@ -252,7 +252,7 @@ public class PdfEncryption : PdfObject, IDisposable
 			}
 
 		// return result
-		return(CipherText);
+		return CipherText;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -265,7 +265,7 @@ public class PdfEncryption : PdfObject, IDisposable
 			)
 		{
 		// no user password
-		if(string.IsNullOrEmpty(StringPassword)) return((byte[]) PasswordPad.Clone());
+		if(string.IsNullOrEmpty(StringPassword)) return (byte[]) PasswordPad.Clone();
 
 		// convert password to byte array
         byte[] BinaryPassword = new byte[32];
@@ -281,7 +281,7 @@ public class PdfEncryption : PdfObject, IDisposable
 		if(IndexEnd < 32) Array.Copy(PasswordPad, 0, BinaryPassword, IndexEnd, 32 - IndexEnd);
 
 		// return password
-		return(BinaryPassword);
+		return BinaryPassword;
 	    }
 
 	////////////////////////////////////////////////////////////////////
@@ -300,16 +300,16 @@ public class PdfEncryption : PdfObject, IDisposable
 		// loop 50 times creating hash of a hash
 		for(int Index = 0; Index < 50; Index++) OwnerHash = MD5.ComputeHash(OwnerHash);
 
-		byte[] ownerKey = (byte[]) UserBinaryPassword.Clone();
+		byte[] OwnerKey = (byte[]) UserBinaryPassword.Clone();
 		byte[] TempKey = new byte[16];
 		for(int Index = 0; Index < 20; Index++)
 			{
 			for(int Tindex = 0; Tindex < 16 ; Tindex++) TempKey[Tindex] = (byte)(OwnerHash[Tindex] ^ Index);
-			EncryptRC4(TempKey, ownerKey);
+			EncryptRC4(TempKey, OwnerKey);
             }
 
 		// return encryption key
-		return(ownerKey);
+		return OwnerKey;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -362,7 +362,7 @@ public class PdfEncryption : PdfObject, IDisposable
 			EncryptRC4(TempKey, UserKey);
 			}
 		Array.Resize<byte>(ref UserKey, 32);
-		return(UserKey);
+		return UserKey;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -386,7 +386,7 @@ public class PdfEncryption : PdfObject, IDisposable
 		if(EncryptionType == EncryptionType.Aes128) Array.Copy(Salt, 0, HashInput, Ptr, Salt.Length);
 		byte[] EncryptionKey = MD5.ComputeHash(HashInput);
 		if(EncryptionKey.Length > 16) Array.Resize<byte>(ref EncryptionKey, 16);
-		return(EncryptionKey);
+		return EncryptionKey;
 		}
 
 	////////////////////////////////////////////////////////////////////

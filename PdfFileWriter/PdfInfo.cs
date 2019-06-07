@@ -60,7 +60,7 @@ public class PdfInfo : PdfObject
 			}
 
 		// exit with either existing object or a new one
-		return(Document.InfoObject);
+		return Document.InfoObject;
 		}
 
 	/// <summary>

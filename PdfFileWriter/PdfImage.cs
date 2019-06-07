@@ -32,19 +32,133 @@ using System.Runtime.InteropServices;
 
 namespace PdfFileWriter
 {
-	/// <summary>
-	/// PDF Image class
-	/// </summary>
-	/// <remarks>
-	/// <para>
-	/// For more information go to <a href="http://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version#ImageSupport">2.4 Image Support</a>
-	/// </para>
-	/// <para>
-	/// <a href="http://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version#DrawImage">For example of drawing image see 3.9. Draw Image and Clip it</a>
-	/// </para>
-	/// </remarks>
-	public class PdfImage : PdfObject, IDisposable
+/// <summary>
+/// Save image as enumeration
+/// </summary>
+public enum SaveImageAs
 	{
+	/// <summary>
+	/// Jpeg format (default)
+	/// </summary>
+	Jpeg,
+
+	/// <summary>
+	/// PDF indexed bitmap format
+	/// </summary>
+	IndexedImage,
+
+	/// <summary>
+	/// convert to gray image
+	/// </summary>
+	GrayImage,
+
+	/// <summary>
+	/// Black and white format from bool array
+	/// </summary>
+	BWImage,
+	}
+
+/// <summary>
+/// PDF Image class
+/// </summary>
+/// <remarks>
+/// <para>
+/// For more information go to <a href="http://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version#ImageSupport">2.4 Image Support</a>
+/// </para>
+/// <para>
+/// <a href="http://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version#DrawImage">For example of drawing image see 3.9. Draw Image and Clip it</a>
+/// </para>
+/// </remarks>
+public class PdfImage : PdfObject, IDisposable
+	{
+	/// <summary>
+	/// Save image as
+	/// </summary>
+	public SaveImageAs SaveAs = SaveImageAs.Jpeg;
+
+	/// <summary>
+	/// Crop image rectangle (image pixels)
+	/// </summary>
+	public Rectangle CropRect = Rectangle.Empty;
+
+	/// <summary>
+	/// Crop image rectangle (percent of image size)
+	/// </summary>
+	public RectangleF CropPercent = RectangleF.Empty;
+
+	/// <summary>
+	/// Reverse black and white (SaveImageAs.BWImage)
+	/// </summary>
+	public bool ReverseBW = false;
+
+	/// <summary>
+	/// Layer control
+	/// </summary>
+	public PdfLayer LayerControl = null;
+
+	/// <summary>
+	/// Set output resolution 
+	/// </summary>
+	public virtual double Resolution
+			{
+			get
+				{
+				return _Resolution;
+				}
+			set
+				{ 
+				if(value < 0) throw new ApplicationException("Resolution must be greater than zero, or zero for default");
+
+				// save resolution
+				_Resolution = value;
+				}
+			}
+	/// <summary>
+	/// Image resolution
+	/// </summary>
+	protected double _Resolution = 0;
+
+	/// <summary>
+	/// Default Jpeg image quality
+	/// </summary>
+	public const int DefaultQuality = -1;
+
+	/// <summary>
+	/// Gets or sets Jpeg image quality
+	/// </summary>
+	public int ImageQuality
+		{
+		get
+			{
+			return _ImageQuality;
+			}
+		set
+			{
+			// set image quality
+			if(value != DefaultQuality && (value < 0 || value > 100)) throw new ApplicationException("PdfImageControl.ImageQuality must be DefaultQuality or 0 to 100");
+			_ImageQuality = value;
+			return;
+			}
+		}
+	internal int _ImageQuality = DefaultQuality;
+
+	/// <summary>
+	/// Gray to BW cutoff level
+	/// </summary>
+	public int GrayToBWCutoff
+		{
+		get
+			{
+			return _GrayToBWCutoff;
+			}
+		set
+			{
+			if(value < 1 || value > 99) throw new ApplicationException("PdfImageControl.GrayToBWCutoff must be 1 to 99 (default is 50)");
+			_GrayToBWCutoff = value;
+			}
+		}
+	internal int _GrayToBWCutoff = 50;
+
 	/// <summary>
 	/// Gets image width in pixels
 	/// </summary>
@@ -55,7 +169,6 @@ namespace PdfFileWriter
 	/// </summary>
 	public int HeightPix {get; internal set;}	// in pixels
 
-	internal PdfImageControl ImageControl;
 	internal Rectangle ImageRect;
 	internal Bitmap Picture;
 	internal bool DisposePicture;
@@ -64,7 +177,11 @@ namespace PdfFileWriter
 
 	internal byte[] OneBitMask = {0x80, 0x40, 0x20, 0x10, 8, 4, 2, 1};
 
-	internal PdfImage
+	/// <summary>
+	/// PdfImage constructor
+	/// </summary>
+	/// <param name="Document">PdfDocument</param>
+	public PdfImage
 			(
 			PdfDocument		Document
 			) : base(Document, ObjectType.Stream, "/XObject")
@@ -77,176 +194,28 @@ namespace PdfFileWriter
 		return;
 		}
 
-	////////////////////////////////////////////////////////////////////
 	/// <summary>
-	/// Constructor for image file
+	/// Load image from file
 	/// </summary>
-	/// <param name="Document">PDF document (parent object)</param>
 	/// <param name="ImageFileName">Image file name</param>
-	/// <param name="ImageControl">Image control</param>
-	/// <remarks>
-	/// <para>Image quality is a parameter that used by the .net framework
-	/// during the compression of the image from bitmap to jpeg. If the parameter
-	/// is missing or set to -1 the library saves the bitmap image as</para>
-	/// <code>
-	///	Bitmap.Save(MemoryStream, ImageFormat.Jpeg);
-	///	</code>
-	///	<para>If the ImageQuality parameter is 0 to 100, the library saves the bitmap image as</para>
-	///	<code>
-	///	EncoderParameters EncoderParameters = new EncoderParameters(1);
-	/// EncoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, ImageQuality);
-	/// Bitmap.Save(MemoryStream, GetEncoderInfo("image/jpeg"), EncoderParameters);
-	///	</code>
-	///	<para>Microsoft does not specify the image quality factor used in the 
-	///	first method of saving. However, experimantaion and Internet comments shows that it is 75.</para>
-	/// </remarks>
-	////////////////////////////////////////////////////////////////////
-	public PdfImage
+	public void LoadImage
 			(
-			PdfDocument Document,
-			string ImageFileName,
-			PdfImageControl ImageControl = null
-			) : this(Document)
-		{
-		ConstructorHelper(LoadImageFromFile(ImageFileName), ImageControl);
-		return;
-		}
-
-	////////////////////////////////////////////////////////////////////
-	/// <summary>
-	/// Constructor for image object
-	/// </summary>
-	/// <param name="Document">PDF document (parent object)</param>
-	/// <param name="Image">Image bitmap or metafile</param>
-	/// <param name="ImageControl">Image control (optional)</param>
-	/// <remarks>
-	/// <para>Image quality is a parameter that used by the .net framework
-	/// during the compression of the image from bitmap to jpeg. If the parameter
-	/// is missing or set to -1 the library saves the bitmap image as</para>
-	/// <code>
-	///	Bitmap.Save(MemoryStream, ImageFormat.Jpeg);
-	///	</code>
-	///	<para>If the ImageQuality parameter is 0 to 100, the library saves the bitmap image as</para>
-	///	<code>
-	///	EncoderParameters EncoderParameters = new EncoderParameters(1);
-	/// EncoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, ImageQuality);
-	/// Bitmap.Save(MemoryStream, GetEncoderInfo("image/jpeg"), EncoderParameters);
-	///	</code>
-	///	<para>Microsoft does not specify the image quality factor used in the 
-	///	first method of saving. However, experimantaion and Internet comments shows that it is 75.</para>
-	/// </remarks>
-	////////////////////////////////////////////////////////////////////
-	public PdfImage
-			(
-			PdfDocument Document,
-			Image Image,
-			PdfImageControl ImageControl = null
-			) : this(Document)
-		{
-		ConstructorHelper(Image, ImageControl);
-		return;
-		}
-
-	/// <summary>
-	/// Black and white image
-	/// </summary>
-	/// <param name="Document">PDF document (parent object)</param>
-	/// <param name="BWImage">Black and white image</param>
-	/// <param name="ImageControl">Image control (optional)</param>
-	public PdfImage
-			(
-			PdfDocument Document,
-			bool[,] BWImage,
-			PdfImageControl ImageControl = null
-			) : this(Document)
-		{
-		// image dimensions
-		WidthPix = BWImage.GetUpperBound(0) + 1;
-		HeightPix = BWImage.GetUpperBound(1) + 1;
-
-		// image represented as two dimension boolean array
-		this.BWImage = BWImage;
-
-		// default image control
-		if(ImageControl == null) ImageControl = new PdfImageControl();
-		ImageControl.SaveAs = SaveImageAs.BWImage;
-		this.ImageControl = ImageControl;
-
-		// write image stream to pdf file
-		WriteObjectToPdfFile();
-		return;
-		}
-
-	/// <summary>
-	/// Display PDF417 barcode as a black and white image
-	/// </summary>
-	/// <param name="Document">PDF document (parent object)</param>
-	/// <param name="Pdf417Encoder">PDF417 barcode encoder</param>
-	public PdfImage
-			(
-			PdfDocument Document,
-			Pdf417Encoder Pdf417Encoder
-			) : this(Document)
-		{
-		// barcode width and height
-		WidthPix = Pdf417Encoder.ImageWidth;
-		HeightPix = Pdf417Encoder.ImageHeight;
-
-		// black and white barcode image
-		BWImage = Pdf417Encoder.ConvertBarcodeMatrixToPixels();
-
-		// image control for PDF417 code
-		ImageControl = new PdfImageControl();
-		ImageControl.ReverseBW = true;
-		ImageControl.SaveAs = SaveImageAs.BWImage;
-
-		// write image stream to pdf file
-		WriteObjectToPdfFile();
-		return;
-		}
-
-	/// <summary>
-	/// Display QRCode barcode as a black and white image
-	/// </summary>
-	/// <param name="Document">PDF document (parent object)</param>
-	/// <param name="QREncoder">QRCode encoder</param>
-	public PdfImage
-			(
-			PdfDocument Document,
-			QREncoder QREncoder
-			) : this(Document)
-		{
-		// barcode width and height
-		WidthPix = QREncoder.QRCodeImageDimension;
-		HeightPix = QREncoder.QRCodeImageDimension;
-
-		// black and white barcode image
-		BWImage = QREncoder.ConvertQRCodeMatrixToPixels();
-
-		// image control for PDF417 code
-		ImageControl = new PdfImageControl();
-		ImageControl.ReverseBW = true;
-		ImageControl.SaveAs = SaveImageAs.BWImage;
-
-		// write image stream to pdf file
-		WriteObjectToPdfFile();
-		return;
-		}
-
-	////////////////////////////////////////////////////////////////////
-	// Constructor helper method
-	////////////////////////////////////////////////////////////////////
-
-	private void ConstructorHelper
-			(
-			Image			Image,
-			PdfImageControl	ImageControl
+			string ImageFileName
 			)
 		{
-		// image control
-		if(ImageControl == null) ImageControl = new PdfImageControl();
-		this.ImageControl = ImageControl;
+		LoadImage(LoadImageFromFile(ImageFileName));
+		return;
+		}
 
+	/// <summary>
+	/// Load image from Image derived class (Bitmap)
+	/// </summary>
+	/// <param name="Image">Image derived class</param>
+	public void LoadImage
+			(
+			Image Image
+			)
+		{
 		// image rectangle
 		ImageRectangle(Image);
 
@@ -263,10 +232,84 @@ namespace PdfFileWriter
 		return;
 		}
 
+	/// <summary>
+	/// Load image from black and white bool matrix
+	/// </summary>
+	/// <param name="BWImage">BW bool matrix</param>
+	public void LoadImage
+			(
+			bool[,] BWImage
+			)
+		{
+		// image dimensions
+		WidthPix = BWImage.GetUpperBound(0) + 1;
+		HeightPix = BWImage.GetUpperBound(1) + 1;
+
+		// image represented as two dimension boolean array
+		this.BWImage = BWImage;
+
+		// set save as to BWImage
+		SaveAs = SaveImageAs.BWImage;
+		return;
+		}
+
+	/// <summary>
+	/// Load image fro Pdf417Encoder
+	/// </summary>
+	/// <param name="Pdf417Encoder">Pdf417 encoder</param>
+	public void LoadImage
+			(
+			Pdf417Encoder Pdf417Encoder
+			)
+		{
+		// barcode width and height
+		WidthPix = Pdf417Encoder.ImageWidth;
+		HeightPix = Pdf417Encoder.ImageHeight;
+
+		// black and white barcode image
+		BWImage = Pdf417Encoder.ConvertBarcodeMatrixToPixels();
+
+		// set save as to BWImage
+		SaveAs = SaveImageAs.BWImage;
+		ReverseBW = true;
+
+		// write to output file
+		WriteObjectToPdfFile();
+
+		// exit
+		return;
+		}
+
+	/// <summary>
+	/// Load image from QRCode encoder
+	/// </summary>
+	/// <param name="QREncoder">QRCode encoder</param>
+	public void LoadImage
+			(
+			QREncoder QREncoder
+			)
+		{
+		// barcode width and height
+		WidthPix = QREncoder.QRCodeImageDimension;
+		HeightPix = WidthPix;
+
+		// black and white barcode image
+		BWImage = QREncoder.ConvertQRCodeMatrixToPixels();
+
+		// set save as to BWImage
+		SaveAs = SaveImageAs.BWImage;
+		ReverseBW = true;
+
+		// write to output file
+		WriteObjectToPdfFile();
+
+		// exit
+		return;
+		}
+
 	////////////////////////////////////////////////////////////////////
 	// Load image from disk file into Image class
 	////////////////////////////////////////////////////////////////////
-
 	internal Image LoadImageFromFile
 			(
 			string ImageFileName
@@ -303,14 +346,13 @@ namespace PdfFileWriter
 		DisposeImage = true;
 
 		// return
-		return(Image);
+		return Image;
 		}
 
 	////////////////////////////////////////////////////////////////////
 	// Create Image rectangle
 	// some images have origin not at top left corner
 	////////////////////////////////////////////////////////////////////
-
 	internal void ImageRectangle
 			(
 			Image Image
@@ -350,16 +392,16 @@ namespace PdfFileWriter
 			)
 		{
 		// crop rectangle is given in percent width or height
-		if(ImageControl.CropRect.IsEmpty && !ImageControl.CropPercent.IsEmpty)
+		if(CropRect.IsEmpty && !CropPercent.IsEmpty)
 			{
-			ImageControl.CropRect = new Rectangle((int) (0.01 * Image.Width * ImageControl.CropPercent.X + 0.5),
-				(int) (0.01 * Image.Height * ImageControl.CropPercent.Y + 0.5),
-				(int) (0.01 * Image.Width * ImageControl.CropPercent.Width + 0.5),
-				(int) (0.01 * Image.Height * ImageControl.CropPercent.Height + 0.5)); 
+			CropRect = new Rectangle((int) (0.01 * Image.Width * CropPercent.X + 0.5),
+				(int) (0.01 * Image.Height * CropPercent.Y + 0.5),
+				(int) (0.01 * Image.Width * CropPercent.Width + 0.5),
+				(int) (0.01 * Image.Height * CropPercent.Height + 0.5)); 
 			}
 
 		// no crop
-		if(ImageControl.CropRect.IsEmpty)
+		if(CropRect.IsEmpty)
 			{
 			// get image width and height in pixels
 			WidthPix = Image.Width;
@@ -371,19 +413,19 @@ namespace PdfFileWriter
 		// adjust origin
 		if(ImageRect.X != 0 || ImageRect.Y != 0)
 			{
-			ImageControl.CropRect.X += ImageRect.X;
-			ImageControl.CropRect.Y += ImageRect.Y;
+			CropRect.X += ImageRect.X;
+			CropRect.Y += ImageRect.Y;
 			}
 
 		// crop rectangle must be contained within image rectangle
-		if(!ImageRect.Contains(ImageControl.CropRect)) throw new ApplicationException("PdfImage: Crop rectangle must be contained within image rectangle");
+		if(!ImageRect.Contains(CropRect)) throw new ApplicationException("PdfImage: Crop rectangle must be contained within image rectangle");
 
 		// change image size to crop size
-		WidthPix = ImageControl.CropRect.Width;
-		HeightPix = ImageControl.CropRect.Height;
+		WidthPix = CropRect.Width;
+		HeightPix = CropRect.Height;
 
 		// replace image rectangle with crop rectangle
-		ImageRect = ImageControl.CropRect;
+		ImageRect = CropRect;
 		return;
 		}
 
@@ -404,16 +446,16 @@ namespace PdfFileWriter
 		double VerticalResolution = Image.VerticalResolution;
 
 		// adjust resolution if it is not zero or greater than exising resolution
-		if(ImageControl.Resolution != 0)
+		if(_Resolution != 0)
 			{
 			// image resolution
 			double ImageResolution = 0.5 * (HorizontalResolution + VerticalResolution);
 
 			// requested resolution is less than image
-			if(ImageControl.Resolution < ImageResolution)
+			if(_Resolution < ImageResolution)
 				{
 				// change in resolution 
-				double Factor = ImageControl.Resolution / ImageResolution;
+				double Factor = _Resolution / ImageResolution;
 
 				// convert to pixels based on requested resolution
 				int NewWidthPix = (int) (WidthPix * Factor + 0.5);
@@ -435,12 +477,12 @@ namespace PdfFileWriter
 					}
 				else
 					{
-					ImageControl.Resolution = 0;
+					_Resolution = 0;
 					}
 				}
 			else
 				{
-				ImageControl.Resolution = 0;
+				_Resolution = 0;
 				}
 			}
 
@@ -451,10 +493,10 @@ namespace PdfFileWriter
 		if(Image.GetType() == typeof(Bitmap))
 			{
 			// no crop
-			if(ImageControl.CropRect.IsEmpty)
+			if(CropRect.IsEmpty)
 				{
 				// image is bitmap, no crop, no change in resolution
-				if(ImageControl.Resolution == 0)
+				if(_Resolution == 0)
 					{
 					Picture = (Bitmap) Image;
 					DisposePicture = DisposeImage;
@@ -511,21 +553,24 @@ namespace PdfFileWriter
 		if(DisposeImage) Image.Dispose();
 
 		// set resolution
-		Picture.SetResolution((Single) HorizontalResolution, (Single) VerticalResolution);
+		Picture.SetResolution((float) HorizontalResolution, (float) VerticalResolution);
 		return;
 		}
 
 	////////////////////////////////////////////////////////////////////
 	// Write object to PDF file
 	////////////////////////////////////////////////////////////////////
-
 	internal override void WriteObjectToPdfFile()
 		{
 		// add items to dictionary
 		Dictionary.AddInteger("/Width", WidthPix);
 		Dictionary.AddInteger("/Height", HeightPix);
 
-		switch(ImageControl.SaveAs)
+		// layer control
+		if(LayerControl != null) Dictionary.AddIndirectReference("/OC", LayerControl);
+
+		// switch based on save as method
+		switch(SaveAs)
 			{ 
 			case SaveImageAs.Jpeg:
 				PictureToJpeg();
@@ -572,7 +617,7 @@ namespace PdfFileWriter
 		MemoryStream MS = new MemoryStream();
 
 		// image quality is default
-		if(ImageControl.ImageQuality == PdfImageControl.DefaultQuality)
+		if(ImageQuality == PdfImage.DefaultQuality)
 			{
 			// save in jpeg format with 75 quality
 			Picture.Save(MS, ImageFormat.Jpeg);
@@ -583,7 +628,7 @@ namespace PdfFileWriter
 			{
 			// build EncoderParameter object for image quality
 			EncoderParameters EncoderParameters = new EncoderParameters(1);
-			EncoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, ImageControl.ImageQuality);
+			EncoderParameters.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, ImageQuality);
 
 			// save in jpeg format with specified quality
 			Picture.Save(MS, GetEncoderInfo("image/jpeg"), EncoderParameters);
@@ -621,7 +666,7 @@ namespace PdfFileWriter
 			}
 		catch
 			{
-			return(false);
+			return false;
 			}
 
 		// frame width in bytes
@@ -649,7 +694,7 @@ namespace PdfFileWriter
 			{ 
 			for(int X = 0; X < WidthPix; X++)
 				{
-				if(ColorArray.Count == 256) return(false);
+				if(ColorArray.Count == 256) return false;
 				// color order is blue, green and red
 				int Pixel = PictureBytes[PicPtr++] | (PictureBytes[PicPtr++] << 8) | (PictureBytes[PicPtr++] << 16);
 				int Index = ColorArray.BinarySearch(Pixel);
@@ -806,7 +851,7 @@ namespace PdfFileWriter
 		// add items to dictionary
 		Dictionary.AddFormat("/ColorSpace",  "[/Indexed /DeviceRGB {0} {1}]", ColorArray.Count - 1, ColorStr);	// R G B
 		Dictionary.AddInteger("/BitsPerComponent", BitPerComponent); // 1 2 4 8 
-		return(true);
+		return true;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -824,7 +869,7 @@ namespace PdfFileWriter
 			}
 		catch
 			{
-			return(false);
+			return false;
 			}
 
 		// frame width in bytes
@@ -865,8 +910,8 @@ namespace PdfFileWriter
 		// add items to dictionary
 		Dictionary.Add("/ColorSpace", "/DeviceGray");
 		Dictionary.Add("/BitsPerComponent", "8");
-		if(ImageControl.ReverseBW) Dictionary.Add("/Decode", "[1 0]");
-		return(true);
+		if(ReverseBW) Dictionary.Add("/Decode", "[1 0]");
+		return true;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -884,7 +929,7 @@ namespace PdfFileWriter
 			}
 		catch
 			{
-			return(false);
+			return false;
 			}
 
 		// frame width in bytes
@@ -914,7 +959,7 @@ namespace PdfFileWriter
 		// QRCode matrix to PDF bitmap
 		int PicPtr = 0;
 		int RowPtr = 0;
-		int Cutoff = 255 * ImageControl._GrayToBWCutoff;
+		int Cutoff = 255 * _GrayToBWCutoff;
 		for(int Row = 0; Row < HeightPix; Row++)
 			{
 			for(int Col = 0; Col < WidthPix; Col++)
@@ -929,14 +974,13 @@ namespace PdfFileWriter
 		// add items to dictionary
 		Dictionary.Add("/ColorSpace", "/DeviceGray");
 		Dictionary.Add("/BitsPerComponent", "1");
-		if(ImageControl.ReverseBW) Dictionary.Add("/Decode", "[1 0]");
-		return(true);
+		if(ReverseBW) Dictionary.Add("/Decode", "[1 0]");
+		return true;
 		}
 
 	////////////////////////////////////////////////////////////////////
 	// Convert .net bitmap image to PDF indexed bitmap image
 	////////////////////////////////////////////////////////////////////
-
 	internal void BooleanToBWImage()
 		{
 		// each row must be multiple of bytes
@@ -959,18 +1003,17 @@ namespace PdfFileWriter
 		// add items to dictionary
 		Dictionary.Add("/ColorSpace", "/DeviceGray");
 		Dictionary.Add("/BitsPerComponent", "1");
-		if(ImageControl.ReverseBW) Dictionary.Add("/Decode", "[1 0]");
+		if(ReverseBW) Dictionary.Add("/Decode", "[1 0]");
 		return;
 		}
 
 	////////////////////////////////////////////////////////////////////
 	// Write object to PDF file
 	////////////////////////////////////////////////////////////////////
-
    private ImageCodecInfo GetEncoderInfo(string mimeType)
 	    {
         ImageCodecInfo[] EncoderArray = ImageCodecInfo.GetImageEncoders();
-        foreach(ImageCodecInfo Encoder in EncoderArray) if(Encoder.MimeType == mimeType) return(Encoder);
+        foreach(ImageCodecInfo Encoder in EncoderArray) if(Encoder.MimeType == mimeType) return Encoder;
         throw new ApplicationException("GetEncoderInfo: image/jpeg encoder does not exist");;
 		}
 
@@ -989,7 +1032,7 @@ namespace PdfFileWriter
 			SizeD InputSize
 			)
 		{
-		return(ImageSizePos.ImageSize(WidthPix, HeightPix, InputSize.Width, InputSize.Height));
+		return ImageSizePos.ImageSize(WidthPix, HeightPix, InputSize.Width, InputSize.Height);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1009,7 +1052,7 @@ namespace PdfFileWriter
 			double	Height
 			)
 		{
-		return(ImageSizePos.ImageSize(WidthPix, HeightPix, Width, Height));
+		return ImageSizePos.ImageSize(WidthPix, HeightPix, Width, Height);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1030,7 +1073,7 @@ namespace PdfFileWriter
 			ContentAlignment	Alignment
 			)
 		{
-		return(ImageSizePos.ImageArea(WidthPix, HeightPix, 0.0, 0.0,  InputSize.Width, InputSize.Height, Alignment));
+		return ImageSizePos.ImageArea(WidthPix, HeightPix, 0.0, 0.0,  InputSize.Width, InputSize.Height, Alignment);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1053,7 +1096,7 @@ namespace PdfFileWriter
 			ContentAlignment	Alignment
 			)
 		{
-		return(ImageSizePos.ImageArea(WidthPix, HeightPix, 0.0, 0.0,  Width, Height, Alignment));
+		return ImageSizePos.ImageArea(WidthPix, HeightPix, 0.0, 0.0,  Width, Height, Alignment);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1072,6 +1115,146 @@ namespace PdfFileWriter
 
 		// exit
 		return;		
+		}
+
+#pragma warning disable 1591
+	private const bool ObsoleteError = false;
+	private const string ObsoleteMsg = "This PdfImage constructor is obsolete. See latest documentation.";
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
+	public PdfImage
+			(
+			PdfDocument Document,
+			string ImageFileName,
+			PdfImageControl ImageControl = null
+			) : this(Document)
+		{
+		ConstructorHelper(LoadImageFromFile(ImageFileName), ImageControl);
+		return;
+		}
+
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
+	public PdfImage
+			(
+			PdfDocument Document,
+			Image Image,
+			PdfImageControl ImageControl = null
+			) : this(Document)
+		{
+		ConstructorHelper(Image, ImageControl);
+		return;
+		}
+
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
+	public PdfImage
+			(
+			PdfDocument Document,
+			bool[,] BWImage,
+			PdfImageControl ImageControl = null
+			) : this(Document)
+		{
+		// image dimensions
+		WidthPix = BWImage.GetUpperBound(0) + 1;
+		HeightPix = BWImage.GetUpperBound(1) + 1;
+
+		// image represented as two dimension boolean array
+		this.BWImage = BWImage;
+
+		// default image control
+		if(ImageControl != null)
+			{
+			CropRect = ImageControl.CropRect;
+			CropPercent = ImageControl.CropPercent;
+			ReverseBW = ImageControl.ReverseBW;
+			GrayToBWCutoff = ImageControl.GrayToBWCutoff;
+			Resolution = ImageControl.Resolution;
+			ImageQuality = ImageControl.ImageQuality;
+			SaveAs = ImageControl.SaveAs;
+			}
+		SaveAs = SaveImageAs.BWImage;
+
+		// write image stream to pdf file
+		WriteObjectToPdfFile();
+		return;
+		}
+
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
+	public PdfImage
+			(
+			PdfDocument Document,
+			Pdf417Encoder Pdf417Encoder
+			) : this(Document)
+		{
+		// barcode width and height
+		WidthPix = Pdf417Encoder.ImageWidth;
+		HeightPix = Pdf417Encoder.ImageHeight;
+
+		// black and white barcode image
+		BWImage = Pdf417Encoder.ConvertBarcodeMatrixToPixels();
+
+		// image control for PDF417 code
+		ReverseBW = true;
+		SaveAs = SaveImageAs.BWImage;
+
+		// write image stream to pdf file
+		WriteObjectToPdfFile();
+		return;
+		}
+
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
+	public PdfImage
+			(
+			PdfDocument Document,
+			QREncoder QREncoder
+			) : this(Document)
+		{
+		// barcode width and height
+		WidthPix = QREncoder.QRCodeImageDimension;
+		HeightPix = QREncoder.QRCodeImageDimension;
+
+		// black and white barcode image
+		BWImage = QREncoder.ConvertQRCodeMatrixToPixels();
+
+		// image control for PDF417 code
+		ReverseBW = true;
+		SaveAs = SaveImageAs.BWImage;
+
+		// write image stream to pdf file
+		WriteObjectToPdfFile();
+		return;
+		}
+
+	[Obsolete(ObsoleteMsg, ObsoleteError)]
+	private void ConstructorHelper
+			(
+			Image			Image,
+			PdfImageControl	ImageControl
+			)
+		{
+		// image control
+		if(ImageControl == null) ImageControl = new PdfImageControl();
+
+		CropRect = ImageControl.CropRect;
+		CropPercent = ImageControl.CropPercent;
+		ReverseBW = ImageControl.ReverseBW;
+		GrayToBWCutoff = ImageControl.GrayToBWCutoff;
+		Resolution = ImageControl.Resolution;
+		ImageQuality = ImageControl.ImageQuality;
+		SaveAs = ImageControl.SaveAs;
+
+		// image rectangle
+		ImageRectangle(Image);
+
+		// image size in pixels
+		ImageSizeInPixels(Image);
+
+		// convert the image to bitmap
+		ConvertImageToBitmap(Image);
+
+		// write to output file
+		WriteObjectToPdfFile();
+
+		// exit
+		return;
 		}
 	}
 }

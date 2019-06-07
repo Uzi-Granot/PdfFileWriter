@@ -115,7 +115,7 @@ public class Barcode
 		{
 		get
 			{
-			return((int[]) _CodeArray.Clone());
+			return (int[]) _CodeArray.Clone();
 			}
 		}
 	internal int[] _CodeArray;
@@ -177,7 +177,7 @@ public class Barcode
 			)
 		{
 		// no text
-		if(TextFont == null) return(new BarcodeBox(BarWidth * TotalWidth, BarcodeHeight));
+		if(TextFont == null) return new BarcodeBox(BarWidth * TotalWidth, BarcodeHeight);
 
 		// calculate width
 		double BarcodeWidth = BarWidth * TotalWidth;
@@ -193,7 +193,7 @@ public class Barcode
 		double TextHeight = TextFont.LineSpacing(FontSize);
 
 		// Barcode box
-		return(new BarcodeBox(OriginX, TextHeight, BarcodeWidth, BarcodeHeight + TextHeight));
+		return new BarcodeBox(OriginX, TextHeight, BarcodeWidth, BarcodeHeight + TextHeight);
 		}
  	}
 
@@ -452,7 +452,7 @@ public class Barcode128 : Barcode
 			int	Index
 			)
 		{
-		return(Index + 1 < BarCount ? CodeTable[_CodeArray[Index / CODE_CHAR_BARS], Index % CODE_CHAR_BARS]: 2);
+		return Index + 1 < BarCount ? CodeTable[_CodeArray[Index / CODE_CHAR_BARS], Index % CODE_CHAR_BARS]: 2;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1082,7 +1082,7 @@ public class Barcode39 : Barcode
 			int	Index
 			)
 		{
-		return(CodeTable[_CodeArray[Index / CODE_CHAR_BARS], Index % CODE_CHAR_BARS]);
+		return CodeTable[_CodeArray[Index / CODE_CHAR_BARS], Index % CODE_CHAR_BARS];
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1352,27 +1352,27 @@ public class BarcodeEAN13 : Barcode
 			)
 		{
 		// leading bars
-		if(BarIndex < LEAD_BARS) return(1);
+		if(BarIndex < LEAD_BARS) return 1;
 
 		// left side 6 digits
 		if(BarIndex < LEAD_BARS + BARCODE_HALF_LEN * CODE_CHAR_BARS)
 			{
 			int Index = BarIndex - LEAD_BARS;
-			return(CodeTable[_CodeArray[Index  / CODE_CHAR_BARS], Index % CODE_CHAR_BARS]);
+			return CodeTable[_CodeArray[Index  / CODE_CHAR_BARS], Index % CODE_CHAR_BARS];
 			}
 
 		// separator bars
-		if(BarIndex < LEAD_BARS + BARCODE_HALF_LEN * CODE_CHAR_BARS + SEPARATOR_BARS) return(1);
+		if(BarIndex < LEAD_BARS + BARCODE_HALF_LEN * CODE_CHAR_BARS + SEPARATOR_BARS) return 1;
 
 		// right side 6 digits
 		if(BarIndex < LEAD_BARS + BARCODE_LEN * CODE_CHAR_BARS + SEPARATOR_BARS)
 			{
 			int Index = BarIndex - (LEAD_BARS + BARCODE_HALF_LEN * CODE_CHAR_BARS + SEPARATOR_BARS);
-			return(CodeTable[_CodeArray[BARCODE_HALF_LEN + Index  / CODE_CHAR_BARS], Index % CODE_CHAR_BARS]);
+			return CodeTable[_CodeArray[BARCODE_HALF_LEN + Index  / CODE_CHAR_BARS], Index % CODE_CHAR_BARS];
 			}
 
 		// trailing bars
-		return(1);
+		return 1;
 		}
 
 	/// <summary>
@@ -1392,7 +1392,7 @@ public class BarcodeEAN13 : Barcode
 			)
 		{
 		// no text
-		if(TextFont == null) return(new BarcodeBox(BarWidth * TotalWidth, BarcodeHeight));
+		if(TextFont == null) return new BarcodeBox(BarWidth * TotalWidth, BarcodeHeight);
 
 		// one digit width
 		double OriginX = TextFont.TextWidth(FontSize, "0");
@@ -1405,7 +1405,7 @@ public class BarcodeEAN13 : Barcode
 		double OriginY = TextFont.LineSpacing(FontSize) - 5.0 * BarWidth;
 
 		// Barcode box
-		return(new BarcodeBox(OriginX, OriginY, BarcodeWidth, BarcodeHeight + OriginY));
+		return new BarcodeBox(OriginX, OriginY, BarcodeWidth, BarcodeHeight + OriginY);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -1626,7 +1626,7 @@ public class BarcodeInterleaved2of5 : Barcode
 	/// Barcode width
 	/// </summary>
 	/// <param name="BarIndex">Code array index</param>
-	/// <returns>Single bar width</returns>
+	/// <returns>float bar width</returns>
 	////////////////////////////////////////////////////////////////////
 	public override int BarWidth
 			(
@@ -1634,10 +1634,10 @@ public class BarcodeInterleaved2of5 : Barcode
 			)
 		{
 		// leading bars
-		if(BarIndex < 4) return(1);
+		if(BarIndex < 4) return 1;
 
 		// ending bars
-		if(BarIndex >= BarCount - 3) return(BarIndex == BarCount - 3 ? 2 : 1);
+		if(BarIndex >= BarCount - 3) return BarIndex == BarCount - 3 ? 2 : 1;
 
 		// code index
 		BarIndex -= 4;
@@ -1647,7 +1647,7 @@ public class BarcodeInterleaved2of5 : Barcode
 		// code
 		int Code = _CodeArray[CodeIndex];
 
-		return(CodeTable[Code, (BarIndex % 10) / 2]);
+		return CodeTable[Code, (BarIndex % 10) / 2];
 		}
 
 	/// <summary>

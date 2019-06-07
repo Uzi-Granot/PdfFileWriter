@@ -43,7 +43,7 @@ internal class FontFileHeader
 			{
 			int Mask;
 			for(Mask = 1; Mask <= NumTables; Mask <<= 1);
-			return((ushort) (Mask << 3));
+			return (ushort) (Mask << 3);
 			}
 		}
 
@@ -54,7 +54,7 @@ internal class FontFileHeader
 			{
 			int Power;
 			for(Power = 1; (1 << Power) <= NumTables; Power++);
-			return((ushort) (Power - 1));
+			return (ushort) (Power - 1);
 			}
 		}
 
@@ -63,7 +63,7 @@ internal class FontFileHeader
 		{
 		get
 			{
-			return((ushort) (16 * NumTables - SearchRange));
+			return (ushort) (16 * NumTables - SearchRange);
 			}
 		}
 	}
@@ -130,9 +130,9 @@ internal class cmapSubTbl : IComparable<cmapSubTbl>
 			cmapSubTbl	Other
 			)
 		{
-		if(this.PlatformID != Other.PlatformID) return(this.PlatformID - Other.PlatformID);
-		if(this.EncodingID != Other.EncodingID) return(this.EncodingID - Other.EncodingID);
-		return(this.Format - Other.Format);
+		if(this.PlatformID != Other.PlatformID) return PlatformID - Other.PlatformID;
+		if(this.EncodingID != Other.EncodingID) return EncodingID - Other.EncodingID;
+		return Format - Other.Format;
 		}
 
 	// 2 x segCount
@@ -140,7 +140,7 @@ internal class cmapSubTbl : IComparable<cmapSubTbl>
 		{
 		get
 			{
-			return((ushort) (2 * SegCount));
+			return (ushort) (2 * SegCount);
 			}
 		}
 
@@ -151,7 +151,7 @@ internal class cmapSubTbl : IComparable<cmapSubTbl>
 			{
 			int Mask;
 			for(Mask = 1; Mask <= SegCount; Mask <<= 1);
-			return((ushort) Mask);
+			return (ushort) Mask;
 			}
 		}
 
@@ -162,7 +162,7 @@ internal class cmapSubTbl : IComparable<cmapSubTbl>
 			{
 			int Power;
 			for(Power = 1; (1 << Power) <= SegCount; Power++);
-			return((ushort) (Power - 1));
+			return (ushort) (Power - 1);
 			}
 		}
 
@@ -171,7 +171,7 @@ internal class cmapSubTbl : IComparable<cmapSubTbl>
 		{
 		get
 			{
-			return((ushort) (2 * SegCount - SearchRange));
+			return (ushort) (2 * SegCount - SearchRange);
 			}
 		}
 	}
@@ -219,7 +219,7 @@ internal class cmapSeg : IComparable<cmapSeg>
 			cmapSeg Other
 			)
 		{
-		return(this.EndChar - Other.EndChar);
+		return EndChar - Other.EndChar;
 		}
 	}
 

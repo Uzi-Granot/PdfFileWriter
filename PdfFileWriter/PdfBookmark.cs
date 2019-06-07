@@ -130,7 +130,7 @@ public class PdfBookmark : PdfObject
 			bool		OpenEntries		// true is display children. false hide children
 			)
 		{
-		return(AddBookmark(Title, Page, 0.0, YPos, 0.0, Color.Empty, TextStyle.Normal, OpenEntries));
+		return AddBookmark(Title, Page, 0.0, YPos, 0.0, Color.Empty, TextStyle.Normal, OpenEntries);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -160,7 +160,7 @@ public class PdfBookmark : PdfObject
 			bool		OpenEntries		// true is display children. false hide children
 			)
 		{
-		return(AddBookmark(Title, Page, 0.0, YPos, 0.0, Paint, TextStyle, OpenEntries));
+		return AddBookmark(Title, Page, 0.0, YPos, 0.0, Paint, TextStyle, OpenEntries);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -190,7 +190,7 @@ public class PdfBookmark : PdfObject
 			bool		OpenEntries		// true is display children. false hide children
 			)
 		{
-		return(AddBookmark(Title, Page, XPos, YPos, Zoom, Color.Empty, TextStyle.Normal, OpenEntries));
+		return AddBookmark(Title, Page, XPos, YPos, Zoom, Color.Empty, TextStyle.Normal, OpenEntries);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -266,7 +266,7 @@ public class PdfBookmark : PdfObject
 			Bookmark.Dictionary.AddFormat("/C", "[{0} {1} {2}]",  Round((double) Paint.R / 255.0), Round((double) Paint.G / 255.0), Round((double) Paint.B / 255.0));
 		if(TextStyle != TextStyle.Normal)
 			Bookmark.Dictionary.AddInteger("/F", (int) TextStyle);
-		return(Bookmark);
+		return Bookmark;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -300,10 +300,10 @@ public class PdfBookmark : PdfObject
 			for(Child = Bookmark.FirstChild; Index > 0 && Child != null; Child = Child.NextSibling, Index--);
 
 			// not found
-			if(Child == null) return(null);
+			if(Child == null) return null;
 			}
 
-		return(Child);
+		return Child;
 		}
 
 	////////////////////////////////////////////////////////////////////

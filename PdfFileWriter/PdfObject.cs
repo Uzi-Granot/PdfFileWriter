@@ -146,7 +146,7 @@ public class PdfObject : IComparable<PdfObject>
 			PdfObject Other		// the second object
 			)
 		{
-		return(string.Compare(this.ResourceCode, Other.ResourceCode));
+		return string.Compare(ResourceCode, Other.ResourceCode);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -154,14 +154,14 @@ public class PdfObject : IComparable<PdfObject>
 	// The result is rounded to 6 decimal places and converted to Single.
 	////////////////////////////////////////////////////////////////////
 
-	internal Single ToPt
+	internal float ToPt
 			(
 			double	Value		// coordinate value in user unit of measure
 			)
 		{
 		double ReturnValue = ScaleFactor * Value;
 		if(Math.Abs(ReturnValue) < 0.0001) ReturnValue = 0;
-		return((Single) ReturnValue);
+		return (float) ReturnValue;
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -169,13 +169,13 @@ public class PdfObject : IComparable<PdfObject>
 	// The value is rounded to 6 decimal places and converted to Single
 	////////////////////////////////////////////////////////////////////
 
-	internal Single Round
+	internal float Round
 			(
 			double	Value		// a number to be saved in contents
 			)
 		{
 		if(Math.Abs(Value) < 0.0001) Value = 0;
-		return((Single) Value);
+		return (float) Value;
 		}
 
 	internal void ObjectValueAppend
@@ -220,7 +220,7 @@ public class PdfObject : IComparable<PdfObject>
 		// if there are no resources an empty dictionary must be returned
 		if(ResObjects == null || ResObjects.Count == 0)
 			{
-			return(AddProcSet ? "<</ProcSet [/PDF/Text]>>" : "<<>>");
+			return AddProcSet ? "<</ProcSet [/PDF/Text]>>" : "<<>>";
 			}
 
 		// resources dictionary content initialization
@@ -261,7 +261,7 @@ public class PdfObject : IComparable<PdfObject>
 		Resources.Append(">>\n>>");
 
 		// exit
-		return(Resources.ToString());
+		return Resources.ToString();
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -352,7 +352,7 @@ public class PdfObject : IComparable<PdfObject>
 		int InputLen = InputBuf.Length;
 
 		// input buffer too small to compress
-		if(InputLen < 16) return(InputBuf);
+		if(InputLen < 16) return InputBuf;
 
 		// create output memory stream to receive the compressed buffer
 		MemoryStream OutputStream = new MemoryStream();
@@ -370,7 +370,7 @@ public class PdfObject : IComparable<PdfObject>
 		int OutputLen = (int) OutputStream.Length;
 
 		// make sure compressed stream is shorter than input stream
-		if(OutputLen + 6 >= InputLen) return(InputBuf);
+		if(OutputLen + 6 >= InputLen) return InputBuf;
 
 		// create output buffer
 		byte[] OutputBuf = new byte[OutputLen + 6];
@@ -398,7 +398,7 @@ public class PdfObject : IComparable<PdfObject>
 		Dictionary.Add("/Filter", "/FlateDecode");
 		
 		// successful exit
-		return(OutputBuf);
+		return OutputBuf;
 		}
 
 	/////////////////////////////////////////////////////////////////////
@@ -438,7 +438,7 @@ public class PdfObject : IComparable<PdfObject>
 			AdlerLow %= Adler32Base;
 			AdlerHigh %= Adler32Base;
 			}
-		return((AdlerHigh << 16) | AdlerLow);
+		return (AdlerHigh << 16) | AdlerLow;
 		}
 	}
 }

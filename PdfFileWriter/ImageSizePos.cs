@@ -55,7 +55,7 @@ public static class ImageSizePos
 			ContentAlignment Alignment
 			)
 		{
-		return(ImageArea(ImageWidthPix, ImageHeightPix, DrawArea.Left, DrawArea.Bottom, DrawArea.Width, DrawArea.Height, Alignment));
+		return ImageArea(ImageWidthPix, ImageHeightPix, DrawArea.Left, DrawArea.Bottom, DrawArea.Width, DrawArea.Height, Alignment);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ public static class ImageSizePos
 			}
 
 		// position rectangle
-		return(new PdfRectangle(DrawAreaLeft + DeltaX, DrawAreaBottom + DeltaY, DrawAreaLeft + DeltaX + Width, DrawAreaBottom + DeltaY + Height));
+		return new PdfRectangle(DrawAreaLeft + DeltaX, DrawAreaBottom + DeltaY, DrawAreaLeft + DeltaX + Width, DrawAreaBottom + DeltaY + Height);
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -155,7 +155,7 @@ public static class ImageSizePos
 			OutputSize.Width = DrawAreaHeight * ImageWidthPix / ImageHeightPix;
 			OutputSize.Height = DrawAreaHeight;
 			}
-		return(OutputSize);
+		return OutputSize;
 		}
 	}
 }
