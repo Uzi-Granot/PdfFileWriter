@@ -31,27 +31,26 @@ namespace PdfFileWriter
 {
 internal class PdfFontFile : PdfObject
 	{
-	private PdfFont			PdfFont;
-	private FontApi			FontInfo;
-	private int			FirstChar;
-	private int			LastChar;
-	private bool			GlyphIndexFont;
-	private bool			SymbolicFont;
-	private	CharInfo[][]	CharInfoArray;
+	private PdfFont PdfFont;
+	private FontApi FontInfo;
+	private int FirstChar;
+	private int LastChar;
+	private bool GlyphIndexFont;
+	private bool SymbolicFont;
+	private	CharInfo[][] CharInfoArray;
 
-	private FontFileHeader	FileHeader;
-	private cmapSubTbl		cmapSubTbl;
-	private headTable		headTable;
-	private hheaTable		hheaTable;
-	private ushort[]		hmtxTable;
-	private int[]			locaTable;
-	private maxpTable		maxpTable;
-	private ushort[]		CharToGlyphArray;
-	private CharInfo[]		GlyphArray;
-	private int			OldGlyphTableOffset;
+	private FontFileHeader FileHeader;
+	private cmapSubTbl cmapSubTbl;
+	private headTable headTable;
+	private hheaTable hheaTable;
+	private ushort[] hmtxTable;
+	private int[] locaTable;
+	private maxpTable maxpTable;
+	private ushort[] CharToGlyphArray;
+	private CharInfo[] GlyphArray;
 
-	private byte[]			Buffer;
-	private int			BufPtr;
+	private byte[] Buffer;
+	private int BufPtr;
 
 	// table tags
 	private const uint cmapTag = 0x636d6170;	// "cmap"
@@ -96,9 +95,9 @@ internal class PdfFontFile : PdfObject
 	
 	internal PdfFontFile
 			(
-			PdfFont		PdfFont,
-			int		FirstChar,
-			int		LastChar
+			PdfFont PdfFont,
+			int FirstChar,
+			int LastChar
 			) : base(PdfFont.Document, ObjectType.Stream)
 		{
 		// save input arguments
@@ -195,7 +194,7 @@ internal class PdfFontFile : PdfObject
 	private void GetFontFileHeaderApi()
 		{
 		// read font file header
-		Buffer = FontInfo.GetFontDataApi(0, 12);
+		Buffer = FontInfo.GetFontDataApi(0, 0, 12);
 		BufPtr = 0;
 		FileHeader = new FontFileHeader();
 		FileHeader.FileVersion = ReadUInt32BigEndian();
@@ -205,7 +204,7 @@ internal class PdfFontFile : PdfObject
 		int BufSize = 16 * FileHeader.NumTables;
 
 		// read all table records from input file
-		Buffer = FontInfo.GetFontDataApi(12, BufSize);
+		Buffer = FontInfo.GetFontDataApi(0, 12, BufSize);
 		BufPtr = 0;
 
 		// load table records
@@ -230,7 +229,7 @@ internal class PdfFontFile : PdfObject
 			TableRecord TR = TableRecordArray[Index];
 
 			// test for duplicate
-			if(TR.Offset != 0)  throw new ApplicationException("Font file in error duplicate table");
+			if(TR.Length != 0)  throw new ApplicationException("Font file in error duplicate table");
 
 			// read info for this table
 			TR.Checksum = ReadUInt32BigEndian();
@@ -243,18 +242,14 @@ internal class PdfFontFile : PdfObject
 		// these tables are programming hints
 		foreach(TableRecord TR in TableRecordArray)
 			{
-			if(TR.Offset == 0 && TR.Tag != cvtTag && TR.Tag != fpgmTag && TR.Tag != prepTag) throw new ApplicationException("Required font file table is missing");
+			if(TR.Length == 0 && TR.Tag != cvtTag && TR.Tag != fpgmTag && TR.Tag != prepTag) throw new ApplicationException("Required font file table is missing");
 			}
 
 		// load all tables except for glyf table
 		foreach(TableRecord TR in TableRecordArray)
 			{
-			// ignore glyf table for now
-			// save file offset of glyph table
-			if(TR.Tag == glyfTag) OldGlyphTableOffset = TR.Offset;
-
-			// load all other tables
-			else TR.Data = FontInfo.GetFontDataApi(TR.Offset, TR.Length);
+			// load all tables but glyf
+			if(TR.Tag != glyfTag) TR.Data = FontInfo.GetFontDataApi(TR.Tag, 0, TR.Length);
 			}
 
 		// exit
@@ -742,7 +737,7 @@ internal class PdfFontFile : PdfObject
 		int GlyphLen = locaTable[CharInfo.GlyphIndex + 1] - GlyphLoc;
 
 		// load glyph data
-		Buffer = FontInfo.GetFontDataApi(OldGlyphTableOffset + GlyphLoc, GlyphLen);
+		Buffer = FontInfo.GetFontDataApi(glyfTag, GlyphLoc, GlyphLen);
 		BufPtr = 0;
 
 		// save glyph data block
@@ -1223,11 +1218,11 @@ internal class PdfFontFile : PdfObject
 		{
 		// recalculate checksum
 		// in some cases the calculated checksum does not agree with the one returned by the api
-		if(TableRecordArray[(int) Tag.cvt].Offset != 0)
+		if(TableRecordArray[(int) Tag.cvt].Length != 0)
 			TableRecordArray[(int) Tag.cvt].Checksum = TableChecksum(TableRecordArray[(int) Tag.cvt].Data);
-		if(TableRecordArray[(int) Tag.fpgm].Offset != 0)
+		if(TableRecordArray[(int) Tag.fpgm].Length != 0)
 			TableRecordArray[(int) Tag.fpgm].Checksum = TableChecksum(TableRecordArray[(int) Tag.fpgm].Data);
-		if(TableRecordArray[(int) Tag.prep].Offset != 0)
+		if(TableRecordArray[(int) Tag.prep].Length != 0)
 			TableRecordArray[(int) Tag.prep].Checksum = TableChecksum(TableRecordArray[(int) Tag.prep].Data);
 		return;
 		}
@@ -1247,7 +1242,7 @@ internal class PdfFontFile : PdfObject
 
 		// replace number of tables in file header
 		int Tables = 0;
-		foreach(TableRecord TR in TableRecordArray) if(TR.Offset != 0) Tables++;
+		foreach(TableRecord TR in TableRecordArray) if(TR.Length != 0) Tables++;
 
 		FileHeader.NumTables = (ushort) Tables;
 
@@ -1273,7 +1268,7 @@ internal class PdfFontFile : PdfObject
 		foreach(TableRecord TR in TableRecordArray)
 			{
 			// skip unused table
-			if(TR.Offset == 0) continue;
+			if(TR.Length == 0) continue;
 
 			// table tag
 			WriteUInt32BigEndian(TR.Tag);
@@ -1314,7 +1309,7 @@ internal class PdfFontFile : PdfObject
 		foreach(TableRecord TR in TableRecordArray)
 			{
 			// skip unused table
-			if(TR.Offset == 0) continue;
+			if(TR.Length == 0) continue;
 
 			// test program logic
 			if(BufPtr != TR.Offset) throw new ApplicationException("Table offset");

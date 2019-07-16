@@ -74,11 +74,11 @@ internal class FontFileHeader
 
 internal class TableRecord
 	{
-	internal uint	Tag;				// 4 -byte identifier
-	internal uint	Checksum;			// Checksum for this table
-	internal int	Offset;				// Offset from beginning of TrueType font file
-	internal int	Length;				// Length of this table
-	internal byte[]	Data;				// table data in big endian format
+	internal uint Tag;			// 4 -byte identifier
+	internal uint Checksum;		// Checksum for this table
+	internal int Offset;		// Offset from beginning of TrueType font file
+	internal int Length;		// Length of this table
+	internal byte[]	Data;		// table data in big endian format
 
 	// constructor
 	internal TableRecord

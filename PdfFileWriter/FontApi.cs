@@ -1020,11 +1020,13 @@ public class FontApi : IDisposable
 	/// <summary>
 	/// Gets font data tables
 	/// </summary>
+	/// <param name="TableTag">Table Tag</param>
 	/// <param name="Offset">Table offset</param>
 	/// <param name="BufSize">Table size</param>
 	/// <returns>Table info as byte array</returns>
 	public byte[] GetFontDataApi
 			(
+			uint TableTag,
 			int	Offset,
 			int	BufSize
 			)
@@ -1035,8 +1037,11 @@ public class FontApi : IDisposable
 		// allocate buffer to receive outline text metrics information
 		AllocateBuffer((int) BufSize);
 
+		// microsoft tag is in little endian format
+		uint MSTag = TableTag << 24 | (TableTag << 8) & 0xff0000 | (TableTag >> 8) & 0xff00 | (TableTag >> 24) & 0xff;
+
 		// get outline text metrics information
-		if((int) GetFontData(GDIHandle, 0, (uint) Offset, Buffer, (uint) BufSize) != BufSize) ThrowSystemErrorException("Get font data file header failed");
+		if((int) GetFontData(GDIHandle, MSTag, (uint) Offset, Buffer, (uint) BufSize) != BufSize) ThrowSystemErrorException("Get font data file header failed");
 
 		// copy api result buffer to managed memory buffer
 		byte[] DataBuffer = new byte[BufSize];

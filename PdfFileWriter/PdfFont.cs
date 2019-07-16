@@ -104,7 +104,7 @@ public class KerningAdjust
 	/// <summary>
 	/// Gets or sets Text
 	/// </summary>
-	public string	Text {get; set;}
+	public string Text {get; set;}
 
 	/// <summary>
 	/// Gets or sets adjustment
@@ -112,7 +112,7 @@ public class KerningAdjust
 	/// <remarks>
 	/// Adjustment units are in PDF design unit. To convert to user units: Adjust * FontSize / (1000.0 * ScaleFactor)
 	/// </remarks>
-	public double	Adjust {get; set;}
+	public double Adjust {get; set;}
 
 	/// <summary>
 	/// Kerning adjustment constructor
@@ -121,8 +121,8 @@ public class KerningAdjust
 	/// <param name="Adjust">Adjustment</param>
 	public KerningAdjust
 			(
-			string	Text,
-			double	Adjust
+			string Text,
+			double Adjust
 			)
 		{
 		this.Text = Text;
@@ -194,10 +194,10 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 
 	public static PdfFont CreatePdfFont
 			(
-			PdfDocument		Document,			// PDF document main object
-			string			FontFamilyName,		// font family name
-			FontStyle		FontStyle,			// font style (Regular, Bold, Italic or Bold | Italic
-			bool			EmbeddedFont = true	// embed font in PDF document file
+			PdfDocument Document,		// PDF document main object
+			string FontFamilyName,		// font family name
+			FontStyle FontStyle,		// font style (Regular, Bold, Italic or Bold | Italic
+			bool EmbeddedFont = true	// embed font in PDF document file
 			)
 		{
 		if(Document.FontArray == null) Document.FontArray = new List<PdfFont>();
@@ -211,9 +211,9 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 	// for search only
 	private PdfFont
 			(
-			string			FontFamilyName,		// font family name
-			FontStyle		FontStyle,			// font style (Regular, Bold, Italic or Bold | Italic
-			bool			EmbeddedFont = true	// embed font in PDF document file
+			string FontFamilyName,		// font family name
+			FontStyle FontStyle,		// font style (Regular, Bold, Italic or Bold | Italic
+			bool EmbeddedFont = true	// embed font in PDF document file
 			)
 		{
 		// save parameters
@@ -225,10 +225,10 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 
 	private PdfFont
 			(
-			PdfDocument		Document,			// PDF document main object
-			string			FontFamilyName,		// font family name
-			FontStyle		FontStyle,			// font style (Regular, Bold, Italic or Bold | Italic
-			bool			EmbeddedFont = true	// embed font in PDF document file
+			PdfDocument Document,		// PDF document main object
+			string FontFamilyName,		// font family name
+			FontStyle FontStyle,		// font style (Regular, Bold, Italic or Bold | Italic
+			bool EmbeddedFont = true	// embed font in PDF document file
 			) : base(Document, ObjectType.Dictionary, "/Font")
 		{
 		// save parameters
@@ -704,8 +704,8 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 	////////////////////////////////////////////////////////////////////
 	public double TextWidth
 			(
-			double	FontSize,
-			string	Text
+			double FontSize,
+			string Text
 			)
 		{
 		// text width
@@ -729,11 +729,11 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 	////////////////////////////////////////////////////////////////////
 	public bool TextFitToWidth
 			(
-			double		FontSize,
-			double		ReqWidth,
-			out double	WordSpacing,
-			out double	CharSpacing,
-			string		Text
+			double FontSize,
+			double ReqWidth,
+			out double WordSpacing,
+			out double CharSpacing,
+			string Text
 			)
 		{
 		WordSpacing = 0;
@@ -793,8 +793,8 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 	////////////////////////////////////////////////////////////////////
 	public PdfRectangle TextBoundingBox
 			(
-			double	FontSize,
-			string	Text
+			double FontSize,
+			string Text
 			)
 		{
 		if(string.IsNullOrEmpty(Text)) return null;
@@ -845,7 +845,7 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 	////////////////////////////////////////////////////////////////////
 	public KerningAdjust[] TextKerning
 			(
-			string	Text
+			string Text
 			)
 		{
 		// string is empty or one character
@@ -906,8 +906,8 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 	////////////////////////////////////////////////////////////////////
 	public double TextKerningWidth
 			(
-			double			FontSize,		// in points
-			KerningAdjust[]	KerningArray
+			double FontSize,		// in points
+			KerningAdjust[] KerningArray
 			)
 		{
 		// text is null or empty
@@ -949,8 +949,11 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 				}
 			}
 
+		// invariant name
+		string PostScriptName = FontFamily.GetName(127);
+
 		// PDF readers are not happy with space in font name
-		PdfFontName.Append(FontFamily.Name.Replace(" ", "#20"));
+		PdfFontName.Append(PostScriptName.Replace(" ", "#20"));
 
 		// font name
 		if((DesignFont.Style & FontStyle.Bold) != 0)

@@ -153,6 +153,10 @@
 //		Add support for sticky notes.
 //	Version 1.24.0 2019/06/06
 //		Support for layers control of images and annotations.
+//	Version 1.24.1 2019/06/20
+//		Add meter as unit of measue and fix version number and data strings.
+//	Version 1.25.0 2019/07/15
+//		Support for collection of fonts. Support for non ascii font names
 //
 /////////////////////////////////////////////////////////////////////
 
@@ -194,6 +198,11 @@ public enum UnitOfMeasure
 	/// MM
 	/// </summary>
 	mm,
+
+	/// <summary>
+	/// Meter
+	/// </summary>
+	m,
 	}
 
 /////////////////////////////////////////////////////////////////////
@@ -338,12 +347,12 @@ public class PdfDocument : IDisposable
 	/// <summary>
 	/// Library revision number
 	/// </summary>
-	public static readonly string RevisionNumber = "1.23.0";
+	public static readonly string RevisionNumber = "1.25.0";
 
 	/// <summary>
 	/// Library revision date
 	/// </summary>
-	public static readonly string RevisionDate = "2019/05/26";
+	public static readonly string RevisionDate = "2019/07/15";
 
 	/// <summary>
 	/// Scale factor
@@ -444,6 +453,7 @@ public class PdfDocument : IDisposable
 		72.0,			// Inch
 		72.0 / 2.54,	// cm
 		72.0 / 25.4,	// mm
+		72.0 / 0.0254,	// meter
 		};
 
 	// standard paper sizes (in points)
@@ -586,7 +596,7 @@ public class PdfDocument : IDisposable
 	/// as per width and height arguments in user units.</para>
 	/// <para>Page orientation is portrait if width is less than height.
 	/// Otherwise it is landscape.</para>
-	/// <para>Unit of measure is a an enumeration constant (Point, Inch, cm, mm)</para>
+	/// <para>Unit of measure is a an enumeration constant (Point, Inch, cm, mm, m)</para>
 	/// <para>The PDF document will be saved in a file named FileName.</para>
 	/// </remarks>
 	////////////////////////////////////////////////////////////////////
@@ -594,7 +604,7 @@ public class PdfDocument : IDisposable
 			(
 			double			Width,			// page width
 			double			Height,			// page height
-			UnitOfMeasure	UnitOfMeasure,	// unit of measure: Point, Inch, cm, mm
+			UnitOfMeasure	UnitOfMeasure,	// unit of measure: Point, Inch, cm, mm, m
 			string			FileName
 			)
 		{
@@ -617,7 +627,7 @@ public class PdfDocument : IDisposable
 	/// as per width and height arguments in user units.</para>
 	/// <para>Page orientation is portrait if width is less than height.
 	/// Otherwise it is landscape.</para>
-	/// <para>Unit of measure is a an enumeration constant (Point, Inch, cm, mm)</para>
+	/// <para>Unit of measure is a an enumeration constant (Point, Inch, cm, mm, m)</para>
 	/// <para>The PDF document will be saved in the stream argument. The stream can 
 	/// be either a MemoryStream or a FileStream. It is the calling program
 	/// responsibiliy to close the stream after CreateFile() method
@@ -628,7 +638,7 @@ public class PdfDocument : IDisposable
 			(
 			double			Width,			// page width
 			double			Height,			// page height
-			UnitOfMeasure	UnitOfMeasure,	// unit of measure: Point, Inch, cm, mm
+			UnitOfMeasure	UnitOfMeasure,	// unit of measure: Point, Inch, cm, mm, m
 			Stream			Stream
 			)
 		{
@@ -650,7 +660,7 @@ public class PdfDocument : IDisposable
 	/// <para>This constructor generates a document with default page size
 	/// of Letter, Leagal, A3, A4 or A5.</para>
 	/// <para>Page orientation is determined by the landscape argument.</para>
-	/// <para>Unit of measure is a an enumeration constant (Point, Inch, cm, mm)</para>
+	/// <para>Unit of measure is a an enumeration constant (Point, Inch, cm, mm, m)</para>
 	/// <para>The PDF document will be saved in a file named FileName.</para>
 	/// </remarks>
 	////////////////////////////////////////////////////////////////////
@@ -658,7 +668,7 @@ public class PdfDocument : IDisposable
 			(
 			PaperType		PaperType,
 			bool			Landscape,
-			UnitOfMeasure	UnitOfMeasure,
+			UnitOfMeasure	UnitOfMeasure,	// unit of measure: Point, Inch, cm, mm, m
 			string			FileName
 			)
 		{
@@ -685,7 +695,7 @@ public class PdfDocument : IDisposable
 	/// <para>This constructor generates a document with default page size
 	/// of Letter, Leagal, A3, A4 or A5.</para>
 	/// <para>Page orientation is determined by the landscape argument.</para>
-	/// <para>Unit of measure is a an enumeration constant (Point, Inch, cm, mm)</para>
+	/// <para>Unit of measure is a an enumeration constant (Point, Inch, cm, mm, m)</para>
 	/// <para>The PDF document will be saved in the stream argument. The stream can 
 	/// be either a MemoryStream or a FileStream. It is the calling program
 	/// responsibiliy to close the stream after CreateFile() method
@@ -696,7 +706,7 @@ public class PdfDocument : IDisposable
 			(
 			PaperType		PaperType,
 			bool			Landscape,
-			UnitOfMeasure	UnitOfMeasure,
+			UnitOfMeasure	UnitOfMeasure,	// unit of measure: Point, Inch, cm, mm, m
 			Stream			Stream
 			)
 		{
