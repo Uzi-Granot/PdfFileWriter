@@ -1,0 +1,10 @@
+﻿<Window x:Class="TestPdfFileWriter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MainWindow" Height="350" Width="525">
+    <Grid>
+        <Button Content="Article Example" HorizontalAlignment="Left" Height="46" Margin="60,241,0,0" VerticalAlignment="Top" Width="116" Click="OnArticleExample"/>
+        <Button Content="Test" HorizontalAlignment="Left" Height="46" Margin="253,241,0,0" VerticalAlignment="Top" Width="121" Click="OnTest"/>
+
+    </Grid>
+</Window>
