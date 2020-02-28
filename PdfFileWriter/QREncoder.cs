@@ -36,7 +36,6 @@
 using System;
 using System.Text;
 
-//namespace QRCodeEncoderLibrary
 namespace PdfFileWriter
 {
 /// <summary>
@@ -106,9 +105,9 @@ public enum EncodingMode
 		Unknown6,
 
 		/// <summary>
-		/// Unknown encoding constant
+		/// ECI Assignment Value
 		/// </summary>
-		Unknown7,
+		ECI,
 
 		/// <summary>
 		/// Kanji encoding (not implemented by this software)
@@ -271,6 +270,26 @@ public class QREncoder : QREncoderTables
 			}
 		}
 	private int _QuietZone = 8;
+
+	/// <summary>
+	/// ECI Assignment Value
+	/// </summary>
+	public int ECIAssignValue
+			{
+			get
+				{
+				return _ECIAssignValue;
+				}
+			set
+				{
+				if(value < -1 || value > 999999)
+					{
+					throw new ArgumentException("ECI Assignment Value must be 0-999999 or -1 for none");
+					}
+				_ECIAssignValue = value;
+				}
+			}
+	private int _ECIAssignValue = -1;
 
 	/// <summary>
 	/// Encode one string into QRCode boolean matrix
@@ -472,6 +491,14 @@ public class QREncoder : QREncoderTables
 		// reset total encoded data bits
 		EncodedDataBits = 0;
 
+		// test for ECI
+		if(_ECIAssignValue >= 0)
+			{
+			if(_ECIAssignValue <= 127) EncodedDataBits = 12;
+			else if(_ECIAssignValue <= 16383) EncodedDataBits = 20;
+			else EncodedDataBits = 28;
+			}
+
 		// loop for all segments
 		for(int SegIndex = 0; SegIndex < DataSegArray.Length; SegIndex++)
 			{
@@ -483,7 +510,7 @@ public class QREncoder : QREncoderTables
 			EncodingMode EncodingMode = EncodingMode.Numeric;
 			for(int Index = 0; Index < DataLength; Index++)
 				{
-				int Code = EncodingTable[(int) DataSeg[Index]];
+				int Code = EncodingTable[DataSeg[Index]];
 				if(Code < 10) continue;
 				if(Code < 45)
 					{
@@ -549,6 +576,31 @@ public class QREncoder : QREncoderTables
 		CodewordsPtr = 0;
 		BitBuffer = 0;
 		BitBufferLen = 0;
+
+		// ECI
+		if(_ECIAssignValue >= 0)
+			{
+			// first 4 bits is mode indicator
+			// ECI mode indicator is 0111,
+			SaveBitsToCodewordsArray(7, 4);
+
+			// save value
+			if(_ECIAssignValue <= 127)
+				{
+				SaveBitsToCodewordsArray(_ECIAssignValue, 8);
+				}
+			else if(_ECIAssignValue <= 16383)
+				{
+				SaveBitsToCodewordsArray((_ECIAssignValue >> 8) | 0x80, 8);
+				SaveBitsToCodewordsArray(_ECIAssignValue & 0xff, 8);
+				}
+			else
+				{
+				SaveBitsToCodewordsArray((_ECIAssignValue >> 16) | 0xc0, 8);
+				SaveBitsToCodewordsArray((_ECIAssignValue >> 8) & 0xff, 8);
+				SaveBitsToCodewordsArray(_ECIAssignValue & 0xff, 8);
+				}
+			}
 
 		// loop for all segments
 		for(int SegIndex = 0; SegIndex < DataSegArray.Length; SegIndex++)

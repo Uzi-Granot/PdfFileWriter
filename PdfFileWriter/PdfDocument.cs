@@ -157,27 +157,28 @@
 //		Add meter as unit of measue and fix version number and data strings.
 //	Version 1.25.0 2019/07/15
 //		Support for collection of fonts. Support for non ascii font names
+//	Version 1.26.0 2019/07/28
+//		Support for Metadata and support for QRCode ECI Assignment Value
 //
 /////////////////////////////////////////////////////////////////////
 
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Globalization;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace PdfFileWriter
-{
-/////////////////////////////////////////////////////////////////////
-/// <summary>
-/// Unit of measure enumeration
-/// </summary>
-/// <remarks>
-/// User unit of measure enumeration.
-/// </remarks>
-/////////////////////////////////////////////////////////////////////
-public enum UnitOfMeasure
+	{
+	/////////////////////////////////////////////////////////////////////
+	/// <summary>
+	/// Unit of measure enumeration
+	/// </summary>
+	/// <remarks>
+	/// User unit of measure enumeration.
+	/// </remarks>
+	/////////////////////////////////////////////////////////////////////
+	public enum UnitOfMeasure
 	{
 	/// <summary>
 	/// Point
@@ -276,37 +277,6 @@ public enum InitialDocDisplay
 
 /////////////////////////////////////////////////////////////////////
 /// <summary>
-/// Number Format Information static class
-/// </summary>
-/// <remarks>
-/// Adobe readers expect decimal separator to be a period.
-/// Some countries define decimal separator as a comma.
-/// The project uses NFI.DecSep to force period for all regions.
-/// </remarks>
-/////////////////////////////////////////////////////////////////////
-public static class NFI
-	{
-	/// <summary>
-	/// Define period as number decimal separator.
-	/// </summary>
-	/// <remarks>
-	/// NumberFormatInfo is used with string formatting to set the
-	/// decimal separator to a period regardless of region.
-	/// </remarks>
-	public static NumberFormatInfo PeriodDecSep {get; private set;}
-
-	// static constructor
-	static NFI()
-		{
-		// number format (decimal separator is period)
-		PeriodDecSep = new NumberFormatInfo();
-		PeriodDecSep.NumberDecimalSeparator = ".";
-		return;
-		}
-	}
-
-/////////////////////////////////////////////////////////////////////
-/// <summary>
 /// PDF document class
 /// </summary>
 /// <remarks>
@@ -347,12 +317,12 @@ public class PdfDocument : IDisposable
 	/// <summary>
 	/// Library revision number
 	/// </summary>
-	public static readonly string RevisionNumber = "1.25.0";
+	public static readonly string RevisionNumber = "1.26.0";
 
 	/// <summary>
 	/// Library revision date
 	/// </summary>
-	public static readonly string RevisionDate = "2019/07/15";
+	public static readonly string RevisionDate = "2019/07/28";
 
 	/// <summary>
 	/// Scale factor

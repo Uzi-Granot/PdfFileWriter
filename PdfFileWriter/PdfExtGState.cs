@@ -27,85 +27,85 @@ using System;
 using System.Collections.Generic;
 
 namespace PdfFileWriter
-{
-internal class PdfExtGState : PdfObject, IComparable<PdfExtGState>
 	{
-	internal string	Key;
-	internal string Value;
-
-	// search constructor
-	internal PdfExtGState
-			(
-			string Key,
-			string Value
-			)
+	internal class PdfExtGState : PdfObject, IComparable<PdfExtGState>
 		{
-		// save value
-		this.Key = Key;
-		this.Value = Value;
+		internal string Key;
+		internal string Value;
 
-		// exit
-		return;
-		}
+		// search constructor
+		internal PdfExtGState
+				(
+				string Key,
+				string Value
+				)
+			{
+			// save value
+			this.Key = Key;
+			this.Value = Value;
 
-	// object constructor
-	internal PdfExtGState
-			(
-			PdfDocument		Document,
-			string			Key,
-			string			Value
-			) : base(Document, ObjectType.Dictionary, "/ExtGState")
-		{
-		// save value
-		this.Key = Key;
-		this.Value = Value;
+			// exit
+			return;
+			}
 
-		// create resource code
-		ResourceCode = Document.GenerateResourceNumber('G');
-		return;
-		}
+		// object constructor
+		internal PdfExtGState
+				(
+				PdfDocument Document,
+				string Key,
+				string Value
+				) : base(Document, ObjectType.Dictionary, "/ExtGState")
+			{
+			// save value
+			this.Key = Key;
+			this.Value = Value;
 
-	internal static PdfExtGState CreateExtGState
-			(
-			PdfDocument		Document,
-			string			Key,
-			string			Value
-			)
-		{
-		if(Document.ExtGStateArray == null) Document.ExtGStateArray = new List<PdfExtGState>();
+			// create resource code
+			ResourceCode = Document.GenerateResourceNumber('G');
+			return;
+			}
 
-		// search list for a duplicate
-		int Index = Document.ExtGStateArray.BinarySearch(new PdfExtGState(Key, Value));
+		internal static PdfExtGState CreateExtGState
+				(
+				PdfDocument Document,
+				string Key,
+				string Value
+				)
+			{
+			if(Document.ExtGStateArray == null) Document.ExtGStateArray = new List<PdfExtGState>();
 
-		// this value is a duplicate
-		if(Index >= 0) return Document.ExtGStateArray[Index];
+			// search list for a duplicate
+			int Index = Document.ExtGStateArray.BinarySearch(new PdfExtGState(Key, Value));
 
-		// new blend object
-		PdfExtGState ExtGState = new PdfExtGState(Document, Key, Value);
+			// this value is a duplicate
+			if(Index >= 0) return Document.ExtGStateArray[Index];
 
-		// save new string in array
-		Document.ExtGStateArray.Insert(~Index, ExtGState);
+			// new blend object
+			PdfExtGState ExtGState = new PdfExtGState(Document, Key, Value);
 
-		// update dictionary
-		ExtGState.Dictionary.Add(Key, Value);
+			// save new string in array
+			Document.ExtGStateArray.Insert(~Index, ExtGState);
 
-		// exit
-		return ExtGState;
-		}
+			// update dictionary
+			ExtGState.Dictionary.Add(Key, Value);
 
-	/// <summary>
-	/// Compare two PdfExtGState objects.
-	/// </summary>
-	/// <param name="Other">Other object.</param>
-	/// <returns>Compare result.</returns>
-	public int CompareTo
-			(
-			PdfExtGState	Other
-			)
-		{
-		int Cmp = string.Compare(this.Key, Other.Key);
-		if(Cmp != 0) return Cmp;
-		return string.Compare(this.Value, Other.Value);
+			// exit
+			return ExtGState;
+			}
+
+		/// <summary>
+		/// Compare two PdfExtGState objects.
+		/// </summary>
+		/// <param name="Other">Other object.</param>
+		/// <returns>Compare result.</returns>
+		public int CompareTo
+				(
+				PdfExtGState Other
+				)
+			{
+			int Cmp = string.Compare(this.Key, Other.Key);
+			if(Cmp != 0) return Cmp;
+			return string.Compare(this.Value, Other.Value);
+			}
 		}
 	}
-}

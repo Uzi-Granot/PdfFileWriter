@@ -23,15 +23,14 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
 using System.Drawing;
 
 namespace PdfFileWriter
-{
-/// <summary>
-/// PDF tiling type enumeration
-/// </summary>
-public enum TilingType
+	{
+	/// <summary>
+	/// PDF tiling type enumeration
+	/// </summary>
+	public enum TilingType
 	{
 	/// <summary>
 	/// Constant

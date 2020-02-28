@@ -52,6 +52,7 @@
     <Compile Include="CreateMetafile.cs" />
     <Compile Include="LocationMarker.cs" />
     <Compile Include="DrawWPFPath.cs" />
+    <Compile Include="NumberFormatInfo.cs" />
     <Compile Include="Pdf417Encoder.cs" />
     <Compile Include="Pdf417EncoderTables.cs" />
     <Compile Include="PdfAnnotation.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="PdfInfo.cs" />
     <Compile Include="PdfLayer.cs" />
     <Compile Include="PdfLayers.cs" />
+    <Compile Include="PdfMetadata.cs" />
     <Compile Include="PdfRectangle.cs" />
     <Compile Include="PdfDisplayMedia.cs" />
     <Compile Include="PdfTable.cs" />
@@ -96,6 +98,8 @@
     <Compile Include="QREncoder.cs" />
     <Compile Include="QREncoderTables.cs" />
     <Compile Include="TextBox.cs" />
+    <Compile Include="TextBoxLine.cs" />
+    <Compile Include="TextBoxSeg.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -94,9 +94,9 @@ public class CharInfo : IComparable<CharInfo>
 	/// </summary>
 	//public int DesignHeight {get; internal set;}
 
-	internal int		NewGlyphIndex;
-	internal byte[]		GlyphData;
-	internal bool	Composite;
+	internal int NewGlyphIndex;
+	internal byte[] GlyphData;
+	internal bool Composite;
 
 	////////////////////////////////////////////////////////////////////
 	// constructor
@@ -104,9 +104,9 @@ public class CharInfo : IComparable<CharInfo>
 
 	internal CharInfo
 			(
-			int		CharCode,
-			int		GlyphIndex,
-			FontApi		DC
+			int CharCode,
+			int GlyphIndex,
+			FontApi DC
 			)
 		{
 		// save char code and glyph index
@@ -135,7 +135,7 @@ public class CharInfo : IComparable<CharInfo>
 
 	internal CharInfo
 			(
-			int		GlyphIndex
+			int GlyphIndex
 			)
 		{
 		// save char code and glyph index
@@ -186,22 +186,22 @@ public class FontBox
 	/// <summary>
 	/// Gets left side.
 	/// </summary>
-	public int		Left {get; private set;} 
+	public int Left {get; private set;} 
 
 	/// <summary>
 	/// Gets top side.
 	/// </summary>
-	public int		Top {get; private set;} 
+	public int Top {get; private set;} 
 
 	/// <summary>
 	/// Gets right side.
 	/// </summary>
-	public int		Right {get; private set;} 
+	public int Right {get; private set;} 
 
 	/// <summary>
 	/// Gets bottom side.
 	/// </summary>
-	public int		Bottom {get; private set;}
+	public int Bottom {get; private set;}
 
 	internal FontBox
 			(
@@ -232,52 +232,52 @@ public class WinPanose
 	/// <summary>
 	/// Panose family type
 	/// </summary>
-	public byte			bFamilyType {get; private set;}
+	public byte bFamilyType {get; private set;}
 
 	/// <summary>
 	/// Panose serif style
 	/// </summary>
-	public byte			bSerifStyle {get; private set;}
+	public byte bSerifStyle {get; private set;}
 
 	/// <summary>
 	/// Panose weight
 	/// </summary>
-	public byte			bWeight {get; private set;}
+	public byte bWeight {get; private set;}
 
 	/// <summary>
 	/// Panose proportion
 	/// </summary>
-	public byte			bProportion {get; private set;}
+	public byte bProportion {get; private set;}
 
 	/// <summary>
 	/// Panose contrast
 	/// </summary>
-	public byte			bContrast {get; private set;}
+	public byte bContrast {get; private set;}
 
 	/// <summary>
 	/// Panose stroke variation
 	/// </summary>
-	public byte			bStrokeVariation {get; private set;}
+	public byte bStrokeVariation {get; private set;}
 
 	/// <summary>
 	/// Panose arm style
 	/// </summary>
-	public byte			bArmStyle {get; private set;}
+	public byte bArmStyle {get; private set;}
 
 	/// <summary>
 	/// Panose letter form
 	/// </summary>
-	public byte			bLetterform {get; private set;}
+	public byte bLetterform {get; private set;}
 
 	/// <summary>
 	/// Panose mid line
 	/// </summary>
-	public byte			bMidline {get; private set;}
+	public byte bMidline {get; private set;}
 
 	/// <summary>
 	/// Panose X height
 	/// </summary>
-	public byte			bXHeight {get; private set;}
+	public byte bXHeight {get; private set;}
 
 	internal WinPanose
 			(
@@ -308,17 +308,17 @@ public class WinKerningPair : IComparable<WinKerningPair>
 	/// <summary>
 	/// Gets first character
 	/// </summary>
-	public char			First {get; private set;}
+	public char First {get; private set;}
 
 	/// <summary>
 	/// Gets second character
 	/// </summary>
-	public char			Second {get; private set;}
+	public char Second {get; private set;}
 
 	/// <summary>
 	/// Gets kerning amount in design units
 	/// </summary>
-	public int		KernAmount {get; private set;}
+	public int KernAmount {get; private set;}
 
 	internal WinKerningPair
 			(
@@ -338,8 +338,8 @@ public class WinKerningPair : IComparable<WinKerningPair>
 	/// <param name="Second">Second character</param>
 	public WinKerningPair
 			(
-			char	First,
-			char	Second
+			char First,
+			char Second
 			)
 		{
 		this.First = First;
@@ -354,7 +354,7 @@ public class WinKerningPair : IComparable<WinKerningPair>
 	/// <returns>Compare result</returns>
 	public int CompareTo
 			(
-			WinKerningPair	Other
+			WinKerningPair Other
 			)
 		{
 		return First != Other.First ? First - Other.First : Second - Other.Second;
@@ -377,102 +377,102 @@ public class WinTextMetric
 	/// <summary>
 	/// TextMetric height
 	/// </summary>
-	public int		tmHeight {get; private set;}
+	public int tmHeight {get; private set;}
 	
 	/// <summary>
 	/// TextMetric ascent
 	/// </summary>
-	public int		tmAscent {get; private set;}
+	public int tmAscent {get; private set;}
 	
 	/// <summary>
 	/// TextMetric descent
 	/// </summary>
-	public int		tmDescent {get; private set;}
+	public int tmDescent {get; private set;}
 	
 	/// <summary>
 	/// TextMetric internal leading
 	/// </summary>
-	public int		tmInternalLeading {get; private set;}
+	public int tmInternalLeading {get; private set;}
 	
 	/// <summary>
 	/// TextMetric external leading
 	/// </summary>
-	public int		tmExternalLeading {get; private set;}
+	public int tmExternalLeading {get; private set;}
 	
 	/// <summary>
 	/// TextMetric average character width
 	/// </summary>
-	public int		tmAveCharWidth {get; private set;}
+	public int tmAveCharWidth {get; private set;}
 	
 	/// <summary>
 	/// TextMetric maximum character width
 	/// </summary>
-	public int		tmMaxCharWidth {get; private set;}
+	public int tmMaxCharWidth {get; private set;}
 	
 	/// <summary>
 	/// TextMetric height
 	/// </summary>
-	public int		tmWeight {get; private set;}
+	public int tmWeight {get; private set;}
 	
 	/// <summary>
 	/// TextMetric overhang
 	/// </summary>
-	public int		tmOverhang {get; private set;}
+	public int tmOverhang {get; private set;}
 	
 	/// <summary>
 	/// TextMetric digitize aspect X
 	/// </summary>
-	public int		tmDigitizedAspectX {get; private set;}
+	public int tmDigitizedAspectX {get; private set;}
 	
 	/// <summary>
 	/// TextMetric digitize aspect Y
 	/// </summary>
-	public int		tmDigitizedAspectY {get; private set;}
+	public int tmDigitizedAspectY {get; private set;}
 	
 	/// <summary>
 	/// TextMetric first character
 	/// </summary>
-	public ushort		tmFirstChar {get; private set;}
+	public ushort tmFirstChar {get; private set;}
 	
 	/// <summary>
 	/// TextMetric last character
 	/// </summary>
-	public ushort		tmLastChar {get; private set;}
+	public ushort tmLastChar {get; private set;}
 	
 	/// <summary>
 	/// TextMetric default character
 	/// </summary>
-	public ushort		tmDefaultChar {get; private set;}
+	public ushort tmDefaultChar {get; private set;}
 	
 	/// <summary>
 	/// TextMetric break character
 	/// </summary>
-	public ushort		tmBreakChar {get; private set;}
+	public ushort tmBreakChar {get; private set;}
 	
 	/// <summary>
 	/// TextMetric italic
 	/// </summary>
-	public byte			tmItalic {get; private set;}
+	public byte tmItalic {get; private set;}
 	
 	/// <summary>
 	/// TextMetric underlined
 	/// </summary>
-	public byte			tmUnderlined {get; private set;}
+	public byte tmUnderlined {get; private set;}
 	
 	/// <summary>
 	/// TextMetric struck out
 	/// </summary>
-	public byte			tmStruckOut {get; private set;}
+	public byte tmStruckOut {get; private set;}
 	
 	/// <summary>
 	/// TextMetric pitch and family
 	/// </summary>
-	public byte			tmPitchAndFamily {get; private set;}
+	public byte tmPitchAndFamily {get; private set;}
 	
 	/// <summary>
 	/// TextMetric character set
 	/// </summary>
-	public byte			tmCharSet {get; private set;}
+	public byte tmCharSet {get; private set;}
 
 	internal WinTextMetric
 			(
@@ -517,7 +517,7 @@ public class WinOutlineTextMetric
 	/// <summary>
 	/// Outline text metric size
 	/// </summary>
-	public uint		otmSize {get; private set;}
+	public uint otmSize {get; private set;}
 
 	/// <summary>
 	/// Outline text metric TextMetric
@@ -527,147 +527,147 @@ public class WinOutlineTextMetric
 	/// <summary>
 	/// Outline text metric panose number
 	/// </summary>
-	public WinPanose	otmPanoseNumber {get; private set;}
+	public WinPanose otmPanoseNumber {get; private set;}
 
 	/// <summary>
 	/// Outline text metric FS selection
 	/// </summary>
-	public uint		otmfsSelection {get; private set;}
+	public uint otmfsSelection {get; private set;}
 
 	/// <summary>
 	/// Outline text metric FS type
 	/// </summary>
-	public uint		otmfsType {get; private set;}
+	public uint otmfsType {get; private set;}
 
 	/// <summary>
 	/// Outline text metric char slope rise
 	/// </summary>
-	public int		otmsCharSlopeRise {get; private set;}
+	public int otmsCharSlopeRise {get; private set;}
 
 	/// <summary>
 	/// Outline text metric char slope run
 	/// </summary>
-	public int		otmsCharSlopeRun {get; private set;}
+	public int otmsCharSlopeRun {get; private set;}
 
 	/// <summary>
 	/// Outline text metric italic angle
 	/// </summary>
-	public int		otmItalicAngle {get; private set;}
+	public int otmItalicAngle {get; private set;}
 
 	/// <summary>
 	/// Outline text metric EM square
 	/// </summary>
-	public uint		otmEMSquare {get; private set;}
+	public uint otmEMSquare {get; private set;}
 
 	/// <summary>
 	/// Outline text metric ascent
 	/// </summary>
-	public int		otmAscent {get; private set;}
+	public int otmAscent {get; private set;}
 
 	/// <summary>
 	/// Outline text metric descent
 	/// </summary>
-	public int		otmDescent {get; private set;}
+	public int otmDescent {get; private set;}
 
 	/// <summary>
 	/// Outline text metric line gap
 	/// </summary>
-	public uint		otmLineGap {get; private set;}
+	public uint otmLineGap {get; private set;}
 
 	/// <summary>
 	/// Outline text metric capital M height
 	/// </summary>
-	public uint		otmsCapEmHeight {get; private set;}
+	public uint otmsCapEmHeight {get; private set;}
 
 	/// <summary>
 	/// Outline text metric X height
 	/// </summary>
-	public uint		otmsXHeight {get; private set;}
+	public uint  otmsXHeight {get; private set;}
 
 	/// <summary>
 	/// Outline text metric Font box class
 	/// </summary>
-	public FontBox		otmrcFontBox {get; private set;}
+	public FontBox otmrcFontBox {get; private set;}
 
 	/// <summary>
 	/// Outline text metric Mac ascent
 	/// </summary>
-	public int		otmMacAscent {get; private set;}
+	public int otmMacAscent {get; private set;}
 
 	/// <summary>
 	/// Outline text metric Mac descent
 	/// </summary>
-	public int		otmMacDescent {get; private set;}
+	public int otmMacDescent {get; private set;}
 
 	/// <summary>
 	/// Outline text metric Mac line gap
 	/// </summary>
-	public uint		otmMacLineGap {get; private set;}
+	public uint otmMacLineGap {get; private set;}
 
 	/// <summary>
 	/// Outline text metric minimum PPEM
 	/// </summary>
-	public uint		otmusMinimumPPEM {get; private set;}
+	public uint otmusMinimumPPEM {get; private set;}
 
 	/// <summary>
 	/// Outline text metric subscript size
 	/// </summary>
-	public Point		otmptSubscriptSize {get; private set;}
+	public Point otmptSubscriptSize {get; private set;}
 
 	/// <summary>
 	/// Outline text metric subscript offset
 	/// </summary>
-	public Point		otmptSubscriptOffset {get; private set;}
+	public Point otmptSubscriptOffset {get; private set;}
 
 	/// <summary>
 	/// Outline text metric superscript size
 	/// </summary>
-	public Point		otmptSuperscriptSize {get; private set;}
+	public Point otmptSuperscriptSize {get; private set;}
 
 	/// <summary>
 	/// Outline text metric superscript offset
 	/// </summary>
-	public Point		otmptSuperscriptOffset {get; private set;}
+	public Point otmptSuperscriptOffset {get; private set;}
 
 	/// <summary>
 	/// Outline text metric strikeout size
 	/// </summary>
-	public uint		otmsStrikeoutSize {get; private set;}
+	public uint otmsStrikeoutSize {get; private set;}
 
 	/// <summary>
 	/// Outline text metric strikeout position
 	/// </summary>
-	public int		otmsStrikeoutPosition {get; private set;}
+	public int otmsStrikeoutPosition {get; private set;}
 
 	/// <summary>
 	/// Outline text metric underscore size
 	/// </summary>
-	public int		otmsUnderscoreSize {get; private set;}
+	public int otmsUnderscoreSize {get; private set;}
 
 	/// <summary>
 	/// Outline text metric underscore position
 	/// </summary>
-	public int		otmsUnderscorePosition {get; private set;}
+	public int otmsUnderscorePosition {get; private set;}
 
 	/// <summary>
 	/// Outline text metric family name
 	/// </summary>
-	public string		otmpFamilyName {get; private set;}
+	public string otmpFamilyName {get; private set;}
 
 	/// <summary>
 	/// Outline text metric face name
 	/// </summary>
-	public string		otmpFaceName {get; private set;}
+	public string otmpFaceName {get; private set;}
 
 	/// <summary>
 	/// Outline text metric style name
 	/// </summary>
-	public string		otmpStyleName {get; private set;}
+	public string otmpStyleName {get; private set;}
 
 	/// <summary>
 	/// Outline text metric full name
 	/// </summary>
-	public string		otmpFullName {get; private set;}
+	public string otmpFullName {get; private set;}
 
 	internal WinOutlineTextMetric
 			(
@@ -721,14 +721,14 @@ public class WinOutlineTextMetric
 ////////////////////////////////////////////////////////////////////
 public class FontApi : IDisposable
 	{
-	private Bitmap		BitMap;
-	private Graphics	GDI;
-	private IntPtr		GDIHandle;
-	private IntPtr		FontHandle;
-	private IntPtr		SavedFont;
-	private IntPtr		Buffer;
-	private int		BufPtr;
-	private int		DesignHeight;
+	private Bitmap BitMap;
+	private Graphics GDI;
+	private IntPtr GDIHandle;
+	private IntPtr FontHandle;
+	private IntPtr SavedFont;
+	private IntPtr Buffer;
+	private int BufPtr;
+	private int DesignHeight;
 
 	////////////////////////////////////////////////////////////////////
 	// Device context constructor
@@ -744,8 +744,8 @@ public class FontApi : IDisposable
 	/// <param name="DesignHeight">Design height</param>
 	public FontApi
 			(
-			Font	DesignFont,
-			int	DesignHeight
+			Font DesignFont,
+			int DesignHeight
 			)
 		{
 		// save design height
@@ -785,7 +785,7 @@ public class FontApi : IDisposable
 	/// <returns>Character info class</returns>
 	public CharInfo GetGlyphMetricsApiByCode
 			(
-			int		CharCode
+			int CharCode
 			)
 		{
 		// get glyph index for char code
@@ -806,7 +806,7 @@ public class FontApi : IDisposable
 	/// <returns>Character info class</returns>
 	public CharInfo GetGlyphMetricsApiByGlyphIndex
 			(
-			int		GlyphIndex
+			int GlyphIndex
 			)
 		{
 		// build unit matrix
@@ -841,7 +841,7 @@ public class FontApi : IDisposable
 	////////////////////////////////////////////////////////////////////
 	public CharInfo[] GetGlyphMetricsApi
 			(
-			int	CharValue
+			int CharValue
 			)
 		{
 		// first character of the 256 block
@@ -911,8 +911,8 @@ public class FontApi : IDisposable
 	/// <returns>Array of kerning pairs</returns>
 	public WinKerningPair[] GetKerningPairsApi
 			(
-			int	FirstChar,
-			int	LastChar
+			int FirstChar,
+			int LastChar
 			)
 		{
 		// get number of pairs
@@ -1071,8 +1071,8 @@ public class FontApi : IDisposable
 	/// <returns>Array of glyph indices.</returns>
     public int[] GetGlyphIndicesApi
 			(
-			int		FirstChar,
-			int		LastChar
+			int FirstChar,
+			int LastChar
 			)
 		{
 		// character count
@@ -1113,7 +1113,7 @@ public class FontApi : IDisposable
 
 	private void AllocateBuffer
 			(
-			int	Size
+			int Size
 			)
 		{
 		// allocate memory for result

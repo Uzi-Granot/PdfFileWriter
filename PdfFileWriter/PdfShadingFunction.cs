@@ -28,91 +28,91 @@ using System.Drawing;
 using SysMedia = System.Windows.Media;
 
 namespace PdfFileWriter
-{
-////////////////////////////////////////////////////////////////////
-/// <summary>
-/// PDF shading function class
-/// </summary>
-/// <remarks>
-/// PDF function to convert a number between 0 and 1 into a
-/// color red green and blue based on the sample color array.
-/// </remarks>
-////////////////////////////////////////////////////////////////////
-public class PdfShadingFunction : PdfObject
 	{
 	////////////////////////////////////////////////////////////////////
 	/// <summary>
-	/// PDF Shading function constructor
+	/// PDF shading function class
 	/// </summary>
-	/// <param name="Document">Document object parent of this function.</param>
-	/// <param name="ColorArray">Array of colors.</param>
+	/// <remarks>
+	/// PDF function to convert a number between 0 and 1 into a
+	/// color red green and blue based on the sample color array.
+	/// </remarks>
 	////////////////////////////////////////////////////////////////////
-	public PdfShadingFunction
-			(
-			PdfDocument		Document,		// PDF document object
-			Color[]			ColorArray		// Array of colors. Minimum 2.
-			) : base(Document, ObjectType.Stream)
+	public class PdfShadingFunction : PdfObject
 		{
-		// build dictionary
-		Constructorhelper(ColorArray.Length);
-
-		// add color array to contents stream
-		foreach(Color Color in ColorArray)
+		////////////////////////////////////////////////////////////////////
+		/// <summary>
+		/// PDF Shading function constructor
+		/// </summary>
+		/// <param name="Document">Document object parent of this function.</param>
+		/// <param name="ColorArray">Array of colors.</param>
+		////////////////////////////////////////////////////////////////////
+		public PdfShadingFunction
+				(
+				PdfDocument Document,   // PDF document object
+				Color[] ColorArray      // Array of colors. Minimum 2.
+				) : base(Document, ObjectType.Stream)
 			{
-			ObjectValueList.Add(Color.R);	// red
-			ObjectValueList.Add(Color.G);	// green
-			ObjectValueList.Add(Color.B);	// blue
+			// build dictionary
+			Constructorhelper(ColorArray.Length);
+
+			// add color array to contents stream
+			foreach(Color Color in ColorArray)
+				{
+				ObjectValueList.Add(Color.R);   // red
+				ObjectValueList.Add(Color.G);   // green
+				ObjectValueList.Add(Color.B);   // blue
+				}
+			return;
 			}
-		return;
-		}
 
-	/// <summary>
-	/// PDF Shading function constructor
-	/// </summary>
-	/// <param name="Document">Document object parent of this function.</param>
-	/// <param name="Brush">System.Windows.Media gradient brush</param>
-	public PdfShadingFunction
-			(
-			PdfDocument Document,
-			SysMedia.GradientBrush Brush
-			) : base(Document, ObjectType.Stream)
-		{
-		// build dictionary
-		Constructorhelper(Brush.GradientStops.Count);
-
-		// add color array to contents stream
-		foreach(System.Windows.Media.GradientStop Stop in Brush.GradientStops)
+		/// <summary>
+		/// PDF Shading function constructor
+		/// </summary>
+		/// <param name="Document">Document object parent of this function.</param>
+		/// <param name="Brush">System.Windows.Media gradient brush</param>
+		public PdfShadingFunction
+				(
+				PdfDocument Document,
+				SysMedia.GradientBrush Brush
+				) : base(Document, ObjectType.Stream)
 			{
-			ObjectValueList.Add(Stop.Color.R);	// red
-			ObjectValueList.Add(Stop.Color.G);	// green
-			ObjectValueList.Add(Stop.Color.B);	// blue
+			// build dictionary
+			Constructorhelper(Brush.GradientStops.Count);
+
+			// add color array to contents stream
+			foreach(System.Windows.Media.GradientStop Stop in Brush.GradientStops)
+				{
+				ObjectValueList.Add(Stop.Color.R);  // red
+				ObjectValueList.Add(Stop.Color.G);  // green
+				ObjectValueList.Add(Stop.Color.B);  // blue
+				}
+			return;
 			}
-		return;
-		}
 
-	private void Constructorhelper
-			(
-			int	Length
-			)
-		{
-		// test for error
-		if(Length < 2) throw new ApplicationException("Shading function color array must have two or more items");
+		private void Constructorhelper
+				(
+				int Length
+				)
+			{
+			// test for error
+			if(Length < 2) throw new ApplicationException("Shading function color array must have two or more items");
 
-		// the shading function is a sampled function
-		Dictionary.Add("/FunctionType", "0");
+			// the shading function is a sampled function
+			Dictionary.Add("/FunctionType", "0");
 
-		// input variable is between 0 and 1
-		Dictionary.Add("/Domain", "[0 1]");
+			// input variable is between 0 and 1
+			Dictionary.Add("/Domain", "[0 1]");
 
-		// output variables are red, green and blue color components between 0 and 1
-		Dictionary.Add("/Range", "[0 1 0 1 0 1]");
+			// output variables are red, green and blue color components between 0 and 1
+			Dictionary.Add("/Range", "[0 1 0 1 0 1]");
 
-		// each color components in the stream is 8 bits
-		Dictionary.Add("/BitsPerSample", "8");
+			// each color components in the stream is 8 bits
+			Dictionary.Add("/BitsPerSample", "8");
 
-		// number of colors in the stream must be two or more
-		Dictionary.AddFormat("/Size", "[{0}]", Length);
-		return;
+			// number of colors in the stream must be two or more
+			Dictionary.AddFormat("/Size", "[{0}]", Length);
+			return;
+			}
 		}
 	}
-}
