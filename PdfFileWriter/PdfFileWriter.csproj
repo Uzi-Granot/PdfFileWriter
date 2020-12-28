@@ -50,6 +50,7 @@
     <Compile Include="ArcToBezier.cs" />
     <Compile Include="Barcode.cs" />
     <Compile Include="CreateMetafile.cs" />
+    <Compile Include="KerningAdjust.cs" />
     <Compile Include="LocationMarker.cs" />
     <Compile Include="DrawWPFPath.cs" />
     <Compile Include="NumberFormatInfo.cs" />
@@ -59,6 +60,7 @@
     <Compile Include="PdfDictionary.cs" />
     <Compile Include="PdfEmbeddedFile.cs" />
     <Compile Include="PdfExtGState.cs" />
+    <Compile Include="PdfFontControl.cs" />
     <Compile Include="PdfImageControl.cs" />
     <Compile Include="PdfInfo.cs" />
     <Compile Include="PdfLayer.cs" />

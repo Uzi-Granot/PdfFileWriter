@@ -159,6 +159,9 @@
 //		Support for collection of fonts. Support for non ascii font names
 //	Version 1.26.0 2019/07/28
 //		Support for Metadata and support for QRCode ECI Assignment Value
+//	Version 1.27.0 2019/09/09
+//		Fix for Out of Memory error when using PDF417 barcode
+//		This error occurs under unusual conditions
 //
 /////////////////////////////////////////////////////////////////////
 
@@ -317,12 +320,12 @@ public class PdfDocument : IDisposable
 	/// <summary>
 	/// Library revision number
 	/// </summary>
-	public static readonly string RevisionNumber = "1.26.0";
+	public static readonly string RevisionNumber = "1.27.0";
 
 	/// <summary>
 	/// Library revision date
 	/// </summary>
-	public static readonly string RevisionDate = "2019/07/28";
+	public static readonly string RevisionDate = "2020/09/09";
 
 	/// <summary>
 	/// Scale factor

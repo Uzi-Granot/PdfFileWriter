@@ -89,48 +89,6 @@ public enum PdfFontFlags
 	ForceBold = 1 << 18
 	}
 
-/////////////////////////////////////////////////////////////////////
-/// <summary>
-/// Kerning adjustment class
-/// </summary>
-/// <remarks>
-/// Text position adjustment for TJ operator.
-/// The adjustment is for a font height of one point.
-/// Mainly used for font kerning.
-/// </remarks>
-/////////////////////////////////////////////////////////////////////
-public class KerningAdjust
-	{
-	/// <summary>
-	/// Gets or sets Text
-	/// </summary>
-	public string Text {get; set;}
-
-	/// <summary>
-	/// Gets or sets adjustment
-	/// </summary>
-	/// <remarks>
-	/// Adjustment units are in PDF design unit. To convert to user units: Adjust * FontSize / (1000.0 * ScaleFactor)
-	/// </remarks>
-	public double Adjust {get; set;}
-
-	/// <summary>
-	/// Kerning adjustment constructor
-	/// </summary>
-	/// <param name="Text">Text</param>
-	/// <param name="Adjust">Adjustment</param>
-	public KerningAdjust
-			(
-			string Text,
-			double Adjust
-			)
-		{
-		this.Text = Text;
-		this.Adjust = Adjust;
-		return;
-		}
-	}
-
 ////////////////////////////////////////////////////////////////////
 /// <summary>
 /// PDF font class
@@ -146,6 +104,16 @@ public class KerningAdjust
 ////////////////////////////////////////////////////////////////////
 public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 	{
+	/// <summary>
+	/// Font Family Name
+	/// </summary>
+	public string FontFamilyName { get; internal set;}
+
+	/// <summary>
+	/// Font style
+	/// </summary>
+	public FontStyle FontStyle { get; internal set;}
+
 	internal	FontApi		FontApi;
 	internal	bool		SymbolicFont;
 	internal	CharInfo[][] CharInfoArray;
@@ -157,8 +125,6 @@ public class PdfFont : PdfObject, IDisposable, IComparable<PdfFont>
 	internal	bool		FontResCodeUsed;		// 0-255
 	internal	bool		FontResGlyphUsed;		// 255-0xffff
 	internal	FontFamily	FontFamily;
-	internal	string		FontFamilyName;
-	internal	FontStyle	FontStyle;
 	internal	bool		EmbeddedFont;
 	internal	Font		DesignFont;
 	internal	PdfFontFlags FontFlags;

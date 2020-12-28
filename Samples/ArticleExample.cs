@@ -75,10 +75,10 @@ public class ArticleExample
 		Info.Title("Article Example");
 		Info.Author("Uzi Granot");
 		Info.Keywords("PDF, .NET, C#, Library, Document Creator");
-		Info.Subject("PDF File Writer C# Class Library (Version 1.24.0)");
+		Info.Subject("PDF File Writer C# Class Library (Version 1.27.0)");
 
 		// add metadata
-		PdfMetadata Metadata = new PdfMetadata(Document, "Metadata.xmp");
+		new PdfMetadata(Document, "Metadata.xmp");
 
 		// Step 2: create resources
 		// define font resources

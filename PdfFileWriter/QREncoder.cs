@@ -158,7 +158,7 @@ public class QREncoder : QREncoderTables
 	/// <summary>
 	/// Version number
 	/// </summary>
-	public const string VersionNumber = "Ver 2.1.0 - 2019-05-26";
+	public const string VersionNumber = "Ver 2.2.0 - 2020-09-08";
 
 	/// <summary>
 	/// QR code matrix.
