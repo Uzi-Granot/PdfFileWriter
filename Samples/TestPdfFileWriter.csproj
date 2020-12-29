@@ -1,176 +1,44 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{26BECCC8-3C73-4588-8CC5-5C5A995B8639}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TestPdfFileWriter</RootNamespace>
-    <AssemblyName>TestPdfFileWriter</AssemblyName>
-    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <FileAlignment>512</FileAlignment>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <PlatformTarget>x86</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>
-    </DocumentationFile>
-    <Prefer32Bit>false</Prefer32Bit>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Deployment" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Forms.DataVisualization" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ArticleExample.cs" />
-    <Compile Include="ChartExample.cs" />
-    <Compile Include="CustomDataGridView.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="DrawGlyphForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="DrawGlyphForm.designer.cs">
-      <DependentUpon>DrawGlyphForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="EnumFontFamilies.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="EnumFontFamilies.designer.cs">
-      <DependentUpon>EnumFontFamilies.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ExceptionReport.cs" />
-    <Compile Include="FontInfoForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="FontInfoForm.designer.cs">
-      <DependentUpon>FontInfoForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="OtherExample.cs" />
-    <Compile Include="PrintExample.cs" />
-    <Compile Include="LayersExample.cs" />
-    <Compile Include="TableExample.cs" />
-    <Compile Include="TestPdfFileWriter.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TestPdfFileWriter.Designer.cs">
-      <DependentUpon>TestPdfFileWriter.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Trace.cs" />
-    <EmbeddedResource Include="DrawGlyphForm.resx">
-      <DependentUpon>DrawGlyphForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="EnumFontFamilies.resx">
-      <DependentUpon>EnumFontFamilies.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="FontInfoForm.resx">
-      <DependentUpon>FontInfoForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <EmbeddedResource Include="TestPdfFileWriter.resx">
-      <DependentUpon>TestPdfFileWriter.cs</DependentUpon>
-    </EmbeddedResource>
-    <None Include="App.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 4.5</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PdfFileWriter\PdfFileWriter.csproj">
-      <Project>{7b531568-9c87-4cc5-917d-28c43bcf5b38}</Project>
-      <Name>PdfFileWriter</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFrameworks>net472;netcoreapp3.1;net5.0-windows</TargetFrameworks>
+		<AssemblyTitle>TestPdfFileWriter</AssemblyTitle>
+		<AssemblyName>TestPdfFileWriter</AssemblyName>
+		<AssemblyVersion>1.27.0</AssemblyVersion>
+		<Authors>Uzi Granot</Authors>
+		<Description>PDF File Writer C# Class Library sample application</Description>
+		<Product>TestPdfFileWriter Version 1.27.0</Product>
+		<Copyright>Copyright © 2013-2020 Uzi Granot. All rights reserved.</Copyright>
+		<Company>Uzi Granot</Company>
+		<FileVersion>1.27.0</FileVersion>
+		<Version>1.27.0</Version>
+		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+		<PackageProjectUrl>https://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version-1-27</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Uzi-Granot/PdfFileWriter</RepositoryUrl>
+		<RepositoryType>GIT</RepositoryType>
+		<PackageTags>PDF</PackageTags>
+		<UseWPF>true</UseWPF>
+		<UseWindowsForms>true</UseWindowsForms>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'net48'">
+		<Reference Include="System.Windows.Forms.DataVisualization" />
+	</ItemGroup>
+	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'net5.0-windows'">
+		<PackageReference Include="System.Windows.Forms.DataVisualization" Version="1.0.0-prerelease.20110.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\PdfFileWriter\PdfFileWriter.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\LICENSE.md">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+
 </Project>
