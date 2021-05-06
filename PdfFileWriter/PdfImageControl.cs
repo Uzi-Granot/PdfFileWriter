@@ -30,77 +30,79 @@ using System.IO;
 using System.Text;
 
 namespace PdfFileWriter
-{
-/// <summary>
-/// PdfImageControl is obolete. See latest documentation
-/// </summary>
-public class PdfImageControl
 	{
-	#pragma warning disable 1591
-	private const bool ObsoleteError = false;
-	private const string ObsoleteMsg = "This PdfImageControl class is obsolete. See latest documentation.";
-
-	[Obsolete(ObsoleteMsg, ObsoleteError)]
-	public Rectangle CropRect;
-
-	[Obsolete(ObsoleteMsg, ObsoleteError)]
-	public RectangleF CropPercent;
-
-	[Obsolete(ObsoleteMsg, ObsoleteError)]
-	public bool ReverseBW;
-
-	[Obsolete(ObsoleteMsg, ObsoleteError)]
-	public double Resolution;
-
-	[Obsolete(ObsoleteMsg, ObsoleteError)]
-	public SaveImageAs SaveAs;
-
-	[Obsolete(ObsoleteMsg, ObsoleteError)]
-	public const int DefaultQuality = -1;
-
-	[Obsolete(ObsoleteMsg, ObsoleteError)]
-	public PdfImageControl()
+	/// <summary>
+	/// PdfImageControl is obolete. See latest documentation
+	/// </summary>
+	public class PdfImageControl
 		{
-		CropRect = Rectangle.Empty;
-		CropPercent = RectangleF.Empty;
-		ReverseBW = false;
-		_GrayToBWCutoff = 50;
-		Resolution = 0.0;
-		_ImageQuality = DefaultQuality;
-		SaveAs = SaveImageAs.Jpeg;
-		return;
-		}
+		#pragma warning disable 1591
+		private const bool ObsoleteError = false;
+		private const string ObsoleteMsg = "This PdfImageControl class is obsolete. See latest documentation.";
 
-	[Obsolete(ObsoleteMsg, ObsoleteError)]
-	public int ImageQuality
-		{
-		get
+		[Obsolete(ObsoleteMsg, ObsoleteError)]
+		public Rectangle CropRect;
+
+		[Obsolete(ObsoleteMsg, ObsoleteError)]
+		public RectangleF CropPercent;
+
+		[Obsolete(ObsoleteMsg, ObsoleteError)]
+		public bool ReverseBW;
+
+		[Obsolete(ObsoleteMsg, ObsoleteError)]
+		public double Resolution;
+
+		[Obsolete(ObsoleteMsg, ObsoleteError)]
+		public SaveImageAs SaveAs;
+
+		[Obsolete(ObsoleteMsg, ObsoleteError)]
+		public const int DefaultQuality = -1;
+
+		[Obsolete(ObsoleteMsg, ObsoleteError)]
+		public PdfImageControl()
 			{
-			return _ImageQuality;
-			}
-		set
-			{
-			// set image quality
-			if(value != DefaultQuality && (value < 0 || value > 100)) throw new ApplicationException("PdfImageControl.ImageQuality must be DefaultQuality or 0 to 100");
-			_ImageQuality = value;
+			CropRect = Rectangle.Empty;
+			CropPercent = RectangleF.Empty;
+			ReverseBW = false;
+			_GrayToBWCutoff = 50;
+			Resolution = 0.0;
+			_ImageQuality = DefaultQuality;
+			SaveAs = SaveImageAs.Jpeg;
 			return;
 			}
-		}
-	internal int _ImageQuality;
 
-	[Obsolete(ObsoleteMsg, ObsoleteError)]
-	public int GrayToBWCutoff
-		{
-		get
+		[Obsolete(ObsoleteMsg, ObsoleteError)]
+		public int ImageQuality
 			{
-			return _GrayToBWCutoff;
+			get
+				{
+				return _ImageQuality;
+				}
+			set
+				{
+				// set image quality
+				if(value != DefaultQuality && (value < 0 || value > 100))
+					throw new ApplicationException("PdfImageControl.ImageQuality must be DefaultQuality or 0 to 100");
+				_ImageQuality = value;
+				return;
+				}
 			}
-		set
+		internal int _ImageQuality;
+
+		[Obsolete(ObsoleteMsg, ObsoleteError)]
+		public int GrayToBWCutoff
 			{
-			if(value < 1 || value > 99) throw new ApplicationException("PdfImageControl.GrayToBWCutoff must be 1 to 99");
-			_GrayToBWCutoff = value;
+			get
+				{
+				return _GrayToBWCutoff;
+				}
+			set
+				{
+				if(value < 1 || value > 99)
+					throw new ApplicationException("PdfImageControl.GrayToBWCutoff must be 1 to 99");
+				_GrayToBWCutoff = value;
+				}
 			}
+		internal int _GrayToBWCutoff;
 		}
-	internal int _GrayToBWCutoff;
 	}
-}

@@ -307,10 +307,8 @@ public class PdfBookmark : PdfObject
 		}
 
 	////////////////////////////////////////////////////////////////////
-	// Write object to PDF file
 	////////////////////////////////////////////////////////////////////
-
-	internal override void WriteObjectToPdfFile()
+	internal override void CloseObject()
 		{
 		// update dictionary
 		if(FirstChild != null) Dictionary.AddIndirectReference("/First", FirstChild);
@@ -323,9 +321,6 @@ public class PdfBookmark : PdfObject
 			if(PrevSibling != null) Dictionary.AddIndirectReference("/Prev", PrevSibling);
 			if(NextSibling != null) Dictionary.AddIndirectReference("/Next", NextSibling);
 			}		
-
-		// call PdfObject base routine
-		base.WriteObjectToPdfFile();
 
 		// exit
 		return;

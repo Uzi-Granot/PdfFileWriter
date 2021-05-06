@@ -28,95 +28,72 @@ using System.IO;
 using System.Text;
 
 namespace PdfFileWriter
-{
-/// <summary>
-/// PDF binary writer class
-/// </summary>
-/// <remarks>
-/// Extends .NET BinaryWriter class.
-/// </remarks>
-public class PdfBinaryWriter : BinaryWriter
 	{
 	/// <summary>
-	/// PDF binary writer constructor
+	/// PDF binary writer class
 	/// </summary>
-	/// <param name="Stream">File or memory stream</param>
-	public PdfBinaryWriter
-			(
-			Stream		Stream
-			) : base(Stream, Encoding.UTF8) {}
-
-	/// <summary>
-	/// Write String.
-	/// </summary>
-	/// <param name="Str">Input string</param>
 	/// <remarks>
-	/// Convert each character from two bytes to one byte.
+	/// Extends .NET BinaryWriter class.
 	/// </remarks>
-	public void WriteString
-			(
-			string		Str
-			)
+	public class PdfBinaryWriter : BinaryWriter
 		{
-		// byte array
-		byte[] ByteArray = new byte[Str.Length];
+		/// <summary>
+		/// PDF binary writer constructor
+		/// </summary>
+		/// <param name="Stream">File or memory stream</param>
+		public PdfBinaryWriter
+				(
+				Stream Stream
+				) : base(Stream, Encoding.UTF8) {}
 
-		// convert content from string to binary
-		// do not use Encoding.ASCII.GetBytes(...)
-		for(int Index = 0; Index < ByteArray.Length; Index++) ByteArray[Index] = (byte) Str[Index];
+		/// <summary>
+		/// Write String.
+		/// </summary>
+		/// <param name="Str">Input string</param>
+		/// <remarks>
+		/// Convert each character from two bytes to one byte.
+		/// </remarks>
+		public void WriteString
+				(
+				string Str
+				)
+			{
+			// write to pdf file
+			Write(PdfDocument.ToByteArray(Str));
+			return;
+			}
 
-		// write to pdf file
-		Write(ByteArray);
-		return;
-		}
+		/// <summary>
+		/// Write String.
+		/// </summary>
+		/// <param name="Str">Input string</param>
+		/// <remarks>
+		/// Convert each character from two bytes to one byte.
+		/// </remarks>
+		public void WriteString
+				(
+				StringBuilder Str
+				)
+			{
+			// write to pdf file
+			Write(PdfDocument.ToByteArray(Str.ToString()));
+			return;
+			}
 
-	/// <summary>
-	/// Write StringBuilder.
-	/// </summary>
-	/// <param name="Str">String builder input</param>
-	/// <remarks>
-	/// Convert each character from two bytes to one byte.
-	/// </remarks>
-	public void WriteString
-			(
-			StringBuilder	Str
-			)
-		{
-		// byte array
-		byte[] ByteArray = new byte[Str.Length];
-
-		// convert content from string to binary
-		// do not use Encoding.ASCII.GetBytes(...)
-		for(int Index = 0; Index < ByteArray.Length; Index++) ByteArray[Index] = (byte) Str[Index];
-
-		// write to pdf file
-		Write(ByteArray);
-		return;
-		}
-
-	/// <summary>
-	/// Combine format string with write string.
-	/// </summary>
-	/// <param name="FormatStr">Standard format string</param>
-	/// <param name="List">Array of objects</param>
-	public void WriteFormat
-			(
-			string				FormatStr,
-			params	object[]	List
-			)
-		{
-		string Str = string.Format(FormatStr, List);
-
-		// byte array
-		byte[] ByteArray = new byte[Str.Length];
-
-		// convert content from string to binary
-		// do not use Encoding.ASCII.GetBytes(...)
-		for(int Index = 0; Index < ByteArray.Length; Index++) ByteArray[Index] = (byte) Str[Index];
-
-		// write to pdf file
-		Write(ByteArray);
-		return;
+		/// <summary>
+		/// Combine format string with write string.
+		/// </summary>
+		/// <param name="FormatStr">Standard format string</param>
+		/// <param name="List">Array of objects</param>
+		public void WriteFormat
+				(
+				string FormatStr,
+				params object[] List
+				)
+			{
+			// write to pdf file
+			Write(PdfDocument.ToByteArray(string.Format(FormatStr, List)));
+			return;
+			}
 		}
 	}
-}

@@ -28,10 +28,6 @@
 //
 //	Version 1.0 2019/04/01
 //		Original version
-//	Version 1.1 2019/04/15
-//		Remove icones from form windows to solve VS 2019 security
-//	Version 2.0 2019/05/07
-//		Add support for .NET framework and .NET standard
 /////////////////////////////////////////////////////////////////////
 
 using System;
@@ -1029,7 +1025,8 @@ A * DataColumns**2 + B * DataColumns - C * Total = 0;
 			break;
 			}
 
-		return Ptr - BarcodeDataPos;
+		// the result must be at least 1
+		return Math.Max(Ptr - BarcodeDataPos, 1);
 		}
 
 	// encode numeric data segment

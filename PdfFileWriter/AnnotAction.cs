@@ -26,295 +26,339 @@
 using System;
 
 namespace PdfFileWriter
-{
-/// <summary>
-/// File attachement icon
-/// </summary>
-public enum FileAttachIcon
 	{
 	/// <summary>
-	/// Graph
+	/// File attachement icon
 	/// </summary>
-	Graph,
+	public enum FileAttachIcon
+		{
+		/// <summary>
+		/// Graph
+		/// </summary>
+		Graph,
+
+		/// <summary>
+		/// Paperclip
+		/// </summary>
+		Paperclip,
+
+		/// <summary>
+		/// PushPin (default)
+		/// </summary>
+		PushPin,
+
+		/// <summary>
+		/// Tag
+		/// </summary>
+		Tag,
+
+		/// <summary>
+		/// no icon 
+		/// </summary>
+		NoIcon,
+		}
 
 	/// <summary>
-	/// Paperclip
+	/// Sticky note icon
 	/// </summary>
-	Paperclip,
+	public enum StickyNoteIcon
+		{
+		/// <summary>
+		/// Comment (note: no icon)
+		/// </summary>
+		Comment,
+		/// <summary>
+		/// Key
+		/// </summary>
+		Key,
+		/// <summary>
+		/// Note (default)
+		/// </summary>
+		Note,
+		/// <summary>
+		/// Help
+		/// </summary>
+		Help,
+		/// <summary>
+		/// New paragraph
+		/// </summary>
+		NewParagraph,
+		/// <summary>
+		/// Paragraph
+		/// </summary>
+		Paragraph,
+		/// <summary>
+		/// Insert
+		/// </summary>
+		Insert,
+		}
 
 	/// <summary>
-	/// PushPin (default)
+	/// Annotation action base class
 	/// </summary>
-	PushPin,
+	public class AnnotAction
+		{
+		/// <summary>
+		/// Gets the PDF PdfAnnotation object subtype
+		/// </summary>
+		public string Subtype { get; internal set; }
+
+		internal AnnotAction
+				(
+				string Subtype
+				)
+			{
+			this.Subtype = Subtype;
+			return;
+			}
+
+		/// <summary>
+		/// Compare two annotation objects
+		/// </summary>
+		/// <param name="Other">Other annotation</param>
+		/// <returns>Result</returns>
+		public virtual bool IsEqual
+				(
+				AnnotAction Other
+				)
+			{
+			throw new ApplicationException("AnnotAction IsEqual not implemented");
+			}
+
+		/// <summary>
+		/// Compare two annotation objects
+		/// </summary>
+		/// <param name="One">First object</param>
+		/// <param name="Two">Second object</param>
+		/// <returns>Result</returns>
+		public static bool IsEqual
+				(
+				AnnotAction One,
+				AnnotAction Two
+				)
+			{
+			if(One == null)
+				{
+				return Two == null;  
+				}
+			else
+				{
+				if(Two == null || One.GetType() != Two.GetType()) return false;
+
+				// the two annotations are the same type
+				return One.IsEqual(Two);
+				}
+			}
+		}
 
 	/// <summary>
-	/// Tag
+	/// Web link annotation action
 	/// </summary>
-	Tag,
+	public class AnnotWebLink : AnnotAction
+		{
+		/// <summary>
+		/// Gets or sets web link string
+		/// </summary>
+		public string WebLinkStr { get; set; }
+
+		/// <summary>
+		/// Web link constructor
+		/// </summary>
+		/// <param name="WebLinkStr">Web link string</param>
+		public AnnotWebLink
+				(
+				string WebLinkStr
+				) : base("/Link")
+			{
+			this.WebLinkStr = WebLinkStr;
+			return;
+			}
+
+		/// <summary>
+		/// Compare annotation web links
+		/// </summary>
+		/// <param name="Other">Other annotation</param>
+		/// <returns>Result</returns>
+		public override bool IsEqual
+				(
+				AnnotAction Other
+				)
+			{
+			return WebLinkStr == ((AnnotWebLink) Other).WebLinkStr;
+			}
+		}
 
 	/// <summary>
-	/// no icon 
+	/// Link to location marker within the document
 	/// </summary>
-	NoIcon,
+	public class AnnotLinkAction : AnnotAction
+		{
+		/// <summary>
+		/// Gets or sets the location marker name
+		/// </summary>
+		public string LocMarkerName { get; set; }
+
+		/// <summary>
+		/// Go to annotation action constructor
+		/// </summary>
+		/// <param name="LocMarkerName">Location marker name</param>
+		public AnnotLinkAction
+				(
+				string LocMarkerName
+				) : base("/Link")
+			{
+			this.LocMarkerName = LocMarkerName;
+			return;
+			}
+
+		/// <summary>
+		/// Compare annotation links
+		/// </summary>
+		/// <param name="Other">Other annotation</param>
+		/// <returns>Result</returns>
+		public override bool IsEqual
+				(
+				AnnotAction Other
+				)
+			{
+			return this.LocMarkerName == ((AnnotLinkAction) Other).LocMarkerName;
+			}
+		}
+
+	/// <summary>
+	/// Display video or play sound class
+	/// </summary>
+	public class AnnotDisplayMedia : AnnotAction
+		{
+		/// <summary>
+		/// Gets or sets PdfDisplayMedia object
+		/// </summary>
+		public PdfDisplayMedia DisplayMedia { get; set; }
+
+		/// <summary>
+		/// Display media annotation action constructor
+		/// </summary>
+		/// <param name="DisplayMedia">PdfDisplayMedia</param>
+		public AnnotDisplayMedia
+				(
+				PdfDisplayMedia DisplayMedia
+				) : base("/Screen")
+			{
+			this.DisplayMedia = DisplayMedia;
+			return;
+			}
+
+		/// <summary>
+		/// Compare annotation display media
+		/// </summary>
+		/// <param name="Other">Other annotation</param>
+		/// <returns>Result</returns>
+		public override bool IsEqual
+				(
+				AnnotAction Other
+				)
+			{
+			return DisplayMedia.MediaFile.FileName == ((AnnotDisplayMedia) Other).DisplayMedia.MediaFile.FileName;
+			}
+		}
+
+	/// <summary>
+	/// Save or view embedded file
+	/// </summary>
+	public class AnnotFileAttachment : AnnotAction
+		{
+		/// <summary>
+		/// Gets or sets embedded file
+		/// </summary>
+		public PdfEmbeddedFile EmbeddedFile { get; set; }
+
+		/// <summary>
+		/// Gets or sets associated icon
+		/// </summary>
+		public FileAttachIcon Icon;
+
+		/// <summary>
+		/// File attachement constructor
+		/// </summary>
+		/// <param name="EmbeddedFile">Embedded file</param>
+		/// <param name="Icon">Icon enumeration</param>
+		public AnnotFileAttachment
+				(
+				PdfEmbeddedFile EmbeddedFile,
+				FileAttachIcon Icon
+				) : base("/FileAttachment")
+			{
+			this.EmbeddedFile = EmbeddedFile;
+			this.Icon = Icon;
+			return;
+			}
+
+		/// <summary>
+		/// File attachement constructor (no icon)
+		/// </summary>
+		/// <param name="EmbeddedFile">Embedded file</param>
+		public AnnotFileAttachment
+				(
+				PdfEmbeddedFile EmbeddedFile
+				) : base("/FileAttachment")
+			{
+			this.EmbeddedFile = EmbeddedFile;
+			Icon = FileAttachIcon.NoIcon;
+			return;
+			}
+
+		/// <summary>
+		/// Compare file attachments
+		/// </summary>
+		/// <param name="Other">Other annotation</param>
+		/// <returns>Result</returns>
+		public override bool IsEqual
+				(
+				AnnotAction Other
+				)
+			{
+			AnnotFileAttachment FileAttach = (AnnotFileAttachment) Other;
+			return EmbeddedFile.FileName == FileAttach.EmbeddedFile.FileName && Icon == FileAttach.Icon;
+			}
+		}
+
+	/// <summary>
+	/// Display sticky note
+	/// </summary>
+	public class AnnotStickyNote : AnnotAction
+		{
+		internal string Note;
+
+		internal StickyNoteIcon Icon;
+
+		/// <summary>
+		/// Sticky note annotation action constructor
+		/// </summary>
+		/// <param name="Note">Sticky note text</param>
+		/// <param name="Icon">Sticky note icon</param>
+		public AnnotStickyNote
+				(
+				string Note,
+				StickyNoteIcon Icon
+				) : base("/Text")
+			{
+			this.Note = Note;
+			this.Icon = Icon;
+			return;
+			}
+
+		/// <summary>
+		/// Compare sticky notes
+		/// </summary>
+		/// <param name="Other">Other annotation</param>
+		/// <returns>Result</returns>
+		public override bool IsEqual
+				(
+				AnnotAction Other
+				)
+			{
+			AnnotStickyNote StickyNote = (AnnotStickyNote) Other;
+			return Note == StickyNote.Note && Icon == StickyNote.Icon;
+			}
+		}
 	}
-
-/// <summary>
-/// Sticky note icon
-/// </summary>
-public enum StickyNoteIcon
-	{
-	/// <summary>
-	/// Comment (note: no icon)
-	/// </summary>
-	Comment,
-	/// <summary>
-	/// Key
-	/// </summary>
-	Key,
-	/// <summary>
-	/// Note (default)
-	/// </summary>
-	Note,
-	/// <summary>
-	/// Help
-	/// </summary>
-	Help,
-	/// <summary>
-	/// New paragraph
-	/// </summary>
-	NewParagraph,
-	/// <summary>
-	/// Paragraph
-	/// </summary>
-	Paragraph,
-	/// <summary>
-	/// Insert
-	/// </summary>
-	Insert,
-	}
-
-/// <summary>
-/// Annotation action base class
-/// </summary>
-public class AnnotAction
-	{
-	/// <summary>
-	/// Gets the PDF PdfAnnotation object subtype
-	/// </summary>
-	public string Subtype {get; internal set;}
-
-	internal AnnotAction
-			(
-			string Subtype
-			)
-		{
-		this.Subtype = Subtype;
-		return;
-		}
-
-	internal virtual bool IsEqual
-			(
-			AnnotAction Other
-			)
-		{
-		throw new ApplicationException("AnnotAction IsEqual not implemented");
-		}
-
-	internal static bool IsEqual
-			(
-			AnnotAction One,
-			AnnotAction Two
-			)
-		{
-		if(One == null && Two == null) return true;
-		if(One == null && Two != null || One != null && Two == null || One.GetType() != Two.GetType()) return false;
-		return One.IsEqual(Two);
-		}
-	}
-
-/// <summary>
-/// Web link annotation action
-/// </summary>
-public class AnnotWebLink : AnnotAction
-	{
-	/// <summary>
-	/// Gets or sets web link string
-	/// </summary>
-	public string WebLinkStr {get; set;}
-
-	/// <summary>
-	/// Web link constructor
-	/// </summary>
-	/// <param name="WebLinkStr">Web link string</param>
-	public AnnotWebLink
-			(
-			string WebLinkStr
-			) : base("/Link")
-		{
-		this.WebLinkStr = WebLinkStr;
-		return;
-		}
-
-	internal override bool IsEqual
-			(
-			AnnotAction Other
-			)
-		{
-		return WebLinkStr == ((AnnotWebLink) Other).WebLinkStr;
-		}
-	}
-
-/// <summary>
-/// Link to location marker within the document
-/// </summary>
-public class AnnotLinkAction : AnnotAction
-	{
-	/// <summary>
-	/// Gets or sets the location marker name
-	/// </summary>
-	public string LocMarkerName {get; set;}
-
-	/// <summary>
-	/// Go to annotation action constructor
-	/// </summary>
-	/// <param name="LocMarkerName">Location marker name</param>
-	public AnnotLinkAction
-			(
-			string LocMarkerName
-			) : base("/Link")
-		{
-		this.LocMarkerName = LocMarkerName;
-		return;
-		}
-
-	internal override bool IsEqual
-			(
-			AnnotAction Other
-			)
-		{
-		return this.LocMarkerName == ((AnnotLinkAction) Other).LocMarkerName;
-		}
-	}
-
-/// <summary>
-/// Display video or play sound class
-/// </summary>
-public class AnnotDisplayMedia : AnnotAction
-	{
-	/// <summary>
-	/// Gets or sets PdfDisplayMedia object
-	/// </summary>
-	public PdfDisplayMedia DisplayMedia {get; set;}
-
-	/// <summary>
-	/// Display media annotation action constructor
-	/// </summary>
-	/// <param name="DisplayMedia">PdfDisplayMedia</param>
-	public AnnotDisplayMedia
-			(
-			PdfDisplayMedia		DisplayMedia
-			) : base("/Screen")
-		{
-		this.DisplayMedia = DisplayMedia;
-		return;
-		}
-
-	internal override bool IsEqual
-			(
-			AnnotAction Other
-			)
-		{
-		return this.DisplayMedia.MediaFile.FileName == ((AnnotDisplayMedia) Other).DisplayMedia.MediaFile.FileName;
-		}
-	}
-
-/// <summary>
-/// Save or view embedded file
-/// </summary>
-public class AnnotFileAttachment : AnnotAction
-	{
-	/// <summary>
-	/// Gets or sets embedded file
-	/// </summary>
-	public PdfEmbeddedFile EmbeddedFile {get; set;}
-
-	/// <summary>
-	/// Gets or sets associated icon
-	/// </summary>
-	public FileAttachIcon Icon;
-
-	/// <summary>
-	/// File attachement constructor
-	/// </summary>
-	/// <param name="EmbeddedFile">Embedded file</param>
-	/// <param name="Icon">Icon enumeration</param>
-	public AnnotFileAttachment
-			(
-			PdfEmbeddedFile EmbeddedFile,
-			FileAttachIcon Icon
-			) : base("/FileAttachment")
-		{
-		this.EmbeddedFile = EmbeddedFile;
-		this.Icon = Icon;
-		return;
-		}
-
-	/// <summary>
-	/// File attachement constructor (no icon)
-	/// </summary>
-	/// <param name="EmbeddedFile">Embedded file</param>
-	public AnnotFileAttachment
-			(
-			PdfEmbeddedFile EmbeddedFile
-			) : base("/FileAttachment")
-		{
-		this.EmbeddedFile = EmbeddedFile;
-		Icon = FileAttachIcon.NoIcon;
-		return;
-		}
-
-	internal override bool IsEqual
-			(
-			AnnotAction Other
-			)
-		{
-		AnnotFileAttachment FileAttach = (AnnotFileAttachment) Other;
-		return EmbeddedFile.FileName == FileAttach.EmbeddedFile.FileName && Icon == FileAttach.Icon;
-		}
-	}
-
-/// <summary>
-/// Display sticky note
-/// </summary>
-public class AnnotStickyNote : AnnotAction
-	{
-	internal string Note;
-
-	internal StickyNoteIcon Icon;
-
-	/// <summary>
-	/// Sticky note annotation action constructor
-	/// </summary>
-	/// <param name="Note">Sticky note text</param>
-	/// <param name="Icon">Sticky note icon</param>
-	public AnnotStickyNote
-			(
-			string Note,
-			StickyNoteIcon Icon
-			) : base("/Text")
-		{
-		this.Note = Note;
-		this.Icon = Icon;
-		return;
-		}
-
-	internal override bool IsEqual
-			(
-			AnnotAction Other
-			)
-		{
-		AnnotStickyNote StickyNote = (AnnotStickyNote) Other;
-		return Note == StickyNote.Note && Icon == StickyNote.Icon;
-		}
-	}
-}
