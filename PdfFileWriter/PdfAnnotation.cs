@@ -208,15 +208,12 @@ namespace PdfFileWriter
 			}
 
 		////////////////////////////////////////////////////////////////////
-		// Write object to PDF file
+		// close object before writing to PDF file
 		////////////////////////////////////////////////////////////////////
-		internal override void WriteObjectToPdfFile()
+		internal override void CloseObject()
 			{
 			// layer control
 			if(LayerControl != null) Dictionary.AddIndirectReference("/OC", LayerControl);
-
-			// call PdfObject routine
-			base.WriteObjectToPdfFile();
 
 			// exit
 			return;

@@ -62,7 +62,7 @@ namespace PdfFileWriter
 		/// <summary>
 		/// Default constructor.
 		/// </summary>
-		public PdfRectangle() { }
+		public PdfRectangle() {}
 
 		/// <summary>
 		/// Constructor

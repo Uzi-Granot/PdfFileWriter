@@ -56,7 +56,6 @@ namespace PdfFileWriter
 				{
 				// create and add info object to trailer dictionary
 				Document.InfoObject = new PdfInfo(Document);
-				Document.TrailerDict.AddIndirectReference("/Info", Document.InfoObject);
 				}
 
 			// exit with either existing object or a new one

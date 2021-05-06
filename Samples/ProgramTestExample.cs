@@ -28,18 +28,23 @@ class ProgramTestExample
 		// create document
 		using(Document = new PdfDocument(PaperType.Letter, false, UnitOfMeasure.Inch, InputFileName))
 			{
+			// Add new page
+			PdfPage Page = new PdfPage(Document);
+
+			// Add contents to page
+			PdfContents Contents = new PdfContents(Page);
+
 			// define font
 			ArialFont = PdfFont.CreatePdfFont(Document, "Arial", FontStyle.Bold);
 
-			FontSize = 24;
-			Ascent = ArialFont.AscentPlusLeading(FontSize);
-			Descent = ArialFont.DescentPlusLeading(FontSize);
-			FontHeight = ArialFont.LineSpacing(FontSize);
+			Contents.SaveGraphicsState();
+			Contents.SetLineWidth(0.1);
+			Contents.SetColorStroking(Color.Black);
+			Contents.SetColorNonStroking(Color.LightBlue);
+			Contents.DrawRectangle(2.0, 2.0, 4.5, 7.0, PaintOp.CloseFillStroke);
+			Contents.RestoreGraphicsState();
 
-			OnePage(3, 5);
-			OnePage(4, 4);
-			OnePage(4, 6);
-			OnePage(5, 7);
+		//	Contents.DrawText(ArialFont, 14, CenterX, CenterY, TextJustify.Center, "Text Text");
 
 			// create pdf file
 			Document.CreateFile();

@@ -397,14 +397,14 @@ namespace PdfFileWriter
 		public PdfContents
 				(
 				PdfDocument Document
-				) : base(Document, ObjectType.Stream) { }
+				) : base(Document, ObjectType.Stream) {}
 
 		// Constructor for XObject or Pattern
 		internal PdfContents
 				(
 				PdfDocument Document,
 				string PdfObjectType
-				) : base(Document, ObjectType.Stream, PdfObjectType) { }
+				) : base(Document, ObjectType.Stream, PdfObjectType) {}
 
 		/// <summary>
 		/// Save graphics state
@@ -1904,109 +1904,6 @@ namespace PdfFileWriter
 			return new string(RevText);
 			}
 
-		public double DrawTextNew
-				(
-				PdfFontControl Control,
-				double PosX,
-				double PosY,
-				string Text
-				)
-			{
-			// text is null or empty
-			if(string.IsNullOrEmpty(Text))
-				return 0;
-
-			// text width
-			double TextWidth = 0;
-
-			// we have color
-			if(Control.TextColor != Color.Empty)
-				{
-				// save graphics state
-				SaveGraphicsState();
-
-				// change non stroking color
-				SetColorNonStroking(Control.TextColor);
-				}
-
-			// not subscript or superscript
-			if((Control.DrawStyle & (DrawStyle.Subscript | DrawStyle.Superscript)) == 0)
-				{
-				// draw text string
-				TextWidth = DrawText(Control.Font, Control.FontSize, PosX, PosY, Control.TextJustify, Text);
-
-				// not regular style
-				if(Control.DrawStyle != DrawStyle.Normal)
-					{
-					// change stroking color
-					if(Control.TextColor != Color.Empty)
-						SetColorStroking(Control.TextColor);
-
-					// adjust position
-					switch(Control.TextJustify)
-						{
-						// right
-						case TextJustify.Right:
-							PosX -= TextWidth;
-							break;
-
-						// center
-						case TextJustify.Center:
-							PosX -= 0.5 * TextWidth;
-							break;
-						}
-
-					// underline
-					if((Control.DrawStyle & DrawStyle.Underline) != 0)
-						{
-						double UnderlinePos = PosY + Control.UnderlinePosition;
-						DrawLine(PosX, UnderlinePos, PosX + TextWidth, UnderlinePos, Control.UnderlineWidth);
-						}
-
-					// strikeout
-					if((Control.DrawStyle & DrawStyle.Strikeout) != 0)
-						{
-						double StrikeoutPos = PosY + Control.StrikeoutPosition;
-						DrawLine(PosX, StrikeoutPos, PosX + TextWidth, StrikeoutPos, Control.StrikeoutWidth);
-						}
-					}
-				}
-
-			// subscript or superscript
-			else
-				{
-				// subscript
-				if((Control.DrawStyle & (DrawStyle.Subscript | DrawStyle.Superscript)) == DrawStyle.Subscript)
-					{
-					// subscript font size and location
-					PosY -= Control.SubscriptPosition;
-
-					// draw text string
-					TextWidth = DrawText(Control.Font, Control.SubscriptSize, PosX, PosY, Control.TextJustify, Text);
-					}
-
-				// superscript
-				if((Control.DrawStyle & (DrawStyle.Subscript | DrawStyle.Superscript)) == DrawStyle.Superscript)
-					{
-					// superscript font size and location
-					PosY += Control.SuperscriptPosition;
-
-					// draw text string
-					TextWidth = DrawText(Control.Font, Control.SuperscriptSize, PosX, PosY, Control.TextJustify, Text);
-					}
-				}
-
-			// we have color
-			if(Control.TextColor != Color.Empty)
-				{
-				// save graphics state
-				RestoreGraphicsState();
-				}
-
-			// return text width
-			return TextWidth;
-			}
-
 		/// <summary>
 		/// Draw text
 		/// </summary>
@@ -2026,8 +1923,7 @@ namespace PdfFileWriter
 				)
 			{
 			// text is null or empty
-			if(string.IsNullOrEmpty(Text))
-				return 0;
+			if(string.IsNullOrEmpty(Text)) return 0;
 
 			// add font code to current list of font codes
 			AddToUsedResources(Font);
@@ -2096,8 +1992,7 @@ namespace PdfFileWriter
 						if(FontResGlyph == null)
 							{
 							FontResGlyph = CreateFontResStr(Font.ResourceCodeGlyph, FontSizeStr);
-							if(!Font.FontResGlyphUsed)
-								Font.CreateGlyphIndexFont();
+							if(!Font.FontResGlyphUsed) Font.CreateGlyphIndexFont();
 							}
 						ObjectValueList.AddRange(FontResGlyph);
 						}
@@ -2169,11 +2064,9 @@ namespace PdfFileWriter
 			{
 			byte[] FontRes = new byte[ResCode.Length + SizeStr.Length + 4];
 			int Index = 0;
-			foreach(char TextChar in ResCode)
-				FontRes[Index++] = (byte) TextChar;
+			foreach(char TextChar in ResCode) FontRes[Index++] = (byte) TextChar;
 			FontRes[Index++] = (byte) ' ';
-			foreach(char TextChar in SizeStr)
-				FontRes[Index++] = (byte) TextChar;
+			foreach(char TextChar in SizeStr) FontRes[Index++] = (byte) TextChar;
 			FontRes[Index++] = (byte) ' ';
 			FontRes[Index++] = (byte) 'T';
 			FontRes[Index++] = (byte) 'f';
@@ -2226,8 +2119,7 @@ namespace PdfFileWriter
 				)
 			{
 			// text is null or empty
-			if(string.IsNullOrEmpty(Text))
-				return 0;
+			if(string.IsNullOrEmpty(Text)) return 0;
 
 			// add font code to current list of font codes
 			AddToUsedResources(Font);
@@ -2334,8 +2226,7 @@ namespace PdfFileWriter
 				)
 			{
 			// text is null or empty
-			if(string.IsNullOrEmpty(Text))
-				return 0;
+			if(string.IsNullOrEmpty(Text)) return 0;
 
 			// text width
 			double TextWidth = 0;
@@ -2360,8 +2251,7 @@ namespace PdfFileWriter
 				if(DrawStyle != DrawStyle.Normal)
 					{
 					// change stroking color
-					if(TextColor != Color.Empty)
-						SetColorStroking(TextColor);
+					if(TextColor != Color.Empty) SetColorStroking(TextColor);
 
 					// adjust position
 					switch(Justify)
@@ -2419,13 +2309,9 @@ namespace PdfFileWriter
 					}
 				}
 
-			// we have color
-			if(TextColor != Color.Empty)
-				{
-				// save graphics state
-				RestoreGraphicsState();
-				}
-
+			// we have color restore graphics state
+			if(TextColor != Color.Empty) RestoreGraphicsState();
+			
 			// return text width
 			return TextWidth;
 			}
@@ -2455,8 +2341,7 @@ namespace PdfFileWriter
 				)
 			{
 			// text is null or empty
-			if(KerningArray == null || KerningArray.Length == 0)
-				return 0;
+			if(KerningArray == null || KerningArray.Length == 0) return 0;
 
 			// add font code to current list of font codes
 			AddToUsedResources(Font);
@@ -2496,7 +2381,7 @@ namespace PdfFileWriter
 
 			// loop for kerning pairs
 			int Index = 0;
-			for(; ; )
+			for(;;)
 				{
 				KerningAdjust KA = KerningArray[Index];
 				string Text = KA.Text;
@@ -2622,15 +2507,13 @@ namespace PdfFileWriter
 				)
 			{
 			// text is null or empty
-			if(string.IsNullOrEmpty(Text))
-				return 0;
+			if(string.IsNullOrEmpty(Text)) return 0;
 
 			// create text position adjustment array based on kerning information
 			KerningAdjust[] KernArray = Font.TextKerning(Text);
 
 			// no kerning
-			if(KernArray == null)
-				return DrawText(Font, FontSize, PosX, PosY, Text);
+			if(KernArray == null) return DrawText(Font, FontSize, PosX, PosY, Text);
 
 			// draw text with adjustment
 			return DrawText(Font, FontSize, PosX, PosY, KernArray);
@@ -2665,8 +2548,7 @@ namespace PdfFileWriter
 				)
 			{
 			// text is null or empty
-			if(string.IsNullOrEmpty(Text))
-				return 0;
+			if(string.IsNullOrEmpty(Text)) return 0;
 
 			// add font code to current list of font codes
 			AddToUsedResources(Font);
@@ -2871,8 +2753,7 @@ namespace PdfFileWriter
 				)
 			{
 			double Width = DrawText(Font, FontSize, TextAbsPosX, TextAbsPosY, Justify, DrawStyle, TextColor, Text);
-			if(Width == 0.0)
-				return 0.0;
+			if(Width == 0.0) return 0.0;
 
 			// adjust position
 			switch(Justify)
@@ -3023,8 +2904,7 @@ namespace PdfFileWriter
 				TextBoxLine Line = TextBox[LineNo];
 
 				// break out of the loop if printing below bottom line
-				if(PosYTop - Line.LineHeight < PosYBottom)
-					break;
+				if(PosYTop - Line.LineHeight < PosYBottom) break;
 
 				// adjust PosY to font base line
 				PosYTop -= Line.Ascent;
@@ -3061,8 +2941,7 @@ namespace PdfFileWriter
 
 				// advance position y to next line
 				PosYTop -= Line.Descent + LineExtraSpace;
-				if(Line.EndOfParagraph)
-					PosYTop -= ParagraphExtraSpace;
+				if(Line.EndOfParagraph) PosYTop -= ParagraphExtraSpace;
 				}
 			return LineNo;
 			}
@@ -3085,9 +2964,9 @@ namespace PdfFileWriter
 				double SegWidth = DrawText(Seg.Font, Seg.FontSize, SegPosX, PosY, TextJustify.Left, Seg.DrawStyle, Seg.FontColor, Seg.Text);
 				if(Seg.AnnotAction != null)
 					{
-					if(Page == null)
-						throw new ApplicationException("TextBox with WebLink. You must call DrawText with PdfPage");
-					PdfRectangle AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.Font.DescentPlusLeading(Seg.FontSize), SegPosX + SegWidth, PosY + Seg.Font.AscentPlusLeading(Seg.FontSize));
+					if(Page == null) throw new ApplicationException("TextBox with WebLink. You must call DrawText with PdfPage");
+					PdfRectangle AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.Font.DescentPlusLeading(Seg.FontSize),
+						SegPosX + SegWidth, PosY + Seg.Font.AscentPlusLeading(Seg.FontSize));
 					Page.AddAnnotInternal(AnnotRect, Seg.AnnotAction);
 					}
 
@@ -3112,14 +2991,11 @@ namespace PdfFileWriter
 				)
 			{
 			double LineWidth = 0;
-			foreach(TextBoxSeg Seg in Line.SegArray)
-				LineWidth += Seg.SegWidth;
+			foreach(TextBoxSeg Seg in Line.SegArray) LineWidth += Seg.SegWidth;
 
 			double SegPosX = PosX;
-			if(Justify == TextBoxJustify.Right)
-				SegPosX += Width - LineWidth;
-			else
-				SegPosX += 0.5 * (Width - LineWidth);
+			if(Justify == TextBoxJustify.Right) SegPosX += Width - LineWidth;
+			else SegPosX += 0.5 * (Width - LineWidth);
 			foreach(TextBoxSeg Seg in Line.SegArray)
 				{
 				double SegWidth = DrawText(Seg.Font, Seg.FontSize, SegPosX, PosY, TextJustify.Left, Seg.DrawStyle, Seg.FontColor, Seg.Text);
@@ -3127,7 +3003,8 @@ namespace PdfFileWriter
 					{
 					if(Page == null)
 						throw new ApplicationException("TextBox with WebLink. You must call DrawText with PdfPage");
-					PdfRectangle AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.Font.DescentPlusLeading(Seg.FontSize), SegPosX + SegWidth, PosY + Seg.Font.AscentPlusLeading(Seg.FontSize));
+					PdfRectangle AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.Font.DescentPlusLeading(Seg.FontSize),
+						SegPosX + SegWidth, PosY + Seg.Font.AscentPlusLeading(Seg.FontSize));
 					Page.AddAnnotInternal(AnnotRect, Seg.AnnotAction);
 					}
 
@@ -3159,12 +3036,13 @@ namespace PdfFileWriter
 			double SegPosX = PosX;
 			foreach(TextBoxSeg Seg in Line.SegArray)
 				{
-				double SegWidth = DrawText(Seg.Font, Seg.FontSize, SegPosX, PosY, TextJustify.Left, Seg.DrawStyle, Seg.FontColor, Seg.Text) + Seg.SpaceCount * WordSpacing + Seg.Text.Length * CharSpacing;
+				double SegWidth = DrawText(Seg.Font, Seg.FontSize, SegPosX, PosY, TextJustify.Left, Seg.DrawStyle, Seg.FontColor,
+					Seg.Text) + Seg.SpaceCount * WordSpacing + Seg.Text.Length * CharSpacing;
 				if(Seg.AnnotAction != null)
 					{
-					if(Page == null)
-						throw new ApplicationException("TextBox with WebLink. You must call DrawText with PdfPage");
-					PdfRectangle AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.Font.DescentPlusLeading(Seg.FontSize), SegPosX + SegWidth, PosY + Seg.Font.AscentPlusLeading(Seg.FontSize));
+					if(Page == null) throw new ApplicationException("TextBox with WebLink. You must call DrawText with PdfPage");
+					PdfRectangle AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.Font.DescentPlusLeading(Seg.FontSize),
+						SegPosX + SegWidth, PosY + Seg.Font.AscentPlusLeading(Seg.FontSize));
 					Page.AddAnnotInternal(AnnotRect, Seg.AnnotAction);
 					}
 				SegPosX += SegWidth;
@@ -3207,8 +3085,7 @@ namespace PdfFileWriter
 
 			// reduce character count by one
 			CharCount--;
-			if(CharCount <= 0)
-				return false;
+			if(CharCount <= 0) return false;
 
 			// extra spacing required
 			double ExtraSpace = ReqWidth - Width;
@@ -3217,12 +3094,10 @@ namespace PdfFileWriter
 			double MaxRes = 0.006 / ScaleFactor;
 
 			// string is too wide
-			if(ExtraSpace < (-MaxRes))
-				return false;
+			if(ExtraSpace < (-MaxRes)) return false;
 
 			// string is just right
-			if(ExtraSpace < MaxRes)
-				return true;
+			if(ExtraSpace < MaxRes) return true;
 
 			// String does not have any blank characters
 			if(SpaceCount == 0)
@@ -3235,8 +3110,7 @@ namespace PdfFileWriter
 			WordSpacing = ExtraSpace / SpaceCount;
 
 			// extra space is equal or less than one blank
-			if(WordSpacing <= SpaceWidth / SpaceCount)
-				return true;
+			if(WordSpacing <= SpaceWidth / SpaceCount) return true;
 
 			// extra space is larger that one blank
 			// increase character and word spacing
@@ -3265,8 +3139,7 @@ namespace PdfFileWriter
 				)
 			{
 			// text is null or empty
-			if(string.IsNullOrEmpty(Text))
-				return;
+			if(string.IsNullOrEmpty(Text)) return;
 
 			// add font code to current list of font codes
 			AddToUsedResources(Font);
@@ -3507,8 +3380,7 @@ namespace PdfFileWriter
 					double Width = BarWidth * Barcode.BarWidth(Index);
 
 					// draw black bars
-					if(Bar)
-						DrawRectangle(BarPosX, PosY, Width, BarHeight, PaintOp.Fill);
+					if(Bar) DrawRectangle(BarPosX, PosY, Width, BarHeight, PaintOp.Fill);
 
 					// update bar position and color
 					BarPosX += Width;
@@ -3533,8 +3405,7 @@ namespace PdfFileWriter
 					double DeltaY = Index < 7 || Index >= 27 && Index < 32 || Index >= 52 ? 0.0 : 5 * BarWidth;
 
 					// draw black bars
-					if(Bar)
-						DrawRectangle(BarPosX, PosY + DeltaY, Width, BarHeight - DeltaY, PaintOp.Fill);
+					if(Bar) DrawRectangle(BarPosX, PosY + DeltaY, Width, BarHeight - DeltaY, PaintOp.Fill);
 
 					// update bar position and color
 					BarPosX += Width;
@@ -3597,9 +3468,7 @@ namespace PdfFileWriter
 			if(Index < Text.Length)
 				{
 				StringBuilder Str = new StringBuilder(Text);
-				for(; Index < Text.Length; Index++)
-					if(Str[Index] < ' ' || Str[Index] > '~')
-						Str[Index] = ' ';
+				for(; Index < Text.Length; Index++) if(Str[Index] < ' ' || Str[Index] > '~') Str[Index] = ' ';
 				Text = Str.ToString();
 				}
 
@@ -3932,28 +3801,22 @@ namespace PdfFileWriter
 			if(FilePosition == 0)
 				{
 				// call PdfObject routine
-				WriteObjectToPdfFile();
+				WriteToPdfFile();
 
 				// activate garbage collector
-				if(GCCollect)
-					GC.Collect();
+				if(GCCollect) GC.Collect();
 				}
 			// exit
 			return;
 			}
 
 		////////////////////////////////////////////////////////////////////
-		// Write object to PDF file
+		// close object before writing to PDF file
 		////////////////////////////////////////////////////////////////////
-
-		internal override void WriteObjectToPdfFile()
+		internal override void CloseObject()
 			{
 			// build resource dictionary for non page contents
-			if(!PageContents)
-				Dictionary.Add("/Resources", BuildResourcesDictionary(ResObjects, false));
-
-			// call PdfObject routine
-			base.WriteObjectToPdfFile();
+			if(!PageContents) Dictionary.Add("/Resources", BuildResourcesDictionary(ResObjects, false));
 
 			// exit
 			return;

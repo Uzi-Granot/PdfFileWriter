@@ -45,7 +45,7 @@ namespace TestPdfFileWriter
 				EventArgs e
 				)
 			{
-			Text = "PdfFileWriter-Revision " + PdfDocument.RevisionNumber + " " + PdfDocument.RevisionDate + "-\u00a9 2013-2020 Uzi Granot";
+			Text = "PdfFileWriter-Revision " + PdfDocument.RevisionNumber + " " + PdfDocument.RevisionDate + "-\u00a9 2013-2021 Uzi Granot";
 
 			#if DEBUG
 			// current directory
@@ -69,7 +69,7 @@ namespace TestPdfFileWriter
 				"Revision Number: " + PdfDocument.RevisionNumber + "\\par \n" +
 				"Revision Date: " + PdfDocument.RevisionDate + "\\par \n" +
 				"Author: Uzi Granot\\par\\par \n" +
-				"Copyright \u00a9 2013-2020 Uzi Granot. All rights reserved.\\par\\par \n" +
+				"Copyright \u00a9 2013-2021 Uzi Granot. All rights reserved.\\par\\par \n" +
 				"Free software distributed under the Code Project Open License (CPOL) 1.02.\\par \n" +
 				"As per PdfFileWriterReadmeAndLicense.pdf file attached to this distribution.\\par \n" +
 				"You must read and agree with the terms specified to use this program.}";
@@ -165,6 +165,9 @@ namespace TestPdfFileWriter
 				{
 				PrintExample PE = new PrintExample();
 				PE.Test(DebugCheckBox.Checked, "PrintExample.pdf");
+				// for debug only
+				//ProgramTestExample PTE = new ProgramTestExample();
+				//PTE.Test(DebugCheckBox.Checked, "ProgramTestExample.pdf");
 				return;
 				}
 

@@ -119,7 +119,7 @@ namespace PdfFileWriter
 			Document.Encryption = null;
 
 			// write stream
-			WriteObjectToPdfFile();
+			WriteToPdfFile();
 
 			// restore encryption
 			Document.Encryption = SaveEncryption;

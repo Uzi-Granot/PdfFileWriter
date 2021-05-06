@@ -112,7 +112,7 @@ namespace PdfFileWriter
 				(
 				PdfDocument Document,
 				PdfShadingFunction ShadingFunction
-				) : this(Document, 0.0, 0.0, 1.0, 1.0, ShadingFunction) { }
+				) : this(Document, 0.0, 0.0, 1.0, 1.0, ShadingFunction) {}
 
 		/// <summary>
 		/// PDF radial shading constructor for one unit bounding box
@@ -220,10 +220,9 @@ namespace PdfFileWriter
 			}
 
 		////////////////////////////////////////////////////////////////////
-		// Write object to PDF file
+		// close object before writing to PDF file
 		////////////////////////////////////////////////////////////////////
-
-		internal override void WriteObjectToPdfFile()
+		internal override void CloseObject()
 			{
 			// bounding box
 			Dictionary.AddRectangle("/BBox", BBoxLeft, BBoxBottom, BBoxRight, BBoxTop);
@@ -250,9 +249,6 @@ namespace PdfFileWriter
 
 			// extend shading
 			Dictionary.AddFormat("/Extend", "[{0} {1}]", ExtendShadingBefore ? "true" : "false", ExtendShadingAfter ? "true" : "false");
-
-			// call PdfObject base routine
-			base.WriteObjectToPdfFile();
 
 			// exit
 			return;
