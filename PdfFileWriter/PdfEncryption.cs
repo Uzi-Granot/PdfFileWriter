@@ -121,7 +121,11 @@ namespace PdfFileWriter
 		internal EncryptionType EncryptionType;
 		internal byte[] MasterKey;
 		internal MD5 MD5 = MD5.Create();
+#if NET6_0_OR_GREATER
+		internal Aes AES = Aes.Create();
+#else
 		internal AesCryptoServiceProvider AES = new AesCryptoServiceProvider();
+#endif
 
 		private static readonly byte[] PasswordPad =
 			{

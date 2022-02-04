@@ -1392,10 +1392,17 @@ namespace PdfFileWriter
 				)
 			{
 			byte[] ByteArray = new byte[Length];
-			using(RNGCryptoServiceProvider RandNumGen = new RNGCryptoServiceProvider())
+#if NET6_0_OR_GREATER
+			using (RandomNumberGenerator RandNumGen = RandomNumberGenerator.Create())
 				{
 				RandNumGen.GetBytes(ByteArray);
 				}
+#else
+			using (RNGCryptoServiceProvider RandNumGen = new RNGCryptoServiceProvider())
+				{
+				RandNumGen.GetBytes(ByteArray);
+				}
+#endif
 			return ByteArray;
 			}
 

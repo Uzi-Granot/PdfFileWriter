@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFrameworks>net472;netcoreapp3.1;net5.0-windows</TargetFrameworks>
+		<TargetFrameworks>net472;netcoreapp3.1;net5.0-windows;net6.0-windows</TargetFrameworks>
 		<AssemblyTitle>TestPdfFileWriter</AssemblyTitle>
 		<AssemblyName>TestPdfFileWriter</AssemblyName>
 		<AssemblyVersion>1.28.0</AssemblyVersion>
@@ -26,7 +26,7 @@
 	<ItemGroup Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'net48'">
 		<Reference Include="System.Windows.Forms.DataVisualization" />
 	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'net5.0-windows'">
+	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'net5.0-windows' Or '$(TargetFramework)' == 'net6.0-windows'">
 		<PackageReference Include="System.Windows.Forms.DataVisualization" Version="1.0.0-prerelease.20110.1" />
 	</ItemGroup>
 
