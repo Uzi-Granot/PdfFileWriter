@@ -1,20 +1,33 @@
 /////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfObject
 //	Base class for all PDF indirect object classes.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -23,8 +36,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace PdfFileWriter
@@ -57,6 +68,13 @@ namespace PdfFileWriter
 		Free,
 		InFile,
 		ObjStm,
+		}
+
+	internal enum ColorToStr
+		{
+		NonStroking, // rg or g
+		Stroking, // RG or G
+		Array, // [R G B] or [G]
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -93,8 +111,8 @@ namespace PdfFileWriter
 		internal PdfDictionary Dictionary; // indirect objects dictionary or stream dictionary
 		internal bool NoCompression;
 
-		private static string[] ResCodeStr = { "/Font <<", "/Pattern <<", "/Shading <<", "/XObject <<", "/ExtGState <<", "/Properties <<" };
-		internal static string ResCodeLetter = "FPSXGO";
+		private static readonly string[] ResCodeStr = { "/Font <<", "/Pattern <<", "/Shading <<", "/XObject <<", "/ExtGState <<", "/Properties <<" };
+		internal static readonly string ResCodeLetter = "FPSXGO";
 
 		internal PdfObject() {}
 
@@ -157,7 +175,6 @@ namespace PdfFileWriter
 			return;
 			}
 
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Compare the resource codes of two PDF objects.
 		/// </summary>
@@ -166,7 +183,6 @@ namespace PdfFileWriter
 		/// <remarks>
 		/// Used by PdfContents to maintain resource objects in sorted order.
 		/// </remarks>
-		////////////////////////////////////////////////////////////////////
 		public int CompareTo
 				(
 				PdfObject Other     // the second object
@@ -175,11 +191,8 @@ namespace PdfFileWriter
 			return string.Compare(ResourceCode, Other.ResourceCode);
 			}
 
-		////////////////////////////////////////////////////////////////////
 		// Convert user coordinates or line width to points.
 		// The result is rounded to 6 decimal places and converted to Single.
-		////////////////////////////////////////////////////////////////////
-
 		internal float ToPt
 				(
 				double Value // coordinate value in user unit of measure
@@ -190,20 +203,19 @@ namespace PdfFileWriter
 			return (float) ReturnValue;
 			}
 
-		////////////////////////////////////////////////////////////////////
 		// Round unscaled numbers.
 		// The value is rounded to 6 decimal places and converted to Single
-		////////////////////////////////////////////////////////////////////
-
 		internal float Round
 				(
 				double Value // a number to be saved in contents
 				)
 			{
-			if(Math.Abs(Value) < 0.0001) Value = 0;
-			return (float) Value;
+			if(Math.Abs(Value) < 0.0001) return 0;
+			return (float) Math.Round(Value, 4, MidpointRounding.AwayFromZero); // Value;
 			}
 
+		// append string to object's value list
+		// each char is converted to byte
 		internal void ObjectValueAppend
 				(
 				string Str
@@ -229,6 +241,114 @@ namespace PdfFileWriter
 			}
 
 		////////////////////////////////////////////////////////////////////
+		// C# string text to PDF strings only
+		////////////////////////////////////////////////////////////////////
+		internal string TextToPdfString
+				(
+				string Text,
+				PdfObject Parent
+				)
+			{
+			// convert C# string to byte array
+			byte[] ByteArray = TextToByteArray(Text);
+
+			// encryption object
+			PdfEncryption Encryption = Document.Encryption;
+
+			// encryption is active. PDF string must be encrypted except for encryption dictionary
+			if(Encryption != null && Parent != null && Encryption != Parent && Parent.XRefType == XRefObjType.InFile)
+				ByteArray = Encryption.EncryptByteArray(Parent.ObjectNumber, ByteArray);
+
+			// convert byte array to PDF string format
+			return ByteArrayToPdfString(ByteArray);
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// C# string text to byte array
+		// This method is used for PDF strings only
+		////////////////////////////////////////////////////////////////////
+		internal byte[] TextToByteArray
+				(
+				string Text
+				)
+			{
+			// scan input text for Unicode characters and for non printing characters
+			bool Unicode = false;
+			foreach(char TestChar in Text)
+				{
+				// test for non printable characters
+				if(TestChar < ' ' || TestChar > '~' && TestChar < 160)
+					throw new ApplicationException("Text string must be made of printable characters");
+
+				// test for Unicode string
+				if(TestChar > 255) 	Unicode = true;
+				}
+
+			// declare output byte array
+			byte[] ByteArray;
+
+			// all characters are one byte long
+			if(!Unicode)
+				{
+				// save each imput character in one byte
+				ByteArray = new byte[Text.Length];
+				int Index = 0;
+				foreach(char TestChar in Text) ByteArray[Index++] = (byte) TestChar;
+				}
+
+			// Unicode case. we have some two bytes characters
+			else
+				{
+				// allocate output byte array
+				ByteArray = new byte[2 * Text.Length + 2];
+
+				// add Unicode marker at the start of the string
+				ByteArray[0] = 0xfe;
+				ByteArray[1] = 0xff;
+
+				// save each character as two bytes
+				int Index = 2;
+				foreach(char TestChar in Text)
+					{
+					ByteArray[Index++] = (byte) (TestChar >> 8);
+					ByteArray[Index++] = (byte) TestChar;
+					}
+				}
+
+			// return output byte array
+			return ByteArray;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// byte array to PDF string
+		// This method is used for PDF strings only
+		////////////////////////////////////////////////////////////////////
+		internal string ByteArrayToPdfString
+				(
+				byte[] ByteArray
+				)
+			{
+			// create output string with open and closing parenthesis
+			StringBuilder Str = new StringBuilder("(");
+			foreach(byte TestByte in ByteArray)
+				{
+				// CR and NL must be replaced by \r and \n
+				// Otherwise PDF readers will convert CR or NL or CR-NL to NL
+				if(TestByte == '\r') Str.Append("\\r");
+				else if(TestByte == '\n') Str.Append("\\n");
+
+				// the three characters \ ( ) must be preceded by \
+				else
+					{
+					if(TestByte == (byte) '\\' || TestByte == (byte) '(' || TestByte == (byte) ')') Str.Append('\\');
+					Str.Append((char) TestByte);
+					}
+				}
+			Str.Append(')');
+			return Str.ToString();
+			}
+
+		////////////////////////////////////////////////////////////////////
 		// Convert resource dictionary to one String.
 		// This method is called at the last step of document creation
 		// from within PdfDocument.CreateFile(FileName).
@@ -238,22 +358,21 @@ namespace PdfFileWriter
 
 		internal string BuildResourcesDictionary
 				(
-				List<PdfObject> ResObjects, // list of resource objects for this contents
-				bool AddProcSet // for page contents we need /ProcSet 
+				List<PdfObject> ResObjects // list of resource objects for this contents
 				)
 			{
 			// resource object list is empty
 			// if there are no resources an empty dictionary must be returned
 			if(ResObjects == null || ResObjects.Count == 0)
 				{
-				return AddProcSet ? "<</ProcSet [/PDF/Text]>>" : "<<>>";
+				return "<</ProcSet [/PDF/Text]>>";
 				}
 
 			// resources dictionary content initialization
 			StringBuilder Resources = new StringBuilder("<<");
 
 			// for page object
-			if(AddProcSet) Resources.Append("/ProcSet [/PDF/Text/ImageB/ImageC/ImageI]\n");
+			Resources.Append("/ProcSet [/PDF/Text/ImageB/ImageC/ImageI]\n");
 
 			// add all resources
 			char ResCodeType = ' ';
@@ -296,6 +415,33 @@ namespace PdfFileWriter
 			{
 			return;
 			}
+
+		////////////////////////////////////////////////////////////////////
+		// write stream object to output PDF file
+		////////////////////////////////////////////////////////////////////
+		internal void WriteStreamObject
+				(
+				int ObjectsCount,
+				List<byte> Stream
+				)
+			{
+			// position of first object
+			int First = ObjectValueList.Count;
+
+			// copy stream data
+			ObjectValueList.AddRange(Stream);
+
+			// add N pairs and first position
+			Dictionary.AddInteger("/N", ObjectsCount);
+			Dictionary.AddInteger("/First", First);
+
+			// write to file
+			WriteToPdfFile();
+
+			// exit
+			return;
+			}
+
 
 		////////////////////////////////////////////////////////////////////
 		// Write stream object to PDF file

@@ -1,21 +1,34 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PrintPdfDocument
 //	Create PDF document from PrintDocument page images.
 //  Each page is saved as bitmap image.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -24,8 +37,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Drawing;
 using System.Drawing.Printing;
 
 namespace PdfFileWriter
@@ -247,8 +258,11 @@ namespace PdfFileWriter
 					// convert metafile image to PdfImage
 					PdfImage.LoadImage(PageImage);
 
+					// image rectangle
+					PdfRectangle ImageRect = new PdfRectangle(0.0, 0.0, PageWidth, PageHeight);
+
 					// draw the image
-					Contents.DrawImage(PdfImage, 0.0, 0.0, PageWidth, PageHeight);
+					Contents.DrawImage(PdfImage, ImageRect);
 					}
 
 				// crop
@@ -265,7 +279,9 @@ namespace PdfFileWriter
 					PdfImage.LoadImage(PageImage);
 
 					// draw the image
-					Contents.DrawImage(PdfImage, PageCropRect.X, PageHeight - PageCropRect.Y - PageCropRect.Height, PageCropRect.Width, PageCropRect.Height);
+					PdfRectangle ImageRect = new PdfRectangle(0, 0, PageCropRect.Width, PageCropRect.Height);
+					ImageRect = ImageRect.Move(PageCropRect.X, PageHeight - PageCropRect.Y - PageCropRect.Height);
+					Contents.DrawImage(PdfImage, ImageRect);
 					}
 				}
 			return;

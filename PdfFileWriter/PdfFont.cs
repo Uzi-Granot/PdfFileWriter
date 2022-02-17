@@ -1,20 +1,33 @@
 /////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfFont
 //	PDF Font resource.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -23,9 +36,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Text;
 
@@ -114,7 +124,7 @@ namespace PdfFileWriter
 		/// </summary>
 		public FontStyle FontStyle { get; internal set; }
 
-		internal FontApi FontApi;
+		internal PdfFontApi FontApi;
 		internal bool SymbolicFont;
 		internal CharInfo[][] CharInfoArray;
 		internal bool[] CharInfoBlockEmpty;
@@ -128,11 +138,16 @@ namespace PdfFileWriter
 		internal bool EmbeddedFont;
 		internal Font DesignFont;
 		internal PdfFontFlags FontFlags;
+
+		// PdfLineSpacing = PdfAscent + PdfDescent + PdfExternalLead;
+		// PdfAscent = PdfInternalLead + PdfInternalAscent
 		internal int PdfLineSpacing;
 		internal int PdfAscent;
 		internal int PdfDescent;
-		internal int PdfLeading { get { return PdfLineSpacing - PdfAscent - PdfDescent; } }
-		internal int DesignCapHeight;
+		internal int PdfInternalLead;
+		internal int PdfExternalLead;
+
+		internal int DesignCapEmHeight;
 		internal int DesignStrikeoutWidth;
 		internal int DesignStrikeoutPosition;
 		internal int DesignUnderlineWidth;
@@ -222,16 +237,11 @@ namespace PdfFileWriter
 			// design height
 			DesignHeight = FontFamily.GetEmHeight(FontStyle);
 
-			// Ascent, descent and line spacing for a one point font
-			PdfAscent = FontFamily.GetCellAscent(FontStyle);
-			PdfDescent = FontFamily.GetCellDescent(FontStyle); // positive number
-			PdfLineSpacing = FontFamily.GetLineSpacing(FontStyle);
-
 			// create design font
 			DesignFont = new Font(FontFamily, DesignHeight, FontStyle, GraphicsUnit.Pixel);
 
 			// create windows sdk font info object
-			FontApi = new FontApi(DesignFont, DesignHeight);
+			FontApi = new PdfFontApi(DesignFont);
 
 			// create empty array of character information
 			CharInfoArray = new CharInfo[256][];
@@ -244,20 +254,36 @@ namespace PdfFileWriter
 			// get outline text metrics structure
 			WinOutlineTextMetric OTM = FontApi.GetOutlineTextMetricsApi();
 
+			// windows text metric
+			WinTextMetric TM = OTM.otmTextMetric;
+
 			// make sure we have true type font and not device font
-			if((OTM.otmTextMetric.tmPitchAndFamily & 0xe) != 6)
+			if((TM.tmPitchAndFamily & 0xe) != 6)
 				throw new ApplicationException("Font must be True Type and vector");
+
+			// NOTE:
+			// PdfLineSpacing = PdfAscent + PdfDescent + PdfExternalLead;
+			// PdfAscent = PdfInternalLead + PdfInternalAscent
+
+			// Ascent, descent and line spacing for a one point font
+			PdfAscent = FontFamily.GetCellAscent(FontStyle);
+			PdfDescent = FontFamily.GetCellDescent(FontStyle); // positive number
+			PdfLineSpacing = FontFamily.GetLineSpacing(FontStyle);
+
+			// internal and external lead
+			PdfInternalLead = TM.tmInternalLeading;
+			PdfExternalLead = TM.tmExternalLeading;
 
 			// PDF font flags
 			FontFlags = 0;
 			if((OTM.otmfsSelection & 1) != 0) FontFlags |= PdfFontFlags.Italic;
 
 			// roman font is a serif font
-			if((OTM.otmTextMetric.tmPitchAndFamily >> 4) == 1) FontFlags |= PdfFontFlags.Serif;
-			if((OTM.otmTextMetric.tmPitchAndFamily >> 4) == 4) FontFlags |= PdfFontFlags.Script;
+			if((TM.tmPitchAndFamily >> 4) == 1) FontFlags |= PdfFontFlags.Serif;
+			if((TM.tmPitchAndFamily >> 4) == 4) FontFlags |= PdfFontFlags.Script;
 
 			// #define SYMBOL_CHARSET 2
-			if(OTM.otmTextMetric.tmCharSet == 2)
+			if(TM.tmCharSet == 2)
 				{
 				FontFlags |= PdfFontFlags.Symbolic;
 				SymbolicFont = true;
@@ -269,7 +295,7 @@ namespace PdfFileWriter
 				}
 
 			// #define TMPF_FIXED_PITCH 0x01 (Note very carefully that those meanings are the opposite of what the constant name implies.)
-			if((OTM.otmTextMetric.tmPitchAndFamily & 1) == 0) FontFlags |= PdfFontFlags.FixedPitch;
+			if((TM.tmPitchAndFamily & 1) == 0) FontFlags |= PdfFontFlags.FixedPitch;
 
 			// strikeout
 			DesignStrikeoutPosition = OTM.otmsStrikeoutPosition;
@@ -289,22 +315,12 @@ namespace PdfFileWriter
 
 			// italic angle is 10th of a degree
 			DesignItalicAngle = OTM.otmItalicAngle;
-			DesignFontWeight = OTM.otmTextMetric.tmWeight;
+			DesignFontWeight = TM.tmWeight;
 
-			DesignCapHeight = FontApi.GetGlyphMetricsApiByCode('M').DesignBBoxTop;
+			// design capital M letter height
+			DesignCapEmHeight = FontApi.GetGlyphMetricsApiByCode('M').DesignBBoxTop;
 
 			// exit
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// Create glyph index font object on first usage
-		////////////////////////////////////////////////////////////////////
-
-		internal void CreateGlyphIndexFont()
-			{
-			GlyphIndexFont = new PdfObject(Document, ObjectType.Dictionary, "/Font");
-			FontResGlyphUsed = true;
 			return;
 			}
 
@@ -354,6 +370,31 @@ namespace PdfFileWriter
 			return Info;
 			}
 
+		/// <summary>
+		/// Set character range active
+		/// All the range will be loaded to the PDF file even if not used
+		/// </summary>
+		/// <param name="StartChar">Start character</param>
+		/// <param name="EndChar">End character</param>
+		public void SetCharRangeActive
+				(
+				int StartChar,
+				int EndChar
+				)
+			{
+			for(int CharValue = StartChar; CharValue <= EndChar; CharValue++)
+				{
+				CharInfo Info = GetCharInfo(CharValue);
+				if(Info != UndefinedCharInfo)
+					{
+					Info.ActiveChar = true;
+					if(Info.Type0Font) FontResGlyphUsed = true;
+					else FontResCodeUsed = true;
+					}
+				}
+			return;
+			}
+
 		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Font units to user units
@@ -385,6 +426,11 @@ namespace PdfFileWriter
 			{
 			return 1000.0 * Value / DesignHeight;
 			}
+
+		///////////////////////////////////////////////////////////////////
+		// PdfLineSpacing = PdfAscent + PdfDescent + PdfExternalLead;
+		// PdfAscent = PdfInternalLead + PdfInternalAscent
+		///////////////////////////////////////////////////////////////////
 
 		////////////////////////////////////////////////////////////////////
 		/// <summary>
@@ -418,27 +464,12 @@ namespace PdfFileWriter
 
 		////////////////////////////////////////////////////////////////////
 		/// <summary>
-		/// Font ascent in user units
-		/// </summary>
-		/// <param name="FontSize">Font size</param>
-		/// <returns>Font ascent plus half of internal leading.</returns>
-		////////////////////////////////////////////////////////////////////
-		public double AscentPlusLeading
-				(
-				double FontSize
-				)
-			{
-			return FontDesignToUserUnits(FontSize, PdfAscent + (PdfLeading + 1) / 2);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
 		/// Font descent in user units
 		/// </summary>
 		/// <param name="FontSize">Font size</param>
 		/// <returns>Font descent</returns>
 		////////////////////////////////////////////////////////////////////
-		public double Descent
+		public double DesignDescent
 				(
 				double FontSize
 				)
@@ -448,17 +479,32 @@ namespace PdfFileWriter
 
 		////////////////////////////////////////////////////////////////////
 		/// <summary>
-		/// Font descent in user units
+		/// Font internal lead in user units
 		/// </summary>
 		/// <param name="FontSize">Font size</param>
-		/// <returns>Font descent plus half of internal leading.</returns>
+		/// <returns>Font internal lead</returns>
 		////////////////////////////////////////////////////////////////////
-		public double DescentPlusLeading
+		public double InternalLead
 				(
 				double FontSize
 				)
 			{
-			return FontDesignToUserUnits(FontSize, PdfDescent + PdfLeading / 2);
+			return FontDesignToUserUnits(FontSize, PdfInternalLead);
+			}
+
+		////////////////////////////////////////////////////////////////////
+		/// <summary>
+		/// Font external lead in user units
+		/// </summary>
+		/// <param name="FontSize">Font size</param>
+		/// <returns>Font external lead</returns>
+		////////////////////////////////////////////////////////////////////
+		public double ExternalLead
+				(
+				double FontSize
+				)
+			{
+			return FontDesignToUserUnits(FontSize, PdfExternalLead);
 			}
 
 		////////////////////////////////////////////////////////////////////
@@ -473,7 +519,7 @@ namespace PdfFileWriter
 				double FontSize
 				)
 			{
-			return FontDesignToUserUnits(FontSize, DesignCapHeight);
+			return FontDesignToUserUnits(FontSize, DesignCapEmHeight);
 			}
 
 		////////////////////////////////////////////////////////////////////
@@ -661,7 +707,7 @@ namespace PdfFileWriter
 			CharInfo CharInfo = GetCharInfo(CharValue);
 
 			// convert to user coordinate units
-			double Factor = FontSize / ((double) DesignHeight * ScaleFactor);
+			double Factor = FontSize / (DesignHeight * ScaleFactor);
 			return new PdfRectangle(Factor * CharInfo.DesignBBoxLeft, Factor * CharInfo.DesignBBoxBottom,
 				Factor * CharInfo.DesignBBoxRight, Factor * CharInfo.DesignBBoxTop);
 			}
@@ -800,12 +846,12 @@ namespace PdfFileWriter
 					}
 
 				// last character
-				CharInfo LastChar = GetCharInfo(Text[Text.Length - 1]);
+				CharInfo LastChar = GetCharInfo(Text[^1]);
 				Right = Width - LastChar.DesignWidth + LastChar.DesignBBoxRight;
 				}
 
 			// convert to user coordinate units
-			double Factor = FontSize / ((double) DesignHeight * ScaleFactor);
+			double Factor = FontSize / (DesignHeight * ScaleFactor);
 			return new PdfRectangle(Factor * Left, Factor * Bottom, Factor * Right, Factor * Top);
 			}
 
@@ -816,7 +862,7 @@ namespace PdfFileWriter
 		/// <param name="Text">Text</param>
 		/// <returns>Kerning adjustment pairs</returns>
 		////////////////////////////////////////////////////////////////////
-		public KerningAdjust[] TextKerning
+		public PdfKerningAdjust[] TextKerning
 				(
 				string Text
 				)
@@ -840,7 +886,7 @@ namespace PdfFileWriter
 			if(KP == null) return null;
 
 			// prepare a list of kerning adjustments
-			List<KerningAdjust> KA = new List<KerningAdjust>();
+			List<PdfKerningAdjust> KA = new List<PdfKerningAdjust>();
 
 			// look for pairs with adjustments
 			int Ptr1 = 0;
@@ -853,7 +899,7 @@ namespace PdfFileWriter
 				if(Index < 0) continue;
 
 				// add kerning adjustment in PDF font units (windows design units divided by windows font design height)
-				KA.Add(new KerningAdjust(Text.Substring(Ptr1, Ptr2 - Ptr1), FontDesignToPdfUnits(KP[Index].KernAmount)));
+				KA.Add(new PdfKerningAdjust(Text.Substring(Ptr1, Ptr2 - Ptr1), FontDesignToPdfUnits(KP[Index].KernAmount)));
 
 				// adjust pointer
 				Ptr1 = Ptr2;
@@ -863,7 +909,7 @@ namespace PdfFileWriter
 			if(KA.Count == 0) return null;
 
 			// add last
-			KA.Add(new KerningAdjust(Text.Substring(Ptr1, Text.Length - Ptr1), 0));
+			KA.Add(new PdfKerningAdjust(Text.Substring(Ptr1, Text.Length - Ptr1), 0));
 
 			// exit
 			return KA.ToArray();
@@ -880,7 +926,7 @@ namespace PdfFileWriter
 		public double TextKerningWidth
 				(
 				double FontSize, // in points
-				KerningAdjust[] KerningArray
+				PdfKerningAdjust[] KerningArray
 				)
 			{
 			// text is null or empty
@@ -893,7 +939,7 @@ namespace PdfFileWriter
 			int LastStr = KerningArray.Length - 1;
 			for(int Index = 0; Index < LastStr; Index++)
 				{
-				KerningAdjust KA = KerningArray[Index];
+				PdfKerningAdjust KA = KerningArray[Index];
 				Width += TextWidth(FontSize, KA.Text) + KA.Adjust * FontSize / (1000.0 * ScaleFactor);
 				}
 
@@ -1070,9 +1116,9 @@ namespace PdfFileWriter
 			FontDescriptor.Dictionary.AddInteger("/Flags", (int) FontFlags);
 			FontDescriptor.Dictionary.AddReal("/ItalicAngle", (double) DesignItalicAngle / 10.0);
 			FontDescriptor.Dictionary.AddInteger("/FontWeight", DesignFontWeight);
-			FontDescriptor.Dictionary.AddReal("/Leading", FontDesignToPdfUnits(PdfLeading));
+			FontDescriptor.Dictionary.AddReal("/Leading", 0);
 			FontDescriptor.Dictionary.AddReal("/Ascent", FontDesignToPdfUnits(PdfAscent));
-			FontDescriptor.Dictionary.AddReal("/Descent", FontDesignToPdfUnits(-PdfDescent));
+			FontDescriptor.Dictionary.AddReal("/Descent", FontDesignToPdfUnits(PdfAscent - PdfLineSpacing));
 
 			// alphabetic (non symbolic) fonts
 			if((FontFlags & PdfFontFlags.Symbolic) == 0)

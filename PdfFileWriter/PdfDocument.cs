@@ -1,20 +1,34 @@
-﻿/////////////////////////////////////////////////////////////////////
+﻿
+/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfDocument
-//	The main class of PDF object.
+//	The main class of PDF document.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -165,14 +179,13 @@
 //	Version 1.28.0 2021/03/31
 //		Change internal PDF file structure to object streams and
 //		cross reference streams
+//	Version 2.0.0 2022/02/01
+//		Source code was modified to comply with .NET6 and VS 2022
+//		Support for PDF forms
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.IO.Compression;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace PdfFileWriter
@@ -294,7 +307,7 @@ namespace PdfFileWriter
 	/// Creating a PDF is a six steps process.
 	/// </para>
 	/// <para>
-	/// Step 1: Create one document object this PdfDocument class.
+	/// Step 1: Create one document object - PdfDocument class.
 	/// </para>
 	/// <para>
 	/// Step 2: Create resource objects such as fonts or images (i.e. PdfFont or PdfImage).
@@ -324,12 +337,12 @@ namespace PdfFileWriter
 		/// <summary>
 		/// Library revision number
 		/// </summary>
-		public static readonly string RevisionNumber = "1.28.0";
+		public static readonly string RevisionNumber = "2.0.0";
 
 		/// <summary>
 		/// Library revision date
 		/// </summary>
-		public static readonly string RevisionDate = "2021/03/31";
+		public static readonly string RevisionDate = "2022/02/01";
 
 		/// <summary>
 		/// Scale factor
@@ -388,8 +401,10 @@ namespace PdfFileWriter
 		internal PdfLayers Layers;          // Layers control
 		internal PdfObject CatalogObject;   // catalog object
 		internal PdfObject PagesObject;     // parent object of all pages
+		internal PdfPage CurrentPage;       // current page
 		internal PdfEncryption Encryption;  // encryption dictionary
 		internal PdfBookmark BookmarksRoot; // bookmarks (document outline) dictionary
+		internal PdfAcroForm AcroForm;		// acro form (fillable document)
 		internal int[] ResCodeNo = new int[(int) ResCode.Length]; // resource code next number
 		internal PdfInfo InfoObject;
 		internal byte[] DocumentID;         // document ID
@@ -398,8 +413,9 @@ namespace PdfFileWriter
 		internal List<PdfExtGState> ExtGStateArray;
 		internal List<PdfFont> FontArray;
 		internal List<PdfAnnotation> LinkAnnotArray;
-		internal List<LocationMarker> LocMarkerArray;
+		internal List<PdfLocationMarker> LocMarkerArray;
 		internal List<PdfWebLink> WebLinkArray;
+		internal List<PdfFontTypeOne> TypeOneFont;
 
 		internal string[] InitDocDispText = new string[]
 			{
@@ -744,7 +760,7 @@ namespace PdfFileWriter
 			CatalogObject.Dictionary.AddIndirectReference("/Pages", PagesObject);
 
 			// document id
-			DocumentID = RandomByteArray(16);
+			DocumentID = PdfByteArrayMethods.RandomByteArray(16);
 
 			// create file using file name
 			if(FileName != null)
@@ -958,7 +974,7 @@ namespace PdfFileWriter
 				if(ObjectIndex == 200)
 					{
 					// output one full object stream
-					WriteStreamObject(ObjStm, ObjectIndex, StreamData);
+					ObjStm.WriteStreamObject(ObjectIndex, StreamData);
 
 					// next object stream
 					ObjStm = new PdfObject(this, ObjectType.Stream, "/ObjStm");
@@ -967,7 +983,7 @@ namespace PdfFileWriter
 					}
 
 				// object number and relative position
-				ObjStm.ObjectValueList.AddRange(PdfDocument.FormatToByteArray("{0} {1} ", Obj.ObjectNumber, StreamData.Count));
+				ObjStm.ObjectValueList.AddRange(PdfByteArrayMethods.FormatToByteArray("{0} {1} ", Obj.ObjectNumber, StreamData.Count));
 
 				// add object
 				if(Obj.ObjectType == ObjectType.Dictionary)
@@ -993,7 +1009,7 @@ namespace PdfFileWriter
 				}
 
 			// output last object stream
-			WriteStreamObject(ObjStm, ObjectIndex, StreamData);
+			ObjStm.WriteStreamObject(ObjectIndex, StreamData);
 
 			// save position
 			int StrmXRefPos = (int) PdfFile.BaseStream.Position;
@@ -1037,7 +1053,7 @@ namespace PdfFileWriter
 			for(int Index = 0; Index < PageArray.Count; Index++)
 				Kids.AppendFormat("{0} 0 R ", PageArray[Index].ObjectNumber);
 			if(Kids.Length > 1) Kids.Length--;
-			Kids.Append("]");
+			Kids.Append(']');
 			PagesObject.Dictionary.Add("/Kids", Kids.ToString());
 
 			// page count
@@ -1053,37 +1069,10 @@ namespace PdfFileWriter
 				// shortcut
 				PdfObject Obj = ObjectArray[Index];
 
-				// write stream object if not already in the output file,
+				// close object if not already in the output file,
 				if(Obj.FilePosition == 0) Obj.CloseObject();
 				}
 
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// write stream object to output PDF file
-		////////////////////////////////////////////////////////////////////
-		void WriteStreamObject
-				(
-				PdfObject ObjStm,
-				int ObjectsCount,
-				List<byte> Stream
-				)
-			{
-			// position of first object
-			int First = ObjStm.ObjectValueList.Count;
-
-			// copy stream data
-			ObjStm.ObjectValueList.AddRange(Stream);
-
-			// add N pairs and first position
-			ObjStm.Dictionary.AddInteger("/N", ObjectsCount);
-			ObjStm.Dictionary.AddInteger("/First", First);
-
-			// write to file
-			ObjStm.WriteToPdfFile();
-
-			// exit
 			return;
 			}
 
@@ -1099,7 +1088,7 @@ namespace PdfFileWriter
 			StrmXRef.Dictionary.AddIndirectReference("/Root", CatalogObject);
 
 			// add /ID
-			StrmXRef.Dictionary.AddFormat("/ID", "[{0}{0}]", ByteArrayToPdfHexString(DocumentID));
+			StrmXRef.Dictionary.AddFormat("/ID", "[{0}{0}]", PdfByteArrayMethods.ByteArrayToPdfHexString(DocumentID));
 
 			// add /Size (number of objects)
 			StrmXRef.Dictionary.AddInteger("/Size", ObjectArray.Count);
@@ -1183,6 +1172,37 @@ namespace PdfFileWriter
 			return;
 			}
 
+		/// <summary>
+		/// Create unique location marker
+		/// </summary>
+		/// <param name="LocMarkerName">Location marker name (case sensitive)</param>
+		/// <param name="LocMarkerPage">Location marker page</param>
+		/// <param name="Scope">Location marker scope</param>
+		/// <param name="FitArg">Fit enumeration</param>
+		/// <param name="SideArg">Fit optional arguments</param>
+		public void AddLocationMarker
+				(
+				string LocMarkerName,
+				PdfPage LocMarkerPage,
+				LocMarkerScope Scope,
+				DestFit FitArg,
+				params double[] SideArg
+				)
+			{
+			// first time
+			if(LocMarkerArray == null) LocMarkerArray = new List<PdfLocationMarker>();
+
+			// search for duplicate
+			int Index = LocMarkerArray.BinarySearch(new PdfLocationMarker(LocMarkerName));
+
+			// error location marker name must be unique
+			if(Index >= 0) throw new ApplicationException("Duplicate location marker");
+
+			// add to the list
+			LocMarkerArray.Insert(~Index, new PdfLocationMarker(LocMarkerName, LocMarkerPage, Scope, FitArg, SideArg));
+			return;
+			}
+
 		////////////////////////////////////////////////////////////////////
 		// Add destinations to link annotations
 		////////////////////////////////////////////////////////////////////
@@ -1191,8 +1211,8 @@ namespace PdfFileWriter
 			foreach(PdfAnnotation Annot in LinkAnnotArray)
 				{
 				// search for location marker name
-				string LocMarkerName = ((AnnotLinkAction) ((PdfAnnotation) Annot).AnnotAction).LocMarkerName;
-				int Index = LocMarkerArray.BinarySearch(new LocationMarker(LocMarkerName));
+				string LocMarkerName = ((PdfAnnotLinkAction) Annot).LocMarkerName;
+				int Index = LocMarkerArray.BinarySearch(new PdfLocationMarker(LocMarkerName));
 
 				// no location marker was defined for this name
 				if(Index < 0) throw new ApplicationException("No location marker was defined for: " + LocMarkerName);
@@ -1210,7 +1230,7 @@ namespace PdfFileWriter
 			{
 			PdfObject NamedDest = null;
 			StringBuilder DestStr = null;
-			foreach(LocationMarker LocMarker in LocMarkerArray)
+			foreach(PdfLocationMarker LocMarker in LocMarkerArray)
 				{
 				if(LocMarker.Scope != LocMarkerScope.NamedDest) continue;
 				if(NamedDest == null)
@@ -1218,192 +1238,17 @@ namespace PdfFileWriter
 					NamedDest = new PdfObject(this);
 					DestStr = new StringBuilder("[");
 					}
-				DestStr.AppendFormat("{0}{1}", TextToPdfString(LocMarker.LocMarkerName, NamedDest), LocMarker.DestStr);
+				DestStr.AppendFormat("{0}{1}", NamedDest.TextToPdfString(LocMarker.LocMarkerName, NamedDest), LocMarker.DestStr);
 				}
 			if(NamedDest == null) return;
 
 			// add one dictionary entry
-			DestStr.Append("]");
+			DestStr.Append(']');
 			NamedDest.Dictionary.Add("/Names", DestStr.ToString());
 
 			// attach it to PDF catalog
 			CatalogObject.Dictionary.AddFormat("/Names", "<</Dests {0} 0 R>>", NamedDest.ObjectNumber);
 			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// Convert byte array to PDF string
-		// used for document id and encryption
-		////////////////////////////////////////////////////////////////////
-		internal string ByteArrayToPdfHexString
-				(
-				byte[] ByteArray
-				)
-			{
-			// convert to hex string
-			StringBuilder HexText = new StringBuilder("<");
-			for(int index = 0; index < ByteArray.Length; index++) HexText.AppendFormat("{0:x2}", (int) ByteArray[index]);
-			HexText.Append(">");
-			return HexText.ToString();
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// C# string text to PDF strings only
-		////////////////////////////////////////////////////////////////////
-		internal string TextToPdfString
-				(
-				string Text,
-				PdfObject Parent
-				)
-			{
-			// convert C# string to byte array
-			byte[] ByteArray = TextToByteArray(Text);
-
-			// encryption is active. PDF string must be encrypted except for encryption dictionary
-			if(Encryption != null && Parent != null && Encryption != Parent && Parent.XRefType == XRefObjType.InFile)
-				ByteArray = Encryption.EncryptByteArray(Parent.ObjectNumber, ByteArray);
-
-			// convert byte array to PDF string format
-			return ByteArrayToPdfString(ByteArray);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// C# string text to byte array
-		// This method is used for PDF strings only
-		////////////////////////////////////////////////////////////////////
-		internal byte[] TextToByteArray
-				(
-				string Text
-				)
-			{
-			// scan input text for Unicode characters and for non printing characters
-			bool Unicode = false;
-			foreach(char TestChar in Text)
-				{
-				// test for non printable characters
-				if(TestChar < ' ' || TestChar > '~' && TestChar < 160)
-					throw new ApplicationException("Text string must be made of printable characters");
-
-				// test for Unicode string
-				if(TestChar > 255) 	Unicode = true;
-				}
-
-			// declare output byte array
-			byte[] ByteArray = null;
-
-			// all characters are one byte long
-			if(!Unicode)
-				{
-				// save each imput character in one byte
-				ByteArray = new byte[Text.Length];
-				int Index = 0;
-				foreach(char TestChar in Text) ByteArray[Index++] = (byte) TestChar;
-				}
-
-			// Unicode case. we have some two bytes characters
-			else
-				{
-				// allocate output byte array
-				ByteArray = new byte[2 * Text.Length + 2];
-
-				// add Unicode marker at the start of the string
-				ByteArray[0] = 0xfe;
-				ByteArray[1] = 0xff;
-
-				// save each character as two bytes
-				int Index = 2;
-				foreach(char TestChar in Text)
-					{
-					ByteArray[Index++] = (byte) (TestChar >> 8);
-					ByteArray[Index++] = (byte) TestChar;
-					}
-				}
-
-			// return output byte array
-			return ByteArray;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// format short string to byte array 
-		////////////////////////////////////////////////////////////////////
-		internal static byte[] FormatToByteArray
-				(
-				string FormatStr,
-				params object[] List
-				)
-			{
-			// string format
-			return ToByteArray(string.Format(FormatStr, List));
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// format short string to byte array 
-		////////////////////////////////////////////////////////////////////
-		internal static byte[] ToByteArray
-				(
-				string Str
-				)
-			{
-			// byte array
-			byte[] ByteArray = new byte[Str.Length];
-
-			// convert content from string to binary
-			// do not use Encoding.ASCII.GetBytes(...)
-			for(int Index = 0; Index < ByteArray.Length; Index++) ByteArray[Index] = (byte) Str[Index];
-			return ByteArray;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// byte array to PDF string
-		// This method is used for PDF strings only
-		////////////////////////////////////////////////////////////////////
-
-		internal string ByteArrayToPdfString
-				(
-				byte[] ByteArray
-				)
-			{
-			// create output string with open and closing parenthesis
-			StringBuilder Str = new StringBuilder("(");
-			foreach(byte TestByte in ByteArray)
-				{
-				// CR and NL must be replaced by \r and \n
-				// Otherwise PDF readers will convert CR or NL or CR-NL to NL
-				if(TestByte == '\r') Str.Append("\\r");
-				else if(TestByte == '\n') Str.Append("\\n");
-
-				// the three characters \ ( ) must be preceded by \
-				else
-					{
-					if(TestByte == (byte) '\\' || TestByte == (byte) '(' || TestByte == (byte) ')') Str.Append('\\');
-					Str.Append((char) TestByte);
-					}
-				}
-			Str.Append(')');
-			return Str.ToString();
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// Create random byte array
-		////////////////////////////////////////////////////////////////////
-		internal static byte[] RandomByteArray
-				(
-				int Length
-				)
-			{
-			byte[] ByteArray = new byte[Length];
-#if NET6_0_OR_GREATER
-			using (RandomNumberGenerator RandNumGen = RandomNumberGenerator.Create())
-				{
-				RandNumGen.GetBytes(ByteArray);
-				}
-#else
-			using (RNGCryptoServiceProvider RandNumGen = new RNGCryptoServiceProvider())
-				{
-				RandNumGen.GetBytes(ByteArray);
-				}
-#endif
-			return ByteArray;
 			}
 
 		////////////////////////////////////////////////////////////////////

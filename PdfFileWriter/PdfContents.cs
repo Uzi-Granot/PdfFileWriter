@@ -1,21 +1,34 @@
 /////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfContents
 //	PDF contents indirect object. Support for page contents,
 //  X Objects and Tilling Patterns.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -24,9 +37,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Text;
 
 namespace PdfFileWriter
@@ -278,6 +288,27 @@ namespace PdfFileWriter
 		}
 
 	/// <summary>
+	/// Barcode justify enumeration
+	/// </summary>
+	public enum BarcodeJustify
+		{
+		/// <summary>
+		/// Left
+		/// </summary>
+		Left,
+
+		/// <summary>
+		/// Center
+		/// </summary>
+		Center,
+
+		/// <summary>
+		/// Right
+		/// </summary>
+		Right,
+		}
+
+	/// <summary>
 	/// Draw Bezier point one control enumeration
 	/// </summary>
 	public enum BezierPointOne
@@ -359,14 +390,15 @@ namespace PdfFileWriter
 	/// </summary>
 	public class PdfContents : PdfObject
 		{
-		 // true for page contents, false for X objects and pattern
+		// true for page contents, false for X objects and pattern
 		internal bool PageContents;
 
 		// used resource objects
 		internal List<PdfObject> ResObjects;
 
 		// must be in the same order as PaintOp enumeration
-		private static string[] PaintStr = new string[] { "", "n", "S", "s", "f", "f*", "B", "B*", "b", "b*", "h W n", "h W* n", "h" };
+		private static readonly string[] PaintStr =
+			new string[] { "", "n", "S", "s", "f", "f*", "B", "B*", "b", "b*", "h W n", "h W* n", "h" };
 
 		/// <summary>
 		/// PdfContents constructor for page contents
@@ -397,14 +429,18 @@ namespace PdfFileWriter
 		public PdfContents
 				(
 				PdfDocument Document
-				) : base(Document, ObjectType.Stream) {}
+				) : base(Document, ObjectType.Stream) { }
 
 		// Constructor for XObject or Pattern
 		internal PdfContents
 				(
 				PdfDocument Document,
 				string PdfObjectType
-				) : base(Document, ObjectType.Stream, PdfObjectType) {}
+				) : base(Document, ObjectType.Stream, PdfObjectType) { }
+
+		//////////////////////////////////////////////////////////
+		// Low level Graphics Methods							//
+		//////////////////////////////////////////////////////////
 
 		/// <summary>
 		/// Save graphics state
@@ -425,47 +461,6 @@ namespace PdfFileWriter
 			}
 
 		/// <summary>
-		/// Layer start
-		/// </summary>
-		/// <param name="Layer">Layer object</param>
-		public void LayerStart
-				(
-				PdfLayer Layer
-				)
-			{
-			// add to list of resources
-			AddToUsedResources(Layer);
-
-			// write to content stream
-			ObjectValueFormat("/OC {0} BDC\n", Layer.ResourceCode);
-			return;
-			}
-
-		/// <summary>
-		/// Layer end
-		/// </summary>
-		public void LayerEnd()
-			{
-			// write to content stream
-			ObjectValueFormat("EMC\n");
-			return;
-			}
-
-		/// <summary>
-		/// Convert PaintOp enumeration to String
-		/// </summary>
-		/// <param name="PP">Paint operator</param>
-		/// <returns>Paint operator string</returns>
-		public string PaintOpStr
-				(
-				PaintOp PP
-				)
-			{
-			// apply paint operator
-			return PaintStr[(int) PP];
-			}
-
-		/// <summary>
 		/// Set paint operator
 		/// </summary>
 		/// <param name="PP">Paint operator</param>
@@ -475,7 +470,8 @@ namespace PdfFileWriter
 				)
 			{
 			// apply paint operator
-			if(PP != PaintOp.NoOperator) ObjectValueFormat("{0}\n", PaintStr[(int) PP]);
+			if(PP != PaintOp.NoOperator)
+				ObjectValueFormat("{0}\n", PaintStr[(int) PP]);
 			return;
 			}
 
@@ -562,38 +558,6 @@ namespace PdfFileWriter
 			}
 
 		/// <summary>
-		/// Set gray level for non stroking (fill or brush) operations
-		/// </summary>
-		/// <param name="GrayLevel">Gray level (0.0 to 1.0)</param>
-		/// <remarks>
-		/// Gray level must be 0.0 (black) to 1.0 (white).
-		/// </remarks>
-		public void GrayLevelNonStroking
-				(
-				double GrayLevel
-				)
-			{
-			ObjectValueFormat("{0} g\n", Round(GrayLevel));
-			return;
-			}
-
-		/// <summary>
-		/// Set gray level for stroking (outline or pen) operations
-		/// </summary>
-		/// <param name="GrayLevel">Gray level (0.0 to 1.0)</param>
-		/// <remarks>
-		/// Gray level must be 0.0 (black) to 1.0 (white).
-		/// </remarks>
-		public void GrayLevelStroking
-				(
-				double GrayLevel
-				)
-			{
-			ObjectValueFormat("{0} G\n", Round(GrayLevel));
-			return;
-			}
-
-		/// <summary>
 		/// Set color for non stroking (fill or brush) operations
 		/// </summary>
 		/// <param name="Color">Color</param>
@@ -603,7 +567,7 @@ namespace PdfFileWriter
 				Color Color
 				)
 			{
-			ObjectValueFormat("{0} {1} {2} rg\n", Round(Color.R / 255.0), Round(Color.G / 255.0), Round(Color.B / 255.0));
+			ObjectValueAppend(ColorToString(Color, ColorToStr.NonStroking) + "\n");
 			return;
 			}
 
@@ -617,21 +581,7 @@ namespace PdfFileWriter
 				Color Color
 				)
 			{
-			ObjectValueFormat("{0} {1} {2} RG\n", Round(Color.R / 255.0), Round(Color.G / 255.0), Round(Color.B / 255.0));
-			return;
-			}
-
-		/// <summary>
-		/// Set opacity value (alpha) of color of for stroking operations
-		/// </summary>
-		/// <param name="Color">Color value</param>
-		/// <remarks>Set alpha component. Ignore red, green and blue.</remarks>
-		public void SetAlphaStroking
-				(
-				Color Color
-				)
-			{
-			SetAlphaStroking(Color.A / 255.0);
+			ObjectValueAppend(ColorToString(Color, ColorToStr.Stroking) + "\n");
 			return;
 			}
 
@@ -644,27 +594,7 @@ namespace PdfFileWriter
 				double Alpha
 				)
 			{
-			string AlphaStr;
-			if(Alpha < 0.001) AlphaStr = "0";
-			else if(Alpha > 0.999) AlphaStr = "1";
-			else AlphaStr = Alpha.ToString("0.0##", NFI.PeriodDecSep);
-			PdfExtGState ExtGState = PdfExtGState.CreateExtGState(Document, "/CA", AlphaStr);
-			AddToUsedResources(ExtGState);
-			ObjectValueFormat("{0} gs\n", ExtGState.ResourceCode);
-			return;
-			}
-
-		/// <summary>
-		/// Set opacity value (alpha) of color of for non-stroking operations
-		/// </summary>
-		/// <param name="Color">Color value</param>
-		/// <remarks>Set alpha component. Ignore red, green and blue.</remarks>
-		public void SetAlphaNonStroking
-				(
-				Color Color
-				)
-			{
-			SetAlphaNonStroking(Color.A / 255.0);
+			SetAlpha(Alpha, "/CA");
 			return;
 			}
 
@@ -677,13 +607,7 @@ namespace PdfFileWriter
 				double Alpha
 				)
 			{
-			string AlphaStr;
-			if(Alpha < 0.001) AlphaStr = "0";
-			else if(Alpha > 0.999) AlphaStr = "1";
-			else AlphaStr = Alpha.ToString("0.0##", NFI.PeriodDecSep);
-			PdfExtGState ExtGState = PdfExtGState.CreateExtGState(Document, "/ca", AlphaStr);
-			AddToUsedResources(ExtGState);
-			ObjectValueFormat("{0} gs\n", ExtGState.ResourceCode);
+			SetAlpha(Alpha, "/ca");
 			return;
 			}
 
@@ -717,20 +641,6 @@ namespace PdfFileWriter
 			}
 
 		/// <summary>
-		/// Set pattern for stroking (outline) operations
-		/// </summary>
-		/// <param name="Pattern">Pattern resource</param>
-		public void SetPatternStroking
-				(
-				PdfContents Pattern
-				)
-			{
-			AddToUsedResources(Pattern);
-			ObjectValueFormat("/Pattern CS {0} SCN\n", Pattern.ResourceCode);
-			return;
-			}
-
-		/// <summary>
 		/// Draw axial shading pattern
 		/// </summary>
 		/// <param name="Shading">Axial shading resource</param>
@@ -755,6 +665,67 @@ namespace PdfFileWriter
 			{
 			AddToUsedResources(Shading);
 			ObjectValueFormat("{0} sh\n", Shading.ResourceCode);
+			return;
+			}
+
+		/// <summary>
+		/// Begin marked content
+		/// </summary>
+		/// <param name="Tag">Tag (must start with /)</param>
+		public void BeginMarkedContent
+				(
+				string Tag
+				)
+			{
+			ObjectValueFormat("{0} BMC\n", Tag);
+			return;
+			}
+
+		/// <summary>
+		/// Begin marked content with resources
+		/// </summary>
+		/// <param name="Tag">Tag (must start with /)</param>
+		/// <param name="Resource">Resource</param>
+		public void BeginMarkedContent
+				(
+				string Tag,
+				PdfObject Resource
+				)
+			{
+			AddToUsedResources(Resource);
+			ObjectValueFormat("{0} {1} BDC\n", Tag, Resource.ResourceCode);
+			return;
+			}
+
+		/// <summary>
+		/// End marked content (Layer end)
+		/// </summary>
+		public void EndMarkedContent()
+			{
+			ObjectValueFormat("EMC\n");
+			return;
+			}
+
+		/// <summary>
+		/// Layer start
+		/// </summary>
+		/// <param name="Layer">Layer object</param>
+		public void LayerStart
+				(
+				PdfLayer Layer
+				)
+			{
+			AddToUsedResources(Layer);
+			ObjectValueFormat("/OC {0} BDC\n", Layer.ResourceCode);
+			return;
+			}
+
+		/// <summary>
+		/// End marked content (Layer end)
+		/// </summary>
+		public void LayerEnd()
+			{
+			ObjectValueFormat("EMC\n");
 			return;
 			}
 
@@ -949,7 +920,8 @@ namespace PdfFileWriter
 				)
 			{
 			ObjectValueFormat("{2} {3} {4} {5} {0} {1} cm\n", ToPt(OriginX), ToPt(OriginY),
-				Round(ScaleX * Math.Cos(Rotate)), Round(ScaleY * Math.Sin(Rotate)), Round(ScaleX * Math.Sin(-Rotate)), Round(ScaleY * Math.Cos(Rotate)));
+				Round(ScaleX * Math.Cos(Rotate)), Round(ScaleY * Math.Sin(Rotate)),
+				Round(ScaleX * Math.Sin(-Rotate)), Round(ScaleY * Math.Cos(Rotate)));
 			return;
 			}
 
@@ -962,22 +934,7 @@ namespace PdfFileWriter
 				PointD Point
 				)
 			{
-			MoveTo(Point.X, Point.Y);
-			return;
-			}
-
-		/// <summary>
-		/// Move current pointer to new position
-		/// </summary>
-		/// <param name="X">New X position</param>
-		/// <param name="Y">New Y position</param>
-		public void MoveTo
-				(
-				double X,
-				double Y
-				)
-			{
-			ObjectValueFormat("{0} {1} m\n", ToPt(X), ToPt(Y));
+			ObjectValueFormat("{0} {1} m\n", ToPt(Point.X), ToPt(Point.Y));
 			return;
 			}
 
@@ -990,196 +947,7 @@ namespace PdfFileWriter
 				PointD Point
 				)
 			{
-			LineTo(Point.X, Point.Y);
-			return;
-			}
-
-		/// <summary>
-		/// Draw line from last position to new position
-		/// </summary>
-		/// <param name="X">New X position</param>
-		/// <param name="Y">New Y position</param>
-		public void LineTo
-				(
-				double X,
-				double Y
-				)
-			{
-			ObjectValueFormat("{0} {1} l\n", ToPt(X), ToPt(Y));
-			return;
-			}
-
-		/// <summary>
-		/// Draw Bezier cubic path
-		/// </summary>
-		/// <param name="Bezier">Bezier object</param>
-		/// <param name="Point1Action">Point1 action</param>
-		public void DrawBezier
-				(
-				BezierD Bezier,
-				BezierPointOne Point1Action
-				)
-			{
-			switch(Point1Action)
-				{
-				case BezierPointOne.MoveTo:
-					MoveTo(Bezier.P1.X, Bezier.P1.Y);
-					break;
-
-				case BezierPointOne.LineTo:
-					LineTo(Bezier.P1.X, Bezier.P1.Y);
-					break;
-				}
-
-			DrawBezier(Bezier.P2.X, Bezier.P2.Y, Bezier.P3.X, Bezier.P3.Y, Bezier.P4.X, Bezier.P4.Y);
-			return;
-			}
-
-		/// <summary>
-		/// Draw Bezier cubic path
-		/// </summary>
-		/// <param name="P1">Point 1</param>
-		/// <param name="P2">Point 2</param>
-		/// <param name="P3">Point 3</param>
-		public void DrawBezier
-				(
-				PointD P1,
-				PointD P2,
-				PointD P3
-				)
-			{
-			DrawBezier(P1.X, P1.Y, P2.X, P2.Y, P3.X, P3.Y);
-			return;
-			}
-
-		/// <summary>
-		/// Draw Bezier cubic path
-		/// </summary>
-		/// <param name="X1">Point 1 X</param>
-		/// <param name="Y1">Point 1 Y</param>
-		/// <param name="X2">Point 2 X</param>
-		/// <param name="Y2">Point 2 Y</param>
-		/// <param name="X3">Point 3 X</param>
-		/// <param name="Y3">Point 3 Y</param>
-		public void DrawBezier
-				(
-				double X1,
-				double Y1,
-				double X2,
-				double Y2,
-				double X3,
-				double Y3
-				)
-			{
-			ObjectValueFormat("{0} {1} {2} {3} {4} {5} c\n", ToPt(X1), ToPt(Y1), ToPt(X2), ToPt(Y2), ToPt(X3), ToPt(Y3));
-			return;
-			}
-
-		/// <summary>
-		/// Draw Bezier cubic path (P1 is the same as current point)
-		/// </summary>
-		/// <param name="P2">Point 2</param>
-		/// <param name="P3">Point 3</param>
-		public void DrawBezierNoP1
-				(
-				PointD P2,
-				PointD P3
-				)
-			{
-			DrawBezierNoP1(P2.X, P2.Y, P3.X, P3.Y);
-			return;
-			}
-
-		/// <summary>
-		/// Draw Bezier cubic path (P1 is the same as current point)
-		/// </summary>
-		/// <param name="X2">Point 2 X</param>
-		/// <param name="Y2">Point 2 Y</param>
-		/// <param name="X3">Point 3 X</param>
-		/// <param name="Y3">Point 3 Y</param>
-		public void DrawBezierNoP1
-				(
-				double X2,
-				double Y2,
-				double X3,
-				double Y3
-				)
-			{
-			ObjectValueFormat("{0} {1} {2} {3} v\n", ToPt(X2), ToPt(Y2), ToPt(X3), ToPt(Y3));
-			return;
-			}
-
-		/// <summary>
-		/// Draw Bezier cubic path (P2 is the same as P3)
-		/// </summary>
-		/// <param name="P1">Point 1</param>
-		/// <param name="P3">Point 3</param>
-		public void DrawBezierNoP2
-				(
-				PointD P1,
-				PointD P3
-				)
-			{
-			DrawBezierNoP2(P1.X, P1.Y, P3.X, P3.Y);
-			return;
-			}
-
-		/// <summary>
-		/// Draw Bezier cubic path (P2 is the same as P3)
-		/// </summary>
-		/// <param name="X1">Point 1 X</param>
-		/// <param name="Y1">Point 1 Y</param>
-		/// <param name="X3">Point 3 X</param>
-		/// <param name="Y3">Point 3 Y</param>
-		public void DrawBezierNoP2
-				(
-				double X1,
-				double Y1,
-				double X3,
-				double Y3
-				)
-			{
-			ObjectValueFormat("{0} {1} {2} {3} y\n", ToPt(X1), ToPt(Y1), ToPt(X3), ToPt(Y3));
-			return;
-			}
-
-		/// <summary>
-		/// Draw arc
-		/// </summary>
-		/// <param name="ArcStart">Arc start point</param>
-		/// <param name="ArcEnd">Arc end point</param>
-		/// <param name="Radius">RadiusX as width and RadiusY as height</param>
-		/// <param name="Rotate">X axis rotation angle in radians</param>
-		/// <param name="Type">Arc type enumeration</param>
-		/// <param name="OutputStartPoint">Output start point</param>
-		public void DrawArc
-				(
-				PointD ArcStart,
-				PointD ArcEnd,
-				SizeD Radius,
-				double Rotate,
-				ArcType Type,
-				BezierPointOne OutputStartPoint
-				)
-			{
-			// starting point
-			switch(OutputStartPoint)
-				{
-				case BezierPointOne.MoveTo:
-					MoveTo(ArcStart.X, ArcStart.Y);
-					break;
-
-				case BezierPointOne.LineTo:
-					LineTo(ArcStart.X, ArcStart.Y);
-					break;
-				}
-
-			// create arc
-			PointD[] SegArray = ArcToBezier.CreateArc(ArcStart, ArcEnd, Radius, Rotate, Type);
-
-			// output
-			for(int Index = 1; Index < SegArray.Length;)
-				DrawBezier(SegArray[Index].X, SegArray[Index++].Y, SegArray[Index].X, SegArray[Index++].Y, SegArray[Index].X, SegArray[Index++].Y);
+			ObjectValueFormat("{0} {1} l\n", ToPt(Point.X), ToPt(Point.Y));
 			return;
 			}
 
@@ -1192,41 +960,7 @@ namespace PdfFileWriter
 				LineD Line
 				)
 			{
-			DrawLine(Line.P1.X, Line.P1.Y, Line.P2.X, Line.P2.Y);
-			return;
-			}
-
-		/// <summary>
-		/// Draw line
-		/// </summary>
-		/// <param name="P1">Point 1</param>
-		/// <param name="P2">Point 2</param>
-		public void DrawLine
-				(
-				PointD P1,
-				PointD P2
-				)
-			{
-			DrawLine(P1.X, P1.Y, P2.X, P2.Y);
-			return;
-			}
-
-		/// <summary>
-		/// Draw line
-		/// </summary>
-		/// <param name="X1">Point 1 X</param>
-		/// <param name="Y1">Point 1 Y</param>
-		/// <param name="X2">Point 2 X</param>
-		/// <param name="Y2">Point 2 X</param>
-		public void DrawLine
-				(
-				double X1,
-				double Y1,
-				double X2,
-				double Y2
-				)
-			{
-			ObjectValueFormat("{0} {1} m {2} {3} l S\n", ToPt(X1), ToPt(Y1), ToPt(X2), ToPt(Y2));
+			ObjectValueFormat("{0} {1} m {2} {3} l S\n", ToPt(Line.P1.X), ToPt(Line.P1.Y), ToPt(Line.P2.X), ToPt(Line.P2.Y));
 			return;
 			}
 
@@ -1241,313 +975,194 @@ namespace PdfFileWriter
 				double LineWidth
 				)
 			{
-			DrawLine(Line.P1.X, Line.P1.Y, Line.P2.X, Line.P2.Y, LineWidth);
+			ObjectValueFormat("q {0} w {1} {2} m {3} {4} l S Q\n", ToPt(LineWidth), ToPt(Line.P1.X), ToPt(Line.P1.Y), ToPt(Line.P2.X), ToPt(Line.P2.Y));
 			return;
 			}
 
 		/// <summary>
 		/// Draw line with given line width
+		/// </summary>
+		/// <param name="Line">Line</param>
+		/// <param name="LineWidth">Line width</param>
+		/// <param name="LineColor">Line color</param>
+		public void DrawLine
+				(
+				LineD Line,
+				double LineWidth,
+				Color LineColor
+				)
+			{
+			ObjectValueFormat("q {0} w {1} 0 J {2} {3} m {4} {5} l S Q\n", ToPt(LineWidth),
+				ColorToString(LineColor, ColorToStr.Stroking), ToPt(Line.P1.X), ToPt(Line.P1.Y), ToPt(Line.P2.X), ToPt(Line.P2.Y));
+			return;
+			}
+
+		/// <summary>
+		/// Draw Bezier cubic path
+		/// </summary>
+		/// <param name="Bezier">Bezier object</param>
+		/// <param name="Point1Action">Point1 action</param>
+		public void DrawBezier
+				(
+				BezierD Bezier,
+				BezierPointOne Point1Action
+				)
+			{
+			switch (Point1Action)
+				{
+				case BezierPointOne.MoveTo:
+					MoveTo(Bezier.P1);
+					break;
+
+				case BezierPointOne.LineTo:
+					LineTo(Bezier.P1);
+					break;
+				}
+
+			DrawBezier(Bezier.P2, Bezier.P3, Bezier.P4);
+			return;
+			}
+
+		/// <summary>
+		/// Draw Bezier cubic path
 		/// </summary>
 		/// <param name="P1">Point 1</param>
 		/// <param name="P2">Point 2</param>
-		/// <param name="LineWidth">Line width</param>
-		public void DrawLine
+		/// <param name="P3">Point 3</param>
+		public void DrawBezier
 				(
 				PointD P1,
 				PointD P2,
-				double LineWidth
+				PointD P3
 				)
 			{
-			DrawLine(P1.X, P1.Y, P2.X, P2.Y, LineWidth);
+			ObjectValueFormat("{0} {1} {2} {3} {4} {5} c\n", ToPt(P1.X), ToPt(P1.Y), ToPt(P2.X), ToPt(P2.Y), ToPt(P3.X), ToPt(P3.Y));
 			return;
 			}
 
 		/// <summary>
-		/// Draw line with given line width
+		/// Draw Bezier cubic path (P1 is the same as current point)
 		/// </summary>
-		/// <param name="X1">Point 1 X</param>
-		/// <param name="Y1">Point 1 Y</param>
-		/// <param name="X2">Point 2 X</param>
-		/// <param name="Y2">Point 2 X</param>
-		/// <param name="LineWidth">Line width</param>
-		public void DrawLine
+		/// <param name="P2">Point 2</param>
+		/// <param name="P3">Point 3</param>
+		public void DrawBezierP2andP3
 				(
-				double X1,
-				double Y1,
-				double X2,
-				double Y2,
-				double LineWidth
+				PointD P2,
+				PointD P3
 				)
 			{
-			ObjectValueFormat("q {0} w {1} {2} m {3} {4} l S Q\n", ToPt(LineWidth), ToPt(X1), ToPt(Y1), ToPt(X2), ToPt(Y2));
+			ObjectValueFormat("{0} {1} {2} {3} v\n", ToPt(P2.X), ToPt(P2.Y), ToPt(P3.X), ToPt(P3.Y));
 			return;
 			}
 
 		/// <summary>
-		/// Draw border line 
+		/// Draw Bezier cubic path (P2 is the same as P3)
 		/// </summary>
-		/// <param name="X1">Point 1 X</param>
-		/// <param name="Y1">Point 1 Y</param>
-		/// <param name="X2">Point 2 X</param>
-		/// <param name="Y2">Point 2 X</param>
-		/// <param name="BorderStyle">PdfTableBorderStyle</param>
-		public void DrawLine
+		/// <param name="P1">Point 1</param>
+		/// <param name="P3">Point 3</param>
+		public void DrawBezierP1andP3
 				(
-				double X1,
-				double Y1,
-				double X2,
-				double Y2,
-				PdfTableBorderStyle BorderStyle
+				PointD P1,
+				PointD P3
 				)
 			{
-			if(BorderStyle.Display)
-				{
-				ObjectValueFormat("q {0} w {1} {2} {3} RG 0 J {4} {5} m {6} {7} l S Q\n",
-					ToPt(BorderStyle.Width), Round((double) BorderStyle.Color.R / 255.0), Round((double) BorderStyle.Color.G / 255.0),
-					Round((double) BorderStyle.Color.B / 255.0), ToPt(X1), ToPt(Y1), ToPt(X2), ToPt(Y2));
-				}
+			ObjectValueFormat("{0} {1} {2} {3} y\n", ToPt(P1.X), ToPt(P1.Y), ToPt(P3.X), ToPt(P3.Y));
 			return;
 			}
 
 		/// <summary>
-		/// Draw rectangle
+		/// Begin text mode
 		/// </summary>
-		/// <param name="Origin">Origin (left-bottom)</param>
-		/// <param name="Size">Size</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawRectangle
-				(
-				PointD Origin,
-				SizeD Size,
-				PaintOp PP
-				)
+		public void BeginTextMode()
 			{
-			DrawRectangle(Origin.X, Origin.Y, Size.Width, Size.Height, PP);
+			ObjectValueAppend("BT\n");
 			return;
 			}
 
 		/// <summary>
-		/// Draw Rectangle
+		/// End text mode
 		/// </summary>
-		/// <param name="OriginX">Origin X (left)</param>
-		/// <param name="OriginY">Origin Y (bottom)</param>
-		/// <param name="Width">Width</param>
-		/// <param name="Height">Height</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawRectangle
-				(
-				double OriginX,
-				double OriginY,
-				double Width,
-				double Height,
-				PaintOp PP
-				)
+		public void EndTextMode()
 			{
-			// draw rectangle
-			ObjectValueFormat("{0} {1} {2} {3} re {4}\n", ToPt(OriginX), ToPt(OriginY), ToPt(Width), ToPt(Height), PaintOpStr(PP));
+			ObjectValueAppend("ET\n");
 			return;
 			}
 
 		/// <summary>
-		/// Draw oval
+		/// Set font resource and font size
 		/// </summary>
-		/// <param name="Origin">Origin (left-bottom)</param>
-		/// <param name="Size">Size</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawOval
+		/// <param name="TypeOneFont">Type one font</param>
+		/// <param name="FontSize">Font size in points</param>
+		public void SetFontAndSize
 				(
-				PointD Origin,
-				SizeD Size,
-				PaintOp PP
+				PdfFontTypeOne TypeOneFont,
+				double FontSize
 				)
 			{
-			DrawOval(Origin.X, Origin.Y, Size.Width, Size.Height, PP);
+			// convert font size to string
+			ObjectValueFormat("{0} {1} Tf\n", TypeOneFont.ResourceCode,
+				string.Format(NFI.PeriodDecSep, "{0}", Round(FontSize)));
 			return;
 			}
 
 		/// <summary>
-		/// Draw oval
+		/// Set text position
 		/// </summary>
-		/// <param name="OriginX">Origin X (left)</param>
-		/// <param name="OriginY">Origin Y (bottom)</param>
-		/// <param name="Width">Width</param>
-		/// <param name="Height">Height</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawOval
+		/// <param name="PosX">Position X</param>
+		/// <param name="PosY">Position Y</param>
+		public void SetTextPosition
 				(
-				double OriginX,
-				double OriginY,
-				double Width,
-				double Height,
-				PaintOp PP
+				double PosX,
+				double PosY
 				)
 			{
-			Width /= 2;
-			Height /= 2;
-			OriginX += Width;
-			OriginY += Height;
-			DrawBezier(BezierD.OvalFirstQuarter(OriginX, OriginY, Width, Height), BezierPointOne.MoveTo);
-			DrawBezier(BezierD.OvalSecondQuarter(OriginX, OriginY, Width, Height), BezierPointOne.Ignore);
-			DrawBezier(BezierD.OvalThirdQuarter(OriginX, OriginY, Width, Height), BezierPointOne.Ignore);
-			DrawBezier(BezierD.OvalFourthQuarter(OriginX, OriginY, Width, Height), BezierPointOne.Ignore);
-			SetPaintOp(PP);
+			ObjectValueFormat("{0} {1} Td\n", ToPt(PosX), ToPt(PosY));
 			return;
 			}
 
 		/// <summary>
-		/// Draw heart
+		/// Set text rendering mode
 		/// </summary>
-		/// <param name="CenterLine">Center line</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawHeart
+		/// <param name="TR">Text rendering mode enumeration</param>
+		public void SetTextRenderingMode
 				(
-				LineD CenterLine,
-				PaintOp PP
+				TextRendering TR
 				)
 			{
-			// PI / 1.5 = 120 deg and PI / 2 = 90 deg
-			DrawDoubleBezierPath(CenterLine, 1.0, Math.PI / 1.5, 1.0, 0.5 * Math.PI, PP);
+			ObjectValueFormat("{0} Tr\n", (int)TR);
 			return;
 			}
 
 		/// <summary>
-		/// Draw heart
+		/// Set character extra spacing
 		/// </summary>
-		/// <param name="CenterLineTopX">Center line top X</param>
-		/// <param name="CenterLineTopY">Center line top Y</param>
-		/// <param name="CenterLineBottomX">Center line bottom X</param>
-		/// <param name="CenterLineBottomY">Center line bottom Y</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawHeart
+		/// <param name="ExtraSpacing">Character extra spacing</param>
+		public void SetCharacterSpacing
 				(
-				double CenterLineTopX,
-				double CenterLineTopY,
-				double CenterLineBottomX,
-				double CenterLineBottomY,
-				PaintOp PP
+				double ExtraSpacing
 				)
 			{
-			DrawHeart(new LineD(CenterLineTopX, CenterLineTopY, CenterLineBottomX, CenterLineBottomY), PP);
+			ObjectValueFormat("{0} Tc\n", ToPt(ExtraSpacing));
 			return;
 			}
 
 		/// <summary>
-		/// Draw double Bezier path
+		/// Set word extra spacing
 		/// </summary>
-		/// <param name="CenterLine">Center line</param>
-		/// <param name="Factor1">Factor 1</param>
-		/// <param name="Alpha1">Alpha 1</param>
-		/// <param name="Factor2">Factor 2</param>
-		/// <param name="Alpha2">Alpha 2</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawDoubleBezierPath
+		/// <param name="Spacing">Word extra spacing</param>
+		public void SetWordSpacing
 				(
-				LineD CenterLine,
-				double Factor1,
-				double Alpha1,
-				double Factor2,
-				double Alpha2,
-				PaintOp PP
+				double Spacing
 				)
 			{
-			// two symmetric Bezier curves
-			DrawBezier(new BezierD(CenterLine.P1, Factor1, -0.5 * Alpha1, Factor2, -0.5 * Alpha2, CenterLine.P2), BezierPointOne.MoveTo);
-			DrawBezier(new BezierD(CenterLine.P2, Factor2, Math.PI + 0.5 * Alpha2, Factor1, Math.PI + 0.5 * Alpha1, CenterLine.P1), BezierPointOne.Ignore);
-
-			// set paint operator
-			SetPaintOp(PP);
+			ObjectValueFormat("{0} Tw\n", ToPt(Spacing));
 			return;
 			}
 
-		/// <summary>
-		/// Draw Rounded Rectangle
-		/// </summary>
-		/// <param name="Origin">Origin (left-bottom)</param>
-		/// <param name="Size">Size</param>
-		/// <param name="Radius">Radius</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawRoundedRectangle
-				(
-				PointD Origin,
-				SizeD Size,
-				double Radius,
-				PaintOp PP
-				)
-			{
-			DrawRoundedRectangle(Origin.X, Origin.Y, Size.Width, Size.Height, Radius, PP);
-			return;
-			}
-
-		/// <summary>
-		/// Draw Rounded Rectangle
-		/// </summary>
-		/// <param name="OriginX">Origin X (left)</param>
-		/// <param name="OriginY">Origin Y (right)</param>
-		/// <param name="Width">Width</param>
-		/// <param name="Height">Height</param>
-		/// <param name="Radius">Radius</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawRoundedRectangle
-				(
-				double OriginX,
-				double OriginY,
-				double Width,
-				double Height,
-				double Radius,
-				PaintOp PP
-				)
-			{
-			// make sure radius is not too big
-			if(Radius > 0.5 * Width) Radius = 0.5 * Width;
-			if(Radius > 0.5 * Height) Radius = 0.5 * Height;
-
-			// draw path
-			MoveTo(OriginX + Radius, OriginY);
-			DrawBezier(BezierD.CircleFourthQuarter(OriginX + Width - Radius, OriginY + Radius, Radius), BezierPointOne.LineTo);
-			DrawBezier(BezierD.CircleFirstQuarter(OriginX + Width - Radius, OriginY + Height - Radius, Radius), BezierPointOne.LineTo);
-			DrawBezier(BezierD.CircleSecondQuarter(OriginX + Radius, OriginY + Height - Radius, Radius), BezierPointOne.LineTo);
-			DrawBezier(BezierD.CircleThirdQuarter(OriginX + Radius, OriginY + Radius, Radius), BezierPointOne.LineTo);
-
-			// set paint operator
-			SetPaintOp(PP);
-			return;
-			}
-
-		/// <summary>
-		/// Draw Rectangle with Inward Corners
-		/// </summary>
-		/// <param name="OriginX">Origin X (left)</param>
-		/// <param name="OriginY">Origin Y (right)</param>
-		/// <param name="Width">Width</param>
-		/// <param name="Height">Height</param>
-		/// <param name="Radius">Radius</param>
-		/// <param name="PP">Paint operator</param>
-		public void DrawInwardCornerRectangle
-				(
-				double OriginX,
-				double OriginY,
-				double Width,
-				double Height,
-				double Radius,
-				PaintOp PP
-				)
-			{
-			// make sure radius is not too big
-			if(Radius > 0.5 * Width) Radius = 0.5 * Width;
-			if(Radius > 0.5 * Height) Radius = 0.5 * Height;
-
-			// draw path
-			MoveTo(OriginX, OriginY + Radius);
-			DrawBezier(BezierD.CircleFourthQuarter(OriginX, OriginY + Height, Radius), BezierPointOne.LineTo);
-			DrawBezier(BezierD.CircleThirdQuarter(OriginX + Width, OriginY + Height, Radius), BezierPointOne.LineTo);
-			DrawBezier(BezierD.CircleSecondQuarter(OriginX + Width, OriginY, Radius), BezierPointOne.LineTo);
-			DrawBezier(BezierD.CircleFirstQuarter(OriginX, OriginY, Radius), BezierPointOne.LineTo);
-
-			// set paint operator
-			SetPaintOp(PP);
-			return;
-			}
-
+		//////////////////////////////////////////////////////////
+		// Draw Polygon, Arc, Heart, Bezier Graphics Methods	//
+		//////////////////////////////////////////////////////////
+		
 		/// <summary>
 		/// Draw polygon
 		/// </summary>
@@ -1560,13 +1175,14 @@ namespace PdfFileWriter
 				)
 			{
 			// program error
-			if(PathArray.Length < 2) throw new ApplicationException("DrawPolygon: path must have at least two points");
+			if (PathArray.Length < 2)
+				throw new ApplicationException("DrawPolygon: path must have at least two points");
 
 			// move to first point
 			ObjectValueFormat("{0} {1} m\n", ToPt(PathArray[0].X), ToPt(PathArray[0].Y));
 
 			// draw lines		
-			for(int Index = 1; Index < PathArray.Length; Index++)
+			for (int Index = 1; Index < PathArray.Length; Index++)
 				{
 				ObjectValueFormat("{0} {1} l\n", ToPt(PathArray[Index].X), ToPt(PathArray[Index].Y));
 				}
@@ -1588,14 +1204,14 @@ namespace PdfFileWriter
 				)
 			{
 			// program error
-			if(PathArray.Length < 4 || (PathArray.Length & 1) != 0)
+			if (PathArray.Length < 4 || (PathArray.Length & 1) != 0)
 				throw new ApplicationException("DrawPolygon: Path must be even and have at least 4 items");
 
 			// move to first point
 			ObjectValueFormat("{0} {1} m\n", ToPt(PathArray[0]), ToPt(PathArray[1]));
 
 			// draw lines		
-			for(int Index = 2; Index < PathArray.Length; Index += 2)
+			for (int Index = 2; Index < PathArray.Length; Index += 2)
 				{
 				ObjectValueFormat("{0} {1} l\n", ToPt(PathArray[Index]), ToPt(PathArray[Index + 1]));
 				}
@@ -1646,7 +1262,8 @@ namespace PdfFileWriter
 				)
 			{
 			// validate sides
-			if(Sides < 3) throw new ApplicationException("DrawRegularPolygon. Must have 3 or more sides");
+			if (Sides < 3)
+				throw new ApplicationException("DrawRegularPolygon. Must have 3 or more sides");
 
 			// polygon angle
 			double DeltaAlpha = 2.0 * Math.PI / Sides;
@@ -1654,11 +1271,95 @@ namespace PdfFileWriter
 			// first corner coordinates
 			MoveTo(new PointD(Center, Radius, Alpha));
 
-			for(int Side = 1; Side < Sides; Side++)
+			for (int Side = 1; Side < Sides; Side++)
 				{
 				Alpha += DeltaAlpha;
 				LineTo(new PointD(Center, Radius, Alpha));
 				}
+
+			// set paint operator
+			SetPaintOp(PP);
+			return;
+			}
+
+		/// <summary>
+		/// Draw arc
+		/// </summary>
+		/// <param name="ArcStart">Arc start point</param>
+		/// <param name="ArcEnd">Arc end point</param>
+		/// <param name="Radius">RadiusX as width and RadiusY as height</param>
+		/// <param name="Rotate">X axis rotation angle in radians</param>
+		/// <param name="Type">Arc type enumeration</param>
+		/// <param name="OutputStartPoint">Output start point</param>
+		public void DrawArc
+				(
+				PointD ArcStart,
+				PointD ArcEnd,
+				SizeD Radius,
+				double Rotate,
+				ArcType Type,
+				BezierPointOne OutputStartPoint
+				)
+			{
+			// starting point
+			switch (OutputStartPoint)
+				{
+				case BezierPointOne.MoveTo:
+					MoveTo(ArcStart);
+					break;
+
+				case BezierPointOne.LineTo:
+					LineTo(ArcStart);
+					break;
+				}
+
+			// create arc
+			PointD[] SegArray = PdfArcToBezier.CreateArc(ArcStart, ArcEnd, Radius, Rotate, Type);
+
+			// output
+			for (int Index = 1; Index < SegArray.Length;)
+				DrawBezier(SegArray[Index++], SegArray[Index++], SegArray[Index++]);
+			return;
+			}
+
+		/// <summary>
+		/// Draw heart
+		/// </summary>
+		/// <param name="CenterLine">Center line</param>
+		/// <param name="PP">Paint operator</param>
+		public void DrawHeart
+				(
+				LineD CenterLine,
+				PaintOp PP
+				)
+			{
+			// PI / 1.5 = 120 deg and PI / 2 = 90 deg
+			DrawDoubleBezierPath(CenterLine, 1.0, Math.PI / 1.5, 1.0, 0.5 * Math.PI, PP);
+			return;
+			}
+
+		/// <summary>
+		/// Draw double Bezier path
+		/// </summary>
+		/// <param name="CenterLine">Center line</param>
+		/// <param name="Factor1">Factor 1</param>
+		/// <param name="Alpha1">Alpha 1</param>
+		/// <param name="Factor2">Factor 2</param>
+		/// <param name="Alpha2">Alpha 2</param>
+		/// <param name="PP">Paint operator</param>
+		public void DrawDoubleBezierPath
+				(
+				LineD CenterLine,
+				double Factor1,
+				double Alpha1,
+				double Factor2,
+				double Alpha2,
+				PaintOp PP
+				)
+			{
+			// two symmetric Bezier curves
+			DrawBezier(new BezierD(CenterLine.P1, Factor1, -0.5 * Alpha1, Factor2, -0.5 * Alpha2, CenterLine.P2), BezierPointOne.MoveTo);
+			DrawBezier(new BezierD(CenterLine.P2, Factor2, Math.PI + 0.5 * Alpha2, Factor1, Math.PI + 0.5 * Alpha1, CenterLine.P1), BezierPointOne.Ignore);
 
 			// set paint operator
 			SetPaintOp(PP);
@@ -1706,10 +1407,10 @@ namespace PdfFileWriter
 				)
 			{
 			// inner radius
-			double Radius1 = 0;
+			double Radius1;
 
 			// for polygon with less than 5, set inner radius to half the main radius
-			if(Sides < 5) 
+			if (Sides < 5)
 				{
 				Radius1 = 0.5 * Radius;
 				}
@@ -1780,7 +1481,8 @@ namespace PdfFileWriter
 				)
 			{
 			// validate sides
-			if(Sides < 3) throw new ApplicationException("DrawStar. Must have 3 or more sides");
+			if (Sides < 3)
+				throw new ApplicationException("DrawStar. Must have 3 or more sides");
 
 			// move to first point
 			MoveTo(new PointD(Center, Radius1, Alpha));
@@ -1792,7 +1494,7 @@ namespace PdfFileWriter
 			Sides *= 2;
 
 			// line to the rest of the points
-			for(int Side = 1; Side < Sides; Side++)
+			for (int Side = 1; Side < Sides; Side++)
 				{
 				Alpha += DeltaAlpha;
 				LineTo(new PointD(Center, (Side & 1) != 0 ? Radius2 : Radius1, Alpha));
@@ -1803,425 +1505,249 @@ namespace PdfFileWriter
 			return;
 			}
 
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Begin text mode
-		/// </summary>
-		////////////////////////////////////////////////////////////////////
-		public void BeginTextMode()
-			{
-			ObjectValueAppend("BT\n");
-			return;
-			}
+		//////////////////////////////////////////////////////////
+		// Higher level Graphics Methods						//
+		//////////////////////////////////////////////////////////
 
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
-		/// End text mode
+		/// Draw graphics: rectangle, rounded rectangle, oval
 		/// </summary>
-		////////////////////////////////////////////////////////////////////
-		public void EndTextMode()
-			{
-			ObjectValueAppend("ET\n");
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Set text position
-		/// </summary>
-		/// <param name="PosX">Position X</param>
-		/// <param name="PosY">Position Y</param>
-		////////////////////////////////////////////////////////////////////
-		public void SetTextPosition
+		/// <param name="Rect">PDF Rectangle</param>
+		/// <param name="DrawCtrl">Draw rectangle control</param>
+		public void DrawGraphics
 				(
-				double PosX,
-				double PosY
+				PdfDrawCtrl DrawCtrl,
+				PdfRectangle Rect
 				)
 			{
-			ObjectValueFormat("{0} {1} Td\n", ToPt(PosX), ToPt(PosY));
-			return;
-			}
+			// fill rectangle
+			PdfRectangle FillRect;
 
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Set text rendering mode
-		/// </summary>
-		/// <param name="TR">Text rendering mode enumeration</param>
-		////////////////////////////////////////////////////////////////////
-		public void SetTextRenderingMode
-				(
-				TextRendering TR
-				)
-			{
-			ObjectValueFormat("{0} Tr\n", (int) TR);
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Set character extra spacing
-		/// </summary>
-		/// <param name="ExtraSpacing">Character extra spacing</param>
-		////////////////////////////////////////////////////////////////////
-		public void SetCharacterSpacing
-				(
-				double ExtraSpacing
-				)
-			{
-			ObjectValueFormat("{0} Tc\n", ToPt(ExtraSpacing));
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Set word extra spacing
-		/// </summary>
-		/// <param name="Spacing">Word extra spacing</param>
-		////////////////////////////////////////////////////////////////////
-		public void SetWordSpacing
-				(
-				double Spacing
-				)
-			{
-			ObjectValueFormat("{0} Tw\n", ToPt(Spacing));
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Reverse characters in a string
-		/// </summary>
-		/// <param name="Text">Input string</param>
-		/// <returns>Output string</returns>
-		////////////////////////////////////////////////////////////////////
-		public string ReverseString
-				(
-				string Text
-				)
-			{
-			char[] RevText = Text.ToCharArray();
-			Array.Reverse(RevText);
-			return new string(RevText);
-			}
-
-		/// <summary>
-		/// Draw text
-		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="Text">Text</param>
-		/// <returns>Text width</returns>
-		/// <remarks>
-		/// This method must be used together with BeginTextMode,
-		/// EndTextMode and SetTextPosition.
-		/// </remarks>
-		public double DrawText
-				(
-				PdfFont Font,           // font object
-				double FontSize,        // in points
-				string Text
-				)
-			{
-			// text is null or empty
-			if(string.IsNullOrEmpty(Text)) return 0;
-
-			// add font code to current list of font codes
-			AddToUsedResources(Font);
-
-			// draw text
-			return DrawTextInternal(Font, FontSize, Text);
-			}
-
-		internal double DrawTextInternal
-				(
-				PdfFont Font,           // font object
-				double FontSize,
-				string Text
-				)
-			{
-			byte[] FontResCode = null;
-			byte[] FontResGlyph = null;
-
-			// convert font sise to string
-			string FontSizeStr = string.Format(NFI.PeriodDecSep, "{0}", Round(FontSize));
-
-			// set last use glyph index
-			bool GlyphIndexFlag = false;
-
-			// text width
-			int Width = 0;
-
-			// loop for all text characters
-			for(int Ptr = 0; Ptr < Text.Length; Ptr++)
+			// adjust fill rectangle if there is a border with non zero width
+			if((DrawCtrl.Paint == DrawPaint.Border || DrawCtrl.Paint == DrawPaint.BorderAndFill) && DrawCtrl.BorderWidth > 0)
 				{
-				// get character information
-				CharInfo CharInfo = Font.GetCharInfo(Text[Ptr]);
+				FillRect = Rect.AddMargin(-0.5 * DrawCtrl.BorderWidth);
+				}
+			else
+				{
+				FillRect = Rect;
+				}
 
-				// set active flag
-				CharInfo.ActiveChar = true;
+			// save graphics state
+			SaveGraphicsState();
 
-				// accumulate width
-				Width += CharInfo.DesignWidth;
+			// blend mode
+			if(DrawCtrl.Blend != BlendMode.Normal) SetBlendMode(DrawCtrl.Blend);
 
-				// change between 0-255 and 255-65535
-				if(Ptr == 0 || CharInfo.Type0Font != GlyphIndexFlag)
+			switch(DrawCtrl._BackgroundTextureType)
+				{
+				case BackgroundTextureType.Color:
+				case BackgroundTextureType.TilingPattern:
 					{
-					// ")Tj"
-					if(Ptr != 0)
+					// set paint operator
+					PaintOp PP;
+					switch(DrawCtrl.Paint)
 						{
-						ObjectValueList.Add((byte) ')');
-						ObjectValueList.Add((byte) 'T');
-						ObjectValueList.Add((byte) 'j');
+						case DrawPaint.Border:
+							PP = PaintOp.CloseStroke;
+							SetBorder(DrawCtrl);
+							break;
+
+						case DrawPaint.Fill:
+							PP = PaintOp.Fill;
+							SetFillPaint(DrawCtrl);
+							break;
+
+						case DrawPaint.BorderAndFill:
+							PP = PaintOp.CloseFillStroke;
+							SetBorder(DrawCtrl);
+							SetFillPaint(DrawCtrl);
+							break;
+
+						default:
+							throw new ApplicationException("Draw rectangle invalid paint operator");
 						}
 
-					// save glyph index
-					GlyphIndexFlag = CharInfo.Type0Font;
+					// draw shape
+					DrawShape(FillRect, DrawCtrl, PP);
+					}
+					break;
 
-					// ouput font resource and font size
-					if(!GlyphIndexFlag)
+				case BackgroundTextureType.Image:
+					{ 
+					// clip shape area
+					if(DrawCtrl.Shape != PdfFileWriter.DrawShape.Rectangle) ClipGraphics(Rect, DrawCtrl);
+
+					DrawImage((PdfImage) DrawCtrl._BackgroundTexture, FillRect);
+
+					// add border
+					if(DrawCtrl.Paint == DrawPaint.Border || DrawCtrl.Paint == DrawPaint.BorderAndFill)
 						{
-						if(FontResCode == null)
-							{
-							FontResCode = CreateFontResStr(Font.ResourceCode, FontSizeStr);
-							Font.FontResCodeUsed = true;
-							}
-						ObjectValueList.AddRange(FontResCode);
+						// save graphics state
+						SaveGraphicsState();
+
+						// border
+						SetBorder(DrawCtrl);
+
+						// draw border
+						DrawShape(FillRect, DrawCtrl, PaintOp.CloseStroke);
+
+						// restore graphics state
+						RestoreGraphicsState();
 						}
+					}
+					break;
+
+				case BackgroundTextureType.Shading:
+					{ 
+					// clip overall area
+					ClipGraphics(FillRect, DrawCtrl);
+
+					// set bounding box
+					if(DrawCtrl._BackgroundTexture.GetType() == typeof(PdfAxialShading))
+						((PdfAxialShading) DrawCtrl._BackgroundTexture).BBox = FillRect;
 					else
+						((PdfRadialShading) DrawCtrl._BackgroundTexture).BBox = FillRect;
+
+					// draw shading
+					AddToUsedResources((PdfObject) DrawCtrl._BackgroundTexture);
+					ObjectValueFormat("{0} sh\n", ((PdfObject) DrawCtrl._BackgroundTexture).ResourceCode);
+
+					// add border
+					if(DrawCtrl.Paint == DrawPaint.Border || DrawCtrl.Paint == DrawPaint.BorderAndFill)
 						{
-						if(FontResGlyph == null)
-							{
-							FontResGlyph = CreateFontResStr(Font.ResourceCodeGlyph, FontSizeStr);
-							if(!Font.FontResGlyphUsed) Font.CreateGlyphIndexFont();
-							}
-						ObjectValueList.AddRange(FontResGlyph);
+						// save graphics state
+						SaveGraphicsState();
+
+						// border
+						SetBorder(DrawCtrl);
+
+						// draw border
+						DrawShape(FillRect, DrawCtrl, PaintOp.CloseStroke);
+
+						// restore graphics state
+						RestoreGraphicsState();
 						}
-					ObjectValueList.Add((byte) '(');
 					}
-
-				// output character code
-				if(!GlyphIndexFlag)
-					{
-					OutputOneByte(CharInfo.CharCode);
-					}
-
-				// output glyph index
-				else
-					{
-					if(CharInfo.NewGlyphIndex < 0)
-						CharInfo.NewGlyphIndex = Font.EmbeddedFont ? Font.NewGlyphIndex++ : CharInfo.GlyphIndex;
-					OutputOneByte(CharInfo.NewGlyphIndex >> 8);
-					OutputOneByte(CharInfo.NewGlyphIndex & 0xff);
-					}
+					break;
 				}
 
-			// ")Tj"
-			ObjectValueList.Add((byte) ')');
-			ObjectValueList.Add((byte) 'T');
-			ObjectValueList.Add((byte) 'j');
-			ObjectValueList.Add((byte) '\n');
-			return Font.FontDesignToUserUnits(FontSize, Width);
+			// restore graphics state
+			RestoreGraphicsState();
+			return;
 			}
 
-		internal void OutputOneByte
-				(
-				int CharCode
-				)
-			{
-			switch(CharCode)
-				{
-				case '\r':
-					ObjectValueList.Add((byte) '\\');
-					ObjectValueList.Add((byte) 'r');
-					return;
-				case '\n':
-					ObjectValueList.Add((byte) '\\');
-					ObjectValueList.Add((byte) 'n');
-					return;
-				case '(':
-					ObjectValueList.Add((byte) '\\');
-					ObjectValueList.Add((byte) '(');
-					return;
-				case ')':
-					ObjectValueList.Add((byte) '\\');
-					ObjectValueList.Add((byte) ')');
-					return;
-				case '\\':
-					ObjectValueList.Add((byte) '\\');
-					ObjectValueList.Add((byte) '\\');
-					return;
-				default:
-					ObjectValueList.Add((byte) CharCode);
-					return;
-				}
-			}
-
-		internal byte[] CreateFontResStr
-				(
-				string ResCode,
-				string SizeStr
-				)
-			{
-			byte[] FontRes = new byte[ResCode.Length + SizeStr.Length + 4];
-			int Index = 0;
-			foreach(char TextChar in ResCode) FontRes[Index++] = (byte) TextChar;
-			FontRes[Index++] = (byte) ' ';
-			foreach(char TextChar in SizeStr) FontRes[Index++] = (byte) TextChar;
-			FontRes[Index++] = (byte) ' ';
-			FontRes[Index++] = (byte) 'T';
-			FontRes[Index++] = (byte) 'f';
-			return FontRes;
-			}
-
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
-		/// Draw one line of text left justified
+		/// Clip closed shape
 		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="PosX">Position X</param>
-		/// <param name="PosY">Position Y</param>
-		/// <param name="Text">Text</param>
-		/// <returns>Text width</returns>
-		////////////////////////////////////////////////////////////////////
-		public double DrawText
+		/// <param name="Rect">Rectangle</param>
+		/// <param name="DrawCtrl">Draw control</param>
+		public void ClipGraphics
 				(
-				PdfFont Font,
-				double FontSize,        // in points
-				double PosX,
-				double PosY,
-				string Text
+				PdfRectangle Rect,
+				PdfDrawCtrl DrawCtrl
 				)
 			{
-			return DrawText(Font, FontSize, PosX, PosY, TextJustify.Left, Text);
+			DrawShape(Rect, DrawCtrl, PaintOp.ClipPathEor);
+			return;
 			}
 
-		////////////////////////////////////////////////////////////////////
+		/// <summary>
+		/// Draw one character as a symbol
+		/// </summary>
+		/// <param name="Symbol">Symbol class</param>
+		/// <param name="Rect">Drawing rectangle</param>
+		/// <param name="FillColor">Fill or non stroking color</param>
+		public void DrawSymbol
+				(
+				PdfSymbol Symbol,
+				PdfRectangle Rect,
+				Color FillColor
+				)
+			{
+			// symbol bounds
+			RectangleF Bounds = Symbol.Bounds;
+
+			// scale factor from grapics path to page coordinates
+			double Scale = Rect.Width / Bounds.Width;
+			double ScaleY = Rect.Height / Bounds.Height;
+			if(ScaleY < Scale) Scale = ScaleY;
+
+			// origin of path in page rectangle 
+			double OrgX = Rect.Left + (Rect.Width - Scale * Bounds.Width) / 2;
+			double OrgY = Rect.Top - (Rect.Height - Scale * Bounds.Height) / 2;
+
+			// number of points, type and points arrays
+			int Len = Symbol.Len;
+			byte[] Types = Symbol.Types;
+			PointF[] Points = Symbol.Points;
+
+			// save grphics state
+			SaveGraphicsState();
+
+			// set fill color
+			SetColorNonStroking(FillColor);
+
+			// loop for all points
+			for(int Index = 0; Index < Len; Index++)
+				{
+				int Type = Types[Index];
+				double PointX = OrgX + Scale * (Points[Index].X - Bounds.X);
+				double PointY = OrgY - Scale * (Points[Index].Y - Bounds.Top);
+
+				switch(Type & (int) SymbolPointType.PathTypeMask)
+					{
+					case (int) SymbolPointType.Start:
+						ObjectValueFormat("{0} {1} m\n", ToPt(PointX), ToPt(PointY));
+						break;
+
+					case (int) SymbolPointType.Line:
+						ObjectValueFormat("{0} {1} l\n", ToPt(PointX), ToPt(PointY));
+						break;
+
+					case (int) SymbolPointType.Bezier:
+						ObjectValueFormat("{0} {1} ", ToPt(PointX), ToPt(PointY));
+
+						// second bezier point
+						Index++;
+						double PointX1 = OrgX + Scale * (Points[Index].X - Bounds.X);
+						double PointY1 = OrgY - Scale * (Points[Index].Y - Bounds.Top);
+						ObjectValueFormat("{0} {1} ", ToPt(PointX1), ToPt(PointY1));
+
+						// third bezier point
+						Index++;
+						PointX1 = OrgX + Scale * (Points[Index].X - Bounds.X);
+						PointY1 = OrgY - Scale * (Points[Index].Y - Bounds.Top);
+						ObjectValueFormat("{0} {1} c\n", ToPt(PointX1), ToPt(PointY1));
+						break;
+					}
+				}
+
+			// paint the symbol
+			SetPaintOp(PaintOp.Fill);
+
+			// save grphics state
+			SaveGraphicsState();
+			return;
+			}
+
+		//////////////////////////////////////////////////////////
+		// Draw one line of text Methods						//
+		//////////////////////////////////////////////////////////
+
 		/// <summary>
 		/// Draw one line of text
 		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
+		/// <param name="TextCtrl">PDF draw text control</param>
 		/// <param name="PosX">Position X</param>
 		/// <param name="PosY">Position Y</param>
-		/// <param name="Justify">Text justify enumeration</param>
-		/// <param name="Text">Text</param>
-		/// <returns>Text width</returns>
-		////////////////////////////////////////////////////////////////////
-		public double DrawText
-				(
-				PdfFont Font,
-				double FontSize,        // in points
-				double PosX,
-				double PosY,
-				TextJustify Justify,
-				string Text
-				)
-			{
-			// text is null or empty
-			if(string.IsNullOrEmpty(Text)) return 0;
-
-			// add font code to current list of font codes
-			AddToUsedResources(Font);
-
-			// adjust position
-			switch(Justify)
-				{
-				// right
-				case TextJustify.Right:
-					PosX -= Font.TextWidth(FontSize, Text);
-					break;
-
-				// center
-				case TextJustify.Center:
-					PosX -= 0.5 * Font.TextWidth(FontSize, Text);
-					break;
-				}
-
-			// draw text
-			BeginTextMode();
-			SetTextPosition(PosX, PosY);
-			double Width = DrawTextInternal(Font, FontSize, Text);
-			EndTextMode();
-
-			// return text width
-			return Width;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw one line of text width draw style
-		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="PosX">Position X</param>
-		/// <param name="PosY">Position Y</param>
-		/// <param name="DrawStyle">Drawing style enumeration</param>
-		/// <param name="Text">Text</param>
-		/// <returns>Text width</returns>
-		////////////////////////////////////////////////////////////////////
-		public double DrawText
-				(
-				PdfFont Font,
-				double FontSize,        // in points
-				double PosX,
-				double PosY,
-				DrawStyle DrawStyle,
-				string Text
-				)
-			{
-			return DrawText(Font, FontSize, PosX, PosY, TextJustify.Left, DrawStyle, Color.Empty, Text);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw one line of text with a given color
-		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="PosX">Position X</param>
-		/// <param name="PosY">Position Y</param>
-		/// <param name="TextColor">Color</param>
-		/// <param name="Text">Text</param>
-		/// <returns>Text width</returns>
-		////////////////////////////////////////////////////////////////////
-		public double DrawText
-				(
-				PdfFont Font,
-				double FontSize,        // in points
-				double PosX,
-				double PosY,
-				Color TextColor,
-				string Text
-				)
-			{
-			return DrawText(Font, FontSize, PosX, PosY, TextJustify.Left, DrawStyle.Normal, TextColor, Text);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// Draw text width draw style
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw one line of text with text justification, drawing style and color
-		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="PosX">Position X</param>
-		/// <param name="PosY">Position Y</param>
-		/// <param name="Justify">Text justify enumeration</param>
-		/// <param name="DrawStyle">Drawing style enumeration</param>
-		/// <param name="TextColor">Color</param>
 		/// <param name="Text">Text</param>
 		/// <returns>Text width</returns>
 		public double DrawText
 				(
-				PdfFont Font,
-				double FontSize,        // in points
+				PdfDrawTextCtrl TextCtrl,
 				double PosX,
 				double PosY,
-				TextJustify Justify,
-				DrawStyle DrawStyle,
-				Color TextColor,
 				string Text
 				)
 			{
@@ -2232,53 +1758,56 @@ namespace PdfFileWriter
 			double TextWidth = 0;
 
 			// we have color
-			if(TextColor != Color.Empty)
+			if(TextCtrl.TextColor != Color.Empty)
 				{
 				// save graphics state
 				SaveGraphicsState();
 
 				// change non stroking color
-				SetColorNonStroking(TextColor);
+				SetColorNonStroking(TextCtrl.TextColor);
 				}
 
 			// not subscript or superscript
-			if((DrawStyle & (DrawStyle.Subscript | DrawStyle.Superscript)) == 0)
+			if((TextCtrl.DrawStyle & (DrawStyle.Subscript | DrawStyle.Superscript)) == 0)
 				{
 				// draw text string
-				TextWidth = DrawText(Font, FontSize, PosX, PosY, Justify, Text);
+				TextWidth = DrawTextNormal(TextCtrl, PosX, PosY, Text);
 
 				// not regular style
-				if(DrawStyle != DrawStyle.Normal)
+				if(TextCtrl.DrawStyle != DrawStyle.Normal)
 					{
 					// change stroking color
-					if(TextColor != Color.Empty) SetColorStroking(TextColor);
+					if(TextCtrl.TextColor != Color.Empty) SetColorStroking(TextCtrl.TextColor);
 
-					// adjust position
-					switch(Justify)
+					// adjust X position for line drawing
+					double LinePosX = PosX;
+					switch(TextCtrl.Justify)
 						{
 						// right
 						case TextJustify.Right:
-							PosX -= TextWidth;
+							LinePosX -= TextWidth;
 							break;
 
 						// center
 						case TextJustify.Center:
-							PosX -= 0.5 * TextWidth;
+							LinePosX -= 0.5 * TextWidth;
 							break;
 						}
 
 					// underline
-					if((DrawStyle & DrawStyle.Underline) != 0)
+					if((TextCtrl.DrawStyle & DrawStyle.Underline) != 0)
 						{
-						double UnderlinePos = PosY + Font.UnderlinePosition(FontSize);
-						DrawLine(PosX, UnderlinePos, PosX + TextWidth, UnderlinePos, Font.UnderlineWidth(FontSize));
+						double UnderlinePos = PosY + TextCtrl.UnderlinePosition;
+						LineD UnderlineLine = new LineD(LinePosX, UnderlinePos, LinePosX + TextWidth, UnderlinePos);
+						DrawLine(UnderlineLine, TextCtrl.UnderlineWidth);
 						}
 
 					// strikeout
-					if((DrawStyle & DrawStyle.Strikeout) != 0)
+					if((TextCtrl.DrawStyle & DrawStyle.Strikeout) != 0)
 						{
-						double StrikeoutPos = PosY + Font.StrikeoutPosition(FontSize);
-						DrawLine(PosX, StrikeoutPos, PosX + TextWidth, StrikeoutPos, Font.StrikeoutWidth(FontSize));
+						double StrikeoutPos = PosY + TextCtrl.StrikeoutPosition;
+						LineD StrikeoutLine = new LineD(LinePosX, StrikeoutPos, LinePosX + TextWidth, StrikeoutPos);
+						DrawLine(StrikeoutLine, TextCtrl.StrikeoutWidth);
 						}
 					}
 				}
@@ -2287,41 +1816,90 @@ namespace PdfFileWriter
 			else
 				{
 				// subscript
-				if((DrawStyle & (DrawStyle.Subscript | DrawStyle.Superscript)) == DrawStyle.Subscript)
+				if((TextCtrl.DrawStyle & (DrawStyle.Subscript | DrawStyle.Superscript)) == DrawStyle.Subscript)
 					{
 					// subscript font size and location
-					PosY -= Font.SubscriptPosition(FontSize);
-					FontSize = Font.SubscriptSize(FontSize);
+					PosY -= TextCtrl.SubscriptPosition;
+					PdfDrawTextCtrl SubTextCtrl = new PdfDrawTextCtrl(TextCtrl);
+					SubTextCtrl.FontSize = TextCtrl.SubscriptSize;
 
 					// draw text string
-					TextWidth = DrawText(Font, FontSize, PosX, PosY, Justify, Text);
+					TextWidth = DrawTextNormal(SubTextCtrl, PosX, PosY, Text);
 					}
 
 				// superscript
-				if((DrawStyle & (DrawStyle.Subscript | DrawStyle.Superscript)) == DrawStyle.Superscript)
+				if((TextCtrl.DrawStyle & (DrawStyle.Subscript | DrawStyle.Superscript)) == DrawStyle.Superscript)
 					{
 					// superscript font size and location
-					PosY += Font.SuperscriptPosition(FontSize);
-					FontSize = Font.SuperscriptSize(FontSize);
+					PosY += TextCtrl.SuperscriptPosition;
+					PdfDrawTextCtrl SuperTextCtrl = new PdfDrawTextCtrl(TextCtrl);
+					SuperTextCtrl.FontSize = TextCtrl.SuperscriptSize;
 
 					// draw text string
-					TextWidth = DrawText(Font, FontSize, PosX, PosY, Justify, Text);
+					TextWidth = DrawTextNormal(SuperTextCtrl, PosX, PosY, Text);
 					}
 				}
 
 			// we have color restore graphics state
-			if(TextColor != Color.Empty) RestoreGraphicsState();
-			
+			if(TextCtrl.TextColor != Color.Empty) RestoreGraphicsState();
+
+			// annotation
+			if(TextCtrl.Annotation != null)
+				{
+				// adjust position
+				switch(TextCtrl.Justify)
+					{
+					// right
+					case TextJustify.Right:
+						PosX -= TextWidth;
+						break;
+
+					// center
+					case TextJustify.Center:
+						PosX -= 0.5 * TextWidth;
+						break;
+					}
+
+				TextCtrl.Annotation.AnnotRect = new PdfRectangle(PosX, PosY - TextCtrl.TextDescent, PosX + TextWidth, PosY + TextCtrl.TextAscent);
+				}
+
 			// return text width
 			return TextWidth;
 			}
 
-		////////////////////////////////////////////////////////////////////
+		/// <summary>
+		/// Draw text with kerning
+		/// </summary>
+		/// <param name="TextCtrl">PDF draw text control</param>
+		/// <param name="PosX">Position X</param>
+		/// <param name="PosY">Position Y</param>
+		/// <param name="Text">Text</param>
+		/// <returns>Text width</returns>
+		public double DrawTextWithKerning
+				(
+				PdfDrawTextCtrl TextCtrl,
+				double PosX,
+				double PosY,
+				string Text
+				)
+			{
+			// text is null or empty
+			if(string.IsNullOrEmpty(Text)) return 0;
+
+			// create text position adjustment array based on kerning information
+			PdfKerningAdjust[] KernArray = TextCtrl.Font.TextKerning(Text);
+
+			// no kerning
+			if(KernArray == null) return DrawText(TextCtrl, PosX, PosY, Text);
+
+			// draw text with adjustment
+			return DrawTextWithKerning(TextCtrl, PosX, PosY, KernArray);
+			}
+
 		/// <summary>
 		/// Draw text with kerning array
 		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
+		/// <param name="TextCtrl">PDF draw text control</param>
 		/// <param name="PosX">Position X</param>
 		/// <param name="PosY">Position Y</param>
 		/// <param name="KerningArray">Kerning array</param>
@@ -2330,28 +1908,26 @@ namespace PdfFileWriter
 		/// Each kerning item consists of text and position adjustment.
 		/// The adjustment is a negative number.
 		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public double DrawText
+		public double DrawTextWithKerning
 				(
-				PdfFont Font,
-				double FontSize,        // in points
+				PdfDrawTextCtrl TextCtrl,
 				double PosX,
 				double PosY,
-				KerningAdjust[] KerningArray
+				PdfKerningAdjust[] KerningArray
 				)
 			{
 			// text is null or empty
 			if(KerningArray == null || KerningArray.Length == 0) return 0;
 
 			// add font code to current list of font codes
-			AddToUsedResources(Font);
+			AddToUsedResources(TextCtrl.Font);
 
 			// draw text initialization
 			BeginTextMode();
 			SetTextPosition(PosX, PosY);
 
 			// draw text with kerning
-			double Width = DrawTextWithKerning(Font, FontSize, KerningArray);
+			double Width = DrawTextWithKerning(TextCtrl, KerningArray);
 
 			// draw text termination
 			EndTextMode();
@@ -2360,190 +1936,23 @@ namespace PdfFileWriter
 			return Width;
 			}
 
-		internal double DrawTextWithKerning
-				(
-				PdfFont Font,           // font object
-				double FontSize,
-				KerningAdjust[] KerningArray
-				)
-			{
-			byte[] FontResCode = null;
-			byte[] FontResGlyph = null;
-
-			// convert font sise to string
-			string FontSizeStr = string.Format(NFI.PeriodDecSep, "{0}", Round(FontSize));
-
-			// set last use glyph index
-			bool GlyphIndexFlag = false;
-
-			// text width
-			int Width = 0;
-
-			// loop for kerning pairs
-			int Index = 0;
-			for(;;)
-				{
-				KerningAdjust KA = KerningArray[Index];
-				string Text = KA.Text;
-
-				// loop for all text characters
-				for(int Ptr = 0; Ptr < Text.Length; Ptr++)
-					{
-					// get character information
-					CharInfo CharInfo = Font.GetCharInfo(Text[Ptr]);
-
-					// set active flag
-					CharInfo.ActiveChar = true;
-
-					// accumulate width
-					Width += CharInfo.DesignWidth;
-
-					// change between 0-255 and 255-65535
-					if(Index == 0 && Ptr == 0 || CharInfo.Type0Font != GlyphIndexFlag)
-						{
-						// close partial string
-						if(Ptr != 0)
-							{
-							ObjectValueList.Add((byte) ')');
-							}
-
-						// close code/glyph area
-						if(Index != 0)
-							{
-							ObjectValueList.Add((byte) ']');
-							ObjectValueList.Add((byte) 'T');
-							ObjectValueList.Add((byte) 'J');
-							}
-
-						// save glyph index
-						GlyphIndexFlag = CharInfo.Type0Font;
-
-						// ouput font resource and font size
-						if(!GlyphIndexFlag)
-							{
-							if(FontResCode == null)
-								{
-								FontResCode = CreateFontResStr(Font.ResourceCode, FontSizeStr);
-								Font.FontResCodeUsed = true;
-								}
-							ObjectValueList.AddRange(FontResCode);
-							}
-						else
-							{
-							if(FontResGlyph == null)
-								{
-								FontResGlyph = CreateFontResStr(Font.ResourceCodeGlyph, FontSizeStr);
-								if(!Font.FontResGlyphUsed)
-									Font.CreateGlyphIndexFont();
-								}
-							ObjectValueList.AddRange(FontResGlyph);
-							}
-
-						ObjectValueList.Add((byte) '[');
-						ObjectValueList.Add((byte) '(');
-						}
-
-					else if(Ptr == 0)
-						{
-						ObjectValueList.Add((byte) '(');
-						}
-
-					// output character code
-					if(!GlyphIndexFlag)
-						{
-						OutputOneByte(CharInfo.CharCode);
-						}
-
-					// output glyph index
-					else
-						{
-						if(CharInfo.NewGlyphIndex < 0)
-							CharInfo.NewGlyphIndex = Font.EmbeddedFont ? Font.NewGlyphIndex++ : CharInfo.GlyphIndex;
-						OutputOneByte(CharInfo.NewGlyphIndex >> 8);
-						OutputOneByte(CharInfo.NewGlyphIndex & 0xff);
-						}
-					}
-
-				ObjectValueList.Add((byte) ')');
-
-				// test for end of kerning array
-				Index++;
-				if(Index == KerningArray.Length)
-					break;
-
-				// add adjustment
-				ObjectValueFormat("{0}", Round(-KA.Adjust));
-
-				// convert the adjustment width to font design width
-				Width += (int) Math.Round(KA.Adjust * Font.DesignHeight / 1000.0, 0, MidpointRounding.AwayFromZero);
-				}
-
-			// "]Tj"
-			ObjectValueList.Add((byte) ']');
-			ObjectValueList.Add((byte) 'T');
-			ObjectValueList.Add((byte) 'J');
-			ObjectValueList.Add((byte) '\n');
-			return Font.FontDesignToUserUnits(FontSize, Width);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw text with kerning
-		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="PosX">Position X</param>
-		/// <param name="PosY">Position Y</param>
-		/// <param name="Text">Text</param>
-		/// <returns>Text width</returns>
-		////////////////////////////////////////////////////////////////////
-		public double DrawTextWithKerning
-				(
-				PdfFont Font,
-				double FontSize,        // in points
-				double PosX,
-				double PosY,
-				string Text
-				)
-			{
-			// text is null or empty
-			if(string.IsNullOrEmpty(Text)) return 0;
-
-			// create text position adjustment array based on kerning information
-			KerningAdjust[] KernArray = Font.TextKerning(Text);
-
-			// no kerning
-			if(KernArray == null) return DrawText(Font, FontSize, PosX, PosY, Text);
-
-			// draw text with adjustment
-			return DrawText(Font, FontSize, PosX, PosY, KernArray);
-			}
-
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw text with special effects
 		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
+		/// <param name="TextCtrl">Pdf draw text control</param>
 		/// <param name="PosX">Position X</param>
 		/// <param name="PosY">Position Y</param>
-		/// <param name="Justify">Text justify enumeration</param>
 		/// <param name="OutlineWidth">Outline width</param>
-		/// <param name="StrokingColor">Stoking (outline) color</param>
-		/// <param name="NonStokingColor">Non stroking (fill) color</param>
+		/// <param name="OutlineColor">Stoking (outline) color</param>
 		/// <param name="Text">Text</param>
 		/// <returns>Text width</returns>
-		////////////////////////////////////////////////////////////////////
 		public double DrawText
 				(
-				PdfFont Font,
-				double FontSize,        // in points
+				PdfDrawTextCtrl TextCtrl,
 				double PosX,
 				double PosY,
-				TextJustify Justify,
 				double OutlineWidth,
-				Color StrokingColor,
-				Color NonStokingColor,
+				Color OutlineColor,
 				string Text
 				)
 			{
@@ -2551,19 +1960,19 @@ namespace PdfFileWriter
 			if(string.IsNullOrEmpty(Text)) return 0;
 
 			// add font code to current list of font codes
-			AddToUsedResources(Font);
+			AddToUsedResources(TextCtrl.Font);
 
 			// save graphics state
 			SaveGraphicsState();
 
 			// create text position adjustment array based on kerning information
-			KerningAdjust[] KernArray = Font.TextKerning(Text);
+			PdfKerningAdjust[] KernArray = TextCtrl.Font.TextKerning(Text);
 
 			// text width
-			double Width = KernArray == null ? Font.TextWidth(FontSize, Text) : Font.TextKerningWidth(FontSize, KernArray);
+			double Width = KernArray == null ? TextCtrl.TextWidth(Text) : TextCtrl.Font.TextKerningWidth(TextCtrl.FontSize, KernArray);
 
 			// adjust position
-			switch(Justify)
+			switch(TextCtrl.Justify)
 				{
 				// right
 				case TextJustify.Right:
@@ -2578,16 +1987,17 @@ namespace PdfFileWriter
 
 			// special effects
 			TextRendering TR = TextRendering.Fill;
-			if(!StrokingColor.IsEmpty)
+			if(!OutlineColor.IsEmpty)
 				{
 				SetLineWidth(OutlineWidth);
-				SetColorStroking(StrokingColor);
+				SetColorStroking(OutlineColor);
 				TR = TextRendering.Stroke;
 				}
-			if(!NonStokingColor.IsEmpty)
+
+			if(!TextCtrl.TextColor.IsEmpty)
 				{
-				SetColorNonStroking(NonStokingColor);
-				TR = StrokingColor.IsEmpty ? TextRendering.Fill : TextRendering.FillStroke;
+				SetColorNonStroking(TextCtrl.TextColor);
+				TR = OutlineColor.IsEmpty ? TextRendering.Fill : TextRendering.FillStroke;
 				}
 
 			// draw text initialization
@@ -2598,13 +2008,13 @@ namespace PdfFileWriter
 			// draw text without kerning
 			if(KernArray == null)
 				{
-				DrawTextInternal(Font, FontSize, Text);
+				DrawTextNoPos(TextCtrl, Text);
 				}
 
 			// draw text with kerning
 			else
 				{
-				DrawTextWithKerning(Font, FontSize, KernArray);
+				DrawTextWithKerning(TextCtrl, KernArray);
 				}
 
 			// draw text termination
@@ -2613,168 +2023,51 @@ namespace PdfFileWriter
 			// restore graphics state
 			RestoreGraphicsState();
 
+			// add rectangle to annotation
+			if(TextCtrl.Annotation != null)
+				{
+				TextCtrl.Annotation.AnnotRect = new PdfRectangle(PosX, PosY - TextCtrl.TextDescent, PosX + Width, PosY + TextCtrl.TextAscent);
+				}
+
 			// exit
 			return Width;
 			}
 
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
-		/// Draw text with annotation action
+		/// Clip text exposing area underneath
 		/// </summary>
-		/// <param name="Page">Current page</param>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="TextAbsPosX">Text absolute position X</param>
-		/// <param name="TextAbsPosY">Text absolute position Y</param>
+		/// <param name="TextCtrl">PDF draw text control</param>
+		/// <param name="PosX">Position X</param>
+		/// <param name="PosY">Position Y</param>
 		/// <param name="Text">Text</param>
-		/// <param name="AnnotAction">Annotation action</param>
-		/// <returns>Text width</returns>
-		/// <remarks>
-		///	The position arguments are in relation to the
-		///	bottom left corner of the paper.
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public double DrawTextWithAnnotation
+		public void ClipText
 				(
-				PdfPage Page,
-				PdfFont Font,
-				double FontSize,        // in points
-				double TextAbsPosX,
-				double TextAbsPosY,
-				string Text,
-				AnnotAction AnnotAction
+				PdfDrawTextCtrl TextCtrl,
+				double PosX,
+				double PosY,
+				string Text
 				)
 			{
-			return DrawTextWithAnnotation(Page, Font, FontSize, TextAbsPosX, TextAbsPosY, TextJustify.Left, DrawStyle.Underline, Color.DarkBlue, Text, AnnotAction);
+			// text is null or empty
+			if (string.IsNullOrEmpty(Text)) return;
+
+			// add font code to current list of font codes
+			AddToUsedResources(TextCtrl.Font);
+
+			// draw text
+			BeginTextMode();
+			SetTextPosition(PosX, PosY);
+			SetTextRenderingMode(TextRendering.Clip);
+			DrawTextNoPos(TextCtrl, Text);
+			EndTextMode();
+			return;
 			}
 
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw web link with one line of text
-		/// </summary>
-		/// <param name="Page">Current page</param>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="TextAbsPosX">Text absolute position X</param>
-		/// <param name="TextAbsPosY">Text absolute position Y</param>
-		/// <param name="Text">Text</param>
-		/// <param name="WebLinkStr">Web link</param>
-		/// <returns>Text width</returns>
-		/// <remarks>
-		///	The position arguments are in relation to the
-		///	bottom left corner of the paper.
-		///	Text will be drawn left justified, underlined and in dark blue.
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public double DrawWebLink
-				(
-				PdfPage Page,
-				PdfFont Font,
-				double FontSize,        // in points
-				double TextAbsPosX,
-				double TextAbsPosY,
-				string Text,
-				string WebLinkStr
-				)
-			{
-			return DrawTextWithAnnotation(Page, Font, FontSize, TextAbsPosX, TextAbsPosY, TextJustify.Left,
-				DrawStyle.Underline, Color.DarkBlue, Text, new AnnotWebLink(WebLinkStr));
-			}
 
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw web link with one line of text
-		/// </summary>
-		/// <param name="Page">Current page</param>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="TextAbsPosX">Text absolute position X</param>
-		/// <param name="TextAbsPosY">Text absolute position Y</param>
-		/// <param name="Justify">Text justify enumeration.</param>
-		/// <param name="DrawStyle">Draw style enumeration</param>
-		/// <param name="TextColor">Color</param>
-		/// <param name="Text">Text</param>
-		/// <param name="WebLinkStr">Web link</param>
-		/// <returns>Text width</returns>
-		/// <remarks>
-		///	The position arguments are in relation to the
-		///	bottom left corner of the paper.
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public double DrawWebLink
-				(
-				PdfPage Page,
-				PdfFont Font,
-				double FontSize,        // in points
-				double TextAbsPosX,
-				double TextAbsPosY,
-				TextJustify Justify,
-				DrawStyle DrawStyle,
-				Color TextColor,
-				string Text,
-				string WebLinkStr
-				)
-			{
-			return DrawTextWithAnnotation(Page, Font, FontSize, TextAbsPosX, TextAbsPosY, Justify, DrawStyle, TextColor, Text, new AnnotWebLink(WebLinkStr));
-			}
+		//////////////////////////////////////////////////////////
+		//	Draw text box methods								//
+		//////////////////////////////////////////////////////////
 
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw text with annotation action
-		/// </summary>
-		/// <param name="Page">Current page</param>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="TextAbsPosX">Text absolute position X</param>
-		/// <param name="TextAbsPosY">Text absolute position Y</param>
-		/// <param name="Justify">Text justify enumeration.</param>
-		/// <param name="DrawStyle">Draw style enumeration</param>
-		/// <param name="TextColor">Color</param>
-		/// <param name="Text">Text</param>
-		/// <param name="AnnotAction">Annotation action</param>
-		/// <returns>Text width</returns>
-		/// <remarks>
-		///	The position arguments are in relation to the
-		///	bottom left corner of the paper.
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public double DrawTextWithAnnotation
-				(
-				PdfPage Page,
-				PdfFont Font,
-				double FontSize,        // in points
-				double TextAbsPosX,
-				double TextAbsPosY,
-				TextJustify Justify,
-				DrawStyle DrawStyle,
-				Color TextColor,
-				string Text,
-				AnnotAction AnnotAction
-				)
-			{
-			double Width = DrawText(Font, FontSize, TextAbsPosX, TextAbsPosY, Justify, DrawStyle, TextColor, Text);
-			if(Width == 0.0) return 0.0;
-
-			// adjust position
-			switch(Justify)
-				{
-				// right
-				case TextJustify.Right:
-					TextAbsPosX -= Width;
-					break;
-
-				// center
-				case TextJustify.Center:
-					TextAbsPosX -= 0.5 * Width;
-					break;
-				}
-
-			PdfRectangle AnnotRect = new PdfRectangle(TextAbsPosX, TextAbsPosY - Font.DescentPlusLeading(FontSize), TextAbsPosX + Width, TextAbsPosY + Font.AscentPlusLeading(FontSize));
-			Page.AddAnnotInternal(AnnotRect, AnnotAction);
-			return Width;
-			}
-
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw TextBox
 		/// </summary>
@@ -2817,23 +2110,20 @@ namespace PdfFileWriter
 		/// page bottom left corner.
 		/// </para>
 		/// </remarks>
-		////////////////////////////////////////////////////////////////////
 		public int DrawText
 				(
 				double PosX,
 				ref double PosYTop,
 				double PosYBottom,
 				int LineNo,
-				TextBox TextBox,
+				PdfTextBox TextBox,
 				PdfPage Page = null
 				)
 			{
 			return DrawText(PosX, ref PosYTop, PosYBottom, LineNo, 0.0, 0.0, TextBoxJustify.Left, TextBox, Page);
 			}
 
-		////////////////////////////////////////////////////////////////////
 		// Draw Text for TextBox with web link
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw TextBox
 		/// </summary>
@@ -2883,7 +2173,6 @@ namespace PdfFileWriter
 		/// will display a straight right edge.
 		/// </para>
 		/// </remarks>
-		////////////////////////////////////////////////////////////////////
 		public int DrawText
 				(
 				double PosX,
@@ -2893,7 +2182,7 @@ namespace PdfFileWriter
 				double LineExtraSpace,
 				double ParagraphExtraSpace,
 				TextBoxJustify Justify,
-				TextBox TextBox,
+				PdfTextBox TextBox,
 				PdfPage Page = null
 				)
 			{
@@ -2901,7 +2190,7 @@ namespace PdfFileWriter
 			for(; LineNo < TextBox.LineCount; LineNo++)
 				{
 				// short cut
-				TextBoxLine Line = TextBox[LineNo];
+				PdfTextBoxLine Line = TextBox[LineNo];
 
 				// break out of the loop if printing below bottom line
 				if(PosYTop - Line.LineHeight < PosYBottom) break;
@@ -2938,7 +2227,6 @@ namespace PdfFileWriter
 					DrawText(X, PosYTop, Line, Page);
 					}
 
-
 				// advance position y to next line
 				PosYTop -= Line.Descent + LineExtraSpace;
 				if(Line.EndOfParagraph) PosYTop -= ParagraphExtraSpace;
@@ -2946,350 +2234,17 @@ namespace PdfFileWriter
 			return LineNo;
 			}
 
-		////////////////////////////////////////////////////////////////////
-		// Draw text within text box left justified
-		////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////
+		// Draw barcode methods									//
+		//////////////////////////////////////////////////////////
 
-		private double DrawText
-				(
-				double PosX,
-				double PosY,
-				TextBoxLine Line,
-				PdfPage Page
-				)
-			{
-			double SegPosX = PosX;
-			foreach(TextBoxSeg Seg in Line.SegArray)
-				{
-				double SegWidth = DrawText(Seg.Font, Seg.FontSize, SegPosX, PosY, TextJustify.Left, Seg.DrawStyle, Seg.FontColor, Seg.Text);
-				if(Seg.AnnotAction != null)
-					{
-					if(Page == null) throw new ApplicationException("TextBox with WebLink. You must call DrawText with PdfPage");
-					PdfRectangle AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.Font.DescentPlusLeading(Seg.FontSize),
-						SegPosX + SegWidth, PosY + Seg.Font.AscentPlusLeading(Seg.FontSize));
-					Page.AddAnnotInternal(AnnotRect, Seg.AnnotAction);
-					}
-
-				SegPosX += SegWidth;
-				}
-
-			return SegPosX - PosX;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// Draw text within text box center or right justified
-		////////////////////////////////////////////////////////////////////
-
-		private double DrawText
-				(
-				double PosX,
-				double PosY,
-				double Width,
-				TextBoxJustify Justify,
-				TextBoxLine Line,
-				PdfPage Page
-				)
-			{
-			double LineWidth = 0;
-			foreach(TextBoxSeg Seg in Line.SegArray) LineWidth += Seg.SegWidth;
-
-			double SegPosX = PosX;
-			if(Justify == TextBoxJustify.Right) SegPosX += Width - LineWidth;
-			else SegPosX += 0.5 * (Width - LineWidth);
-			foreach(TextBoxSeg Seg in Line.SegArray)
-				{
-				double SegWidth = DrawText(Seg.Font, Seg.FontSize, SegPosX, PosY, TextJustify.Left, Seg.DrawStyle, Seg.FontColor, Seg.Text);
-				if(Seg.AnnotAction != null)
-					{
-					if(Page == null)
-						throw new ApplicationException("TextBox with WebLink. You must call DrawText with PdfPage");
-					PdfRectangle AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.Font.DescentPlusLeading(Seg.FontSize),
-						SegPosX + SegWidth, PosY + Seg.Font.AscentPlusLeading(Seg.FontSize));
-					Page.AddAnnotInternal(AnnotRect, Seg.AnnotAction);
-					}
-
-				SegPosX += SegWidth;
-				}
-
-			return SegPosX - PosX;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// Draw text justify to width within text box
-		////////////////////////////////////////////////////////////////////
-
-		private double DrawText
-				(
-				double PosX,
-				double PosY,
-				double Width,
-				TextBoxLine Line,
-				PdfPage Page
-				)
-			{
-			if(!TextFitToWidth(Width, out double WordSpacing, out double CharSpacing, Line))
-				return DrawText(PosX, PosY, Line, Page);
-			SaveGraphicsState();
-			SetWordSpacing(WordSpacing);
-			SetCharacterSpacing(CharSpacing);
-
-			double SegPosX = PosX;
-			foreach(TextBoxSeg Seg in Line.SegArray)
-				{
-				double SegWidth = DrawText(Seg.Font, Seg.FontSize, SegPosX, PosY, TextJustify.Left, Seg.DrawStyle, Seg.FontColor,
-					Seg.Text) + Seg.SpaceCount * WordSpacing + Seg.Text.Length * CharSpacing;
-				if(Seg.AnnotAction != null)
-					{
-					if(Page == null) throw new ApplicationException("TextBox with WebLink. You must call DrawText with PdfPage");
-					PdfRectangle AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.Font.DescentPlusLeading(Seg.FontSize),
-						SegPosX + SegWidth, PosY + Seg.Font.AscentPlusLeading(Seg.FontSize));
-					Page.AddAnnotInternal(AnnotRect, Seg.AnnotAction);
-					}
-				SegPosX += SegWidth;
-				}
-			RestoreGraphicsState();
-			return SegPosX - PosX;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// Stretch text to given width
-		////////////////////////////////////////////////////////////////////
-
-		private bool TextFitToWidth
-				(
-				double ReqWidth,
-				out double WordSpacing,
-				out double CharSpacing,
-				TextBoxLine Line
-				)
-			{
-			WordSpacing = 0;
-			CharSpacing = 0;
-
-			int CharCount = 0;
-			double Width = 0;
-			int SpaceCount = 0;
-			double SpaceWidth = 0;
-			foreach(TextBoxSeg Seg in Line.SegArray)
-				{
-				// accumulate line width
-				CharCount += Seg.Text.Length;
-				Width += Seg.SegWidth;
-
-				// count spaces
-				SpaceCount += Seg.SpaceCount;
-
-				// accumulate space width
-				SpaceWidth += Seg.SpaceCount * Seg.Font.CharWidth(Seg.FontSize, ' ');
-				}
-
-			// reduce character count by one
-			CharCount--;
-			if(CharCount <= 0) return false;
-
-			// extra spacing required
-			double ExtraSpace = ReqWidth - Width;
-
-			// highest possible output device resolution (12000 dots per inch)
-			double MaxRes = 0.006 / ScaleFactor;
-
-			// string is too wide
-			if(ExtraSpace < (-MaxRes)) return false;
-
-			// string is just right
-			if(ExtraSpace < MaxRes) return true;
-
-			// String does not have any blank characters
-			if(SpaceCount == 0)
-				{
-				CharSpacing = ExtraSpace / CharCount;
-				return true;
-				}
-
-			// extra space per word
-			WordSpacing = ExtraSpace / SpaceCount;
-
-			// extra space is equal or less than one blank
-			if(WordSpacing <= SpaceWidth / SpaceCount) return true;
-
-			// extra space is larger that one blank
-			// increase character and word spacing
-			CharSpacing = ExtraSpace / (10 * SpaceCount + CharCount);
-			WordSpacing = 10 * CharSpacing;
-			return true;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Clip text exposing area underneath
-		/// </summary>
-		/// <param name="Font">Font</param>
-		/// <param name="FontSize">Font size</param>
-		/// <param name="PosX">Position X</param>
-		/// <param name="PosY">Position Y</param>
-		/// <param name="Text">Text</param>
-		////////////////////////////////////////////////////////////////////
-		public void ClipText
-				(
-				PdfFont Font,
-				double FontSize,        // in points
-				double PosX,
-				double PosY,
-				string Text
-				)
-			{
-			// text is null or empty
-			if(string.IsNullOrEmpty(Text)) return;
-
-			// add font code to current list of font codes
-			AddToUsedResources(Font);
-
-			// draw text
-			BeginTextMode();
-			SetTextPosition(PosX, PosY);
-			SetTextRenderingMode(TextRendering.Clip);
-			DrawTextInternal(Font, FontSize, Text);
-			EndTextMode();
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw barcode
 		/// </summary>
+		/// <param name="BarcodeCtrl">Barcode draw control</param>
 		/// <param name="PosX">Position X</param>
 		/// <param name="PosY">Position Y</param>
-		/// <param name="BarWidth">Narrow bar width</param>
-		/// <param name="BarHeight">Barcode height</param>
 		/// <param name="Barcode">Derived barcode class</param>
-		/// <param name="TextFont">Optional text font</param>
-		/// <param name="FontSize">Optional text font size</param>
-		/// <returns>Barcode width</returns>
-		/// <remarks>
-		/// <para>
-		/// PosX can be the left, centre or right side of the barcode.
-		/// The Justify argument controls the meaning of PosX.
-		/// PosY is the position of the bottom side of the barcode. 
-		/// If optional text is displayed it will be
-		/// displayed below PosY. If optional text is wider than the
-		/// barcode it will be extended to the left and right sides
-		/// of the barcode.
-		/// </para>
-		/// <para>
-		/// The BarWidth argument is the width of the narrow bar.
-		/// </para>
-		/// <para>
-		/// The BarcodeHeight argument is the height of the barcode 
-		/// excluding optional text.
-		/// </para>
-		/// <para>
-		/// Set Barcode to one of the derived classes. 
-		/// This library supports: Barcode128, Barcode39 and BarcodeEAN13.
-		/// Note BarcodeEAN13 supports Barcode UPC-A.
-		/// </para>
-		/// <para>
-		/// Barcode text is optional. If TextFont and FontSize are omitted 
-		/// no text will be drawn under the barcode. If TextFont and
-		/// FontSize are specified the barcode text will be displayed
-		/// under the barcode. It will be horizontally centered in relation
-		/// to the barcode.
-		/// </para>
-		/// <para>
-		/// Barcode text is displayed below PosY. Make sure to leave
-		/// space under the barcode.
-		/// </para>
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public double DrawBarcode
-				(
-				double PosX,
-				double PosY,
-				double BarWidth,
-				double BarHeight,
-				Barcode Barcode,
-				PdfFont TextFont = null,
-				double FontSize = 0.0
-				)
-			{
-			return DrawBarcode(PosX, PosY, TextJustify.Left, BarWidth, BarHeight, Color.Black, Barcode, TextFont, FontSize);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw barcode
-		/// </summary>
-		/// <param name="PosX">Position X</param>
-		/// <param name="PosY">Position Y</param>
-		/// <param name="Justify">Barcode justify (using TextJustify enumeration)</param>
-		/// <param name="BarWidth">Narrow bar width</param>
-		/// <param name="BarcodeHeight">Barcode height</param>
-		/// <param name="Barcode">Derived barcode class</param>
-		/// <param name="TextFont">Text font</param>
-		/// <param name="FontSize">Text font size</param>
-		/// <returns>Barcode width</returns>
-		/// <remarks>
-		/// <para>
-		/// PosX can be the left, centre or right side of the barcode.
-		/// The Justify argument controls the meaning of PosX.
-		/// PosY is the position of the bottom side of the barcode. 
-		/// If optional text is displayed it will be
-		/// displayed below PosY. If optional text is wider than the
-		/// barcode it will be extended to the left and right sides
-		/// of the barcode.
-		/// </para>
-		/// <para>
-		/// The BarWidth argument is the width of the narrow bar.
-		/// </para>
-		/// <para>
-		/// The BarcodeHeight argument is the height of the barcode 
-		/// excluding optional text.
-		/// </para>
-		/// <para>
-		/// Set Barcode to one of the derived classes. 
-		/// This library supports: Barcode128, Barcode39 and BarcodeEAN13.
-		/// Note BarcodeEAN13 supports Barcode UPC-A.
-		/// </para>
-		/// <para>
-		/// Barcode text is optional. If TextFont and FontSize are omitted 
-		/// no text will be drawn under the barcode. If TextFont and
-		/// FontSize are specified the barcode text will be displayed
-		/// under the barcode. It will be horizontally centered in relation
-		/// to the barcode.
-		/// </para>
-		/// <para>
-		/// Barcode text is displayed below PosY. Make sure to leave
-		/// space under the barcode.
-		/// </para>
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public double DrawBarcode
-				(
-				double PosX,
-				double PosY,
-				TextJustify Justify,
-				double BarWidth,
-				double BarcodeHeight,
-				Barcode Barcode,
-				PdfFont TextFont = null,
-				double FontSize = 0.0
-				)
-			{
-			return DrawBarcode(PosX, PosY, Justify, BarWidth, BarcodeHeight, Color.Black, Barcode, TextFont, FontSize);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw barcode
-		/// </summary>
-		/// <param name="PosX">Position X</param>
-		/// <param name="PosY">Position Y</param>
-		/// <param name="Justify">Barcode justify (using TextJustify enumeration)</param>
-		/// <param name="BarWidth">Narrow bar width</param>
-		/// <param name="BarHeight">Barcode height</param>
-		/// <param name="BarColor">Barcode color</param>
-		/// <param name="Barcode">Derived barcode class</param>
-		/// <param name="TextFont">Text font</param>
-		/// <param name="FontSize">Text font size</param>
 		/// <returns>Barcode width</returns>
 		/// <remarks>
 		/// <para>
@@ -3329,37 +2284,30 @@ namespace PdfFileWriter
 		/// a good contrast to white.
 		/// </para>
 		/// </remarks>
-		////////////////////////////////////////////////////////////////////
 		public double DrawBarcode
 				(
+				PdfDrawBarcodeCtrl BarcodeCtrl,
 				double PosX,
 				double PosY,
-				TextJustify Justify,
-				double BarWidth,
-				double BarHeight,
-				Color BarColor,
-				Barcode Barcode,
-				PdfFont TextFont = null,
-				double FontSize = 0.0
+				PdfBarcode Barcode
 				)
 			{
-			// save graphics state
-			SaveGraphicsState();
-
 			// set barcode color
-			SetColorNonStroking(BarColor);
+			PdfDrawCtrl DrawCtrl = new PdfDrawCtrl();
+			DrawCtrl.Paint = DrawPaint.Fill;
+			DrawCtrl.BackgroundTexture = BarcodeCtrl.Color;
 
 			// barcode width
-			double TotalWidth = BarWidth * Barcode.TotalWidth;
+			double TotalWidth = BarcodeCtrl.NarrowBarWidth * Barcode.TotalWidth;
 
 			// switch for adjustment
-			switch(Justify)
+			switch(BarcodeCtrl.Justify)
 				{
-				case TextJustify.Center:
+				case BarcodeJustify.Center:
 					PosX -= 0.5 * TotalWidth;
 					break;
 
-				case TextJustify.Right:
+				case BarcodeJustify.Right:
 					PosX -= TotalWidth;
 					break;
 				}
@@ -3371,25 +2319,32 @@ namespace PdfFileWriter
 			bool Bar = true;
 
 			// all barcodes except EAN-13 or UPC-A
-			if(Barcode.GetType() != typeof(BarcodeEAN13))
+			if(Barcode.GetType() != typeof(PdfBarcodeEAN13))
 				{
 				// loop for all bars
 				for(int Index = 0; Index < Barcode.BarCount; Index++)
 					{
 					// bar width in user units
-					double Width = BarWidth * Barcode.BarWidth(Index);
+					double Width = BarcodeCtrl.NarrowBarWidth * Barcode.BarWidth(Index);
 
 					// draw black bars
-					if(Bar) DrawRectangle(BarPosX, PosY, Width, BarHeight, PaintOp.Fill);
+					if(Bar)
+						{
+						PdfRectangle Rect = new PdfRectangle(BarPosX, PosY, BarPosX + Width, PosY + BarcodeCtrl.Height);
+						DrawGraphics(DrawCtrl, Rect);
+						}
 
 					// update bar position and color
 					BarPosX += Width;
 					Bar = !Bar;
 					}
 
-				// display text if font is specified
-				if(TextFont != null)
-					DrawBarcodeText(TextFont, FontSize, PosX + 0.5 * TotalWidth, PosY, TextJustify.Center, Barcode.Text);
+				// display text centered, if font is specified
+				if(BarcodeCtrl.TextCtrl != null)
+					{
+					BarcodeCtrl.TextCtrl.Justify = TextJustify.Center;
+					DrawBarcodeText(BarcodeCtrl.TextCtrl, PosX + 0.5 * TotalWidth, PosY, Barcode.Text);
+					}
 				}
 
 			// EAN-13 or UPC-A
@@ -3399,13 +2354,18 @@ namespace PdfFileWriter
 				for(int Index = 0; Index < Barcode.BarCount; Index++)
 					{
 					// bar width in user units
-					double Width = BarWidth * Barcode.BarWidth(Index);
+					double Width = BarcodeCtrl.NarrowBarWidth * Barcode.BarWidth(Index);
 
 					// adjust vertical position
-					double DeltaY = Index < 7 || Index >= 27 && Index < 32 || Index >= 52 ? 0.0 : 5 * BarWidth;
+					double DeltaY = Index < 7 || Index >= 27 && Index < 32 || Index >= 52 ? 0.0 : 5 * BarcodeCtrl.NarrowBarWidth;
 
 					// draw black bars
-					if(Bar) DrawRectangle(BarPosX, PosY + DeltaY, Width, BarHeight - DeltaY, PaintOp.Fill);
+					if(Bar)
+						{
+						PdfRectangle Rect = new PdfRectangle(BarPosX, PosY + DeltaY,
+							BarPosX + Width, PosY + BarcodeCtrl.Height);
+						DrawGraphics(DrawCtrl, Rect);
+						}
 
 					// update bar position and color
 					BarPosX += Width;
@@ -3413,71 +2373,46 @@ namespace PdfFileWriter
 					}
 
 				// display text if font is specified
-				if(TextFont != null)
+				if(BarcodeCtrl.TextCtrl != null)
 					{
 					// substrings positions
-					double PosX1 = PosX - 2.0 * BarWidth;
-					double PosX2 = PosX + 27.5 * BarWidth;
-					double PosX3 = PosX + 67.5 * BarWidth;
-					double PosX4 = PosX + 97.0 * BarWidth;
-					double PosY1 = PosY + 5.0 * BarWidth;
+					double PosX1 = PosX - 2.0 * BarcodeCtrl.NarrowBarWidth;
+					double PosX2 = PosX + 27.5 * BarcodeCtrl.NarrowBarWidth;
+					double PosX3 = PosX + 67.5 * BarcodeCtrl.NarrowBarWidth;
+					double PosX4 = PosX + 97.0 * BarcodeCtrl.NarrowBarWidth;
+					double PosY1 = PosY + 5.0 * BarcodeCtrl.NarrowBarWidth;
 
 					// UPC-A
 					if(Barcode.Text.Length == 12)
 						{
-						DrawBarcodeText(TextFont, FontSize, PosX1, PosY1, TextJustify.Right, Barcode.Text.Substring(0, 1));
-						DrawBarcodeText(TextFont, FontSize, PosX2, PosY1, TextJustify.Center, Barcode.Text.Substring(1, 5));
-						DrawBarcodeText(TextFont, FontSize, PosX3, PosY1, TextJustify.Center, Barcode.Text.Substring(6, 5));
-						DrawBarcodeText(TextFont, FontSize, PosX4, PosY1, TextJustify.Left, Barcode.Text.Substring(11));
+						BarcodeCtrl.TextCtrl.Justify = TextJustify.Right;
+						DrawBarcodeText(BarcodeCtrl.TextCtrl, PosX1, PosY1, Barcode.Text.Substring(0, 1));
+						BarcodeCtrl.TextCtrl.Justify = TextJustify.Center;
+						DrawBarcodeText(BarcodeCtrl.TextCtrl, PosX2, PosY1, Barcode.Text.Substring(1, 5));
+						DrawBarcodeText(BarcodeCtrl.TextCtrl, PosX3, PosY1, Barcode.Text.Substring(6, 5));
+						BarcodeCtrl.TextCtrl.Justify = TextJustify.Left;
+						DrawBarcodeText(BarcodeCtrl.TextCtrl, PosX4, PosY1, Barcode.Text.Substring(11));
 						}
 					// EAN-13
 					else
 						{
-						DrawBarcodeText(TextFont, FontSize, PosX1, PosY1, TextJustify.Right, Barcode.Text.Substring(0, 1));
-						DrawBarcodeText(TextFont, FontSize, PosX2, PosY1, TextJustify.Center, Barcode.Text.Substring(1, 6));
-						DrawBarcodeText(TextFont, FontSize, PosX3, PosY1, TextJustify.Center, Barcode.Text.Substring(7));
+						BarcodeCtrl.TextCtrl.Justify = TextJustify.Right;
+						DrawBarcodeText(BarcodeCtrl.TextCtrl, PosX1, PosY1, Barcode.Text.Substring(0, 1));
+						BarcodeCtrl.TextCtrl.Justify = TextJustify.Center;
+						DrawBarcodeText(BarcodeCtrl.TextCtrl, PosX2, PosY1, Barcode.Text.Substring(1, 6));
+						DrawBarcodeText(BarcodeCtrl.TextCtrl, PosX3, PosY1, Barcode.Text.Substring(7));
 						}
 					}
 				}
-
-			// restore graphics state
-			RestoreGraphicsState();
 
 			// return width
 			return TotalWidth;
 			}
 
-		////////////////////////////////////////////////////////////////////
-		// Draw barcode text
-		////////////////////////////////////////////////////////////////////
+		//////////////////////////////////////////////////////////
+		// Draw image methods									//
+		//////////////////////////////////////////////////////////
 
-		private void DrawBarcodeText
-				(
-				PdfFont Font,
-				double FontSize,
-				double CenterPos,
-				double TopPos,
-				TextJustify Justify,
-				string Text
-				)
-			{
-			// test for non printable characters
-			int Index;
-			for(Index = 0; Index < Text.Length && Text[Index] >= ' ' && Text[Index] <= '~'; Index++)
-				;
-			if(Index < Text.Length)
-				{
-				StringBuilder Str = new StringBuilder(Text);
-				for(; Index < Text.Length; Index++) if(Str[Index] < ' ' || Str[Index] > '~') Str[Index] = ' ';
-				Text = Str.ToString();
-				}
-
-			// draw the text
-			DrawText(Font, FontSize, CenterPos, TopPos - Font.Ascent(FontSize), Justify, Text);
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw image (Height is calculated from width as per aspect ratio)
 		/// </summary>
@@ -3491,7 +2426,6 @@ namespace PdfFileWriter
 		/// PdfImage.ImageSizePosition(...) to ensure correct aspect ratio 
 		/// and positioning.
 		/// </remarks>
-		////////////////////////////////////////////////////////////////////
 		public void DrawImage
 				(
 				PdfImage Image,
@@ -3509,29 +2443,21 @@ namespace PdfFileWriter
 			return;
 			}
 
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw image
 		/// </summary>
 		/// <param name="Image">PdfImage resource</param>
-		/// <param name="OriginX">Origin X</param>
-		/// <param name="OriginY">Origin Y</param>
-		/// <param name="Width">Display width</param>
-		/// <param name="Height">Display height</param>
+		/// <param name="ImageRect">Image display rectangle</param>
 		/// <remarks>
 		/// The chart will be stretched or shrunk to fit the display width
 		/// and display height. Use PdfImage.ImageSize(...) or 
 		/// PdfImage.ImageSizePosition(...) to ensure correct aspect ratio 
 		/// and positioning.
 		/// </remarks>
-		////////////////////////////////////////////////////////////////////
 		public void DrawImage
 				(
 				PdfImage Image,
-				double OriginX,
-				double OriginY,
-				double Width,
-				double Height
+				PdfRectangle ImageRect
 				)
 			{
 			// add image code to current list of resources
@@ -3539,142 +2465,14 @@ namespace PdfFileWriter
 
 			// draw image
 			ObjectValueFormat("q {0} 0 0 {1} {2} {3} cm {4} Do Q\n",
-				ToPt(Width), ToPt(Height), ToPt(OriginX), ToPt(OriginY), Image.ResourceCode);
+				ToPt(ImageRect.Width), ToPt(ImageRect.Height), ToPt(ImageRect.Left), ToPt(ImageRect.Bottom), Image.ResourceCode);
 			return;
 			}
 
-		/// <summary>
-		/// Draw WPF path
-		/// </summary>
-		/// <param name="Path">DrawWPFPath class</param>
-		/// <param name="OriginX">Origin X</param>
-		/// <param name="OriginY">Origin Y</param>
-		/// <param name="Width">Path area width</param>
-		/// <param name="Height">Path area height</param>
-		/// <param name="Alignment">Alignment of path bounding box in drawing area. 0=no alignment</param>
-		public void DrawWPFPath
-				(
-				DrawWPFPath Path,
-				double OriginX,
-				double OriginY,
-				double Width,
-				double Height,
-				ContentAlignment Alignment = (ContentAlignment) 0
-				)
-			{
-			// draw WPF path
-			Path.Draw(this, OriginX, OriginY, Width, Height, Alignment);
-			return;
-			}
+		//////////////////////////////////////////////////////////
+		// Draw X Object methods								//
+		//////////////////////////////////////////////////////////
 
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw chart
-		/// </summary>
-		/// <param name="PdfChart">PdfChart resource</param>
-		/// <param name="OriginX">Origin X</param>
-		/// <param name="OriginY">Origin Y</param>
-		/// <param name="DisposeChart">Dispose chart</param>
-		/// <param name="GCCollect">Run the garbage collector</param>
-		/// <remarks>
-		/// <para>
-		/// The chart is saved in the PDF document as an image.
-		/// </para>
-		/// <para>
-		/// The PdfChart resource contains a .NET Chart class. The .NET
-		/// Chart defines width and height in pixels and image resolution
-		/// in pixels per inch. This method calculates the chart's display
-		/// width and height based on these values.
-		/// </para>
-		/// <para>
-		/// The .NET Chart member is defined by the user. It must be
-		/// disposed in order to free unmanaged resources. If
-		/// DisposeChart is true the DrawChart will call the Chart.Dispose()
-		/// method. If the DisposeChart is false it is the responsibility
-		/// of the calling method to dispose of the chart.
-		/// </para>
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public void DrawChart
-				(
-				PdfChart PdfChart,
-				double OriginX,
-				double OriginY,
-				bool DisposeChart = true,
-				bool GCCollect = true
-				)
-			{
-			// write chart as an image to PDF output file
-			PdfChart.CommitToPdfFile(DisposeChart, GCCollect);
-
-			// add chart code to current list of resources
-			AddToUsedResources(PdfChart);
-
-			// draw chart image
-			ObjectValueFormat("q {0} 0 0 {1} {2} {3} cm {4} Do Q\n",
-				ToPt(PdfChart.Width), ToPt(PdfChart.Height), ToPt(OriginX), ToPt(OriginY), PdfChart.ResourceCode);
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Draw chart
-		/// </summary>
-		/// <param name="PdfChart">PdfChart resource</param>
-		/// <param name="OriginX">Origin X</param>
-		/// <param name="OriginY">Origin Y</param>
-		/// <param name="Width">Display width</param>
-		/// <param name="Height">Display height</param>
-		/// <param name="DisposeChart">Dispose chart</param>
-		/// <param name="GCCollect">Run the garbage collector</param>
-		/// <remarks>
-		/// <para>
-		/// The chart is saved in the PDF document as an image.
-		/// </para>
-		/// <para>
-		/// The PdfChart resource contains a .NET Chart class. The .NET
-		/// Chart defines width and height in pixels and image resolution
-		/// in pixels per inch.
-		/// </para>
-		/// <para>
-		/// The chart will be stretched or shrunk to fit the display width
-		/// and display height. Use PdfChart.ImageSize(...) or 
-		/// PdfChart.ImageSizePosition(...) to ensure correct aspect ratio 
-		/// and positioning.
-		/// </para>
-		/// <para>
-		/// The .NET Chart member is defined by the user. It must be
-		/// disposed in order to free unmanaged resources. If
-		/// DisposeChart is true the DrawChart will call the Chart.Dispose()
-		/// method. If the DisposeChart is false it is the responsibility
-		/// of the calling method to dispose of the chart.
-		/// </para>
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public void DrawChart
-				(
-				PdfChart PdfChart,
-				double OriginX,
-				double OriginY,
-				double Width,
-				double Height,
-				bool DisposeChart = true,
-				bool GCCollect = true
-				)
-			{
-			// write chart as an image to PDF output file
-			PdfChart.CommitToPdfFile(DisposeChart, GCCollect);
-
-			// add image code to current list of resources
-			AddToUsedResources(PdfChart);
-
-			// draw chart image
-			ObjectValueFormat("q {0} 0 0 {1} {2} {3} cm {4} Do Q\n",
-				ToPt(Width), ToPt(Height), ToPt(OriginX), ToPt(OriginY), PdfChart.ResourceCode);
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw X Object
 		/// </summary>
@@ -3683,7 +2481,6 @@ namespace PdfFileWriter
 		/// X object is displayed at current position. X object Size
 		/// is as per X object.
 		/// </remarks>
-		////////////////////////////////////////////////////////////////////
 		public void DrawXObject
 				(
 				PdfXObject XObject
@@ -3697,7 +2494,6 @@ namespace PdfFileWriter
 			return;
 			}
 
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw X Object
 		/// </summary>
@@ -3707,7 +2503,6 @@ namespace PdfFileWriter
 		/// <remarks>
 		/// X object Size is as per X object.
 		/// </remarks>
-		////////////////////////////////////////////////////////////////////
 		public void DrawXObject
 				(
 				PdfXObject XObject,
@@ -3722,7 +2517,6 @@ namespace PdfFileWriter
 			return;
 			}
 
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw X Object
 		/// </summary>
@@ -3731,7 +2525,6 @@ namespace PdfFileWriter
 		/// <param name="OriginY">Origin Y</param>
 		/// <param name="ScaleX">Horizontal scale factor</param>
 		/// <param name="ScaleY">Vertical scale factor</param>
-		////////////////////////////////////////////////////////////////////
 		public void DrawXObject
 				(
 				PdfXObject XObject,
@@ -3748,7 +2541,6 @@ namespace PdfFileWriter
 			return;
 			}
 
-		////////////////////////////////////////////////////////////////////
 		/// <summary>
 		/// Draw X Object
 		/// </summary>
@@ -3758,7 +2550,6 @@ namespace PdfFileWriter
 		/// <param name="ScaleX">Horizontal scale factor</param>
 		/// <param name="ScaleY">Vertical scale factor</param>
 		/// <param name="Alpha">Rotation angle</param>
-		////////////////////////////////////////////////////////////////////
 		public void DrawXObject
 				(
 				PdfXObject XObject,
@@ -3776,16 +2567,56 @@ namespace PdfFileWriter
 			return;
 			}
 
-		// Add resource to list of used resources
-		internal void AddToUsedResources
+		//////////////////////////////////////////////////////////
+		// Misc methods											//
+		//////////////////////////////////////////////////////////
+
+		/// <summary>
+		/// Reverse characters in a string
+		/// </summary>
+		/// <param name="Text">Input string</param>
+		/// <returns>Output string</returns>
+		public static string ReverseString
 				(
-				PdfObject ResObject
+				string Text
 				)
 			{
-			if(ResObjects == null) ResObjects = new List<PdfObject>();
-			int Index = ResObjects.BinarySearch(ResObject);
-			if(Index < 0) ResObjects.Insert(~Index, ResObject);
-			return;
+			char[] RevText = Text.ToCharArray();
+			Array.Reverse(RevText);
+			return new string(RevText);
+			}
+
+		/// <summary>
+		/// Make a color darker
+		/// </summary>
+		/// <param name="BaseColor">Base color</param>
+		/// <param name="Factor">Factor 0 to 1</param>
+		/// <returns>Darker color</returns>
+		public static Color MakeDarker
+				(
+				Color BaseColor,
+				double Factor
+				)
+			{
+			// test argument
+			if (Factor < 0 || Factor > 1) throw new ApplicationException("Make darker factor must be 0 to 1");
+
+			// two extreme cases
+			if (Factor == 0) return BaseColor;
+			if (Factor == 1) return Color.Black;
+
+			// test for gray
+			if (BaseColor.R == BaseColor.G && BaseColor.R == BaseColor.B)
+				{
+				int Gray = (int)(BaseColor.R * (1 - Factor));
+				return Color.FromArgb(Gray, Gray, Gray);
+				}
+
+			// color
+			int Red = (int)(BaseColor.R * (1 - Factor));
+			int Green = (int)(BaseColor.G * (1 - Factor));
+			int Blue = (int)(BaseColor.B * (1 - Factor));
+			return Color.FromArgb(Red, Green, Blue);
 			}
 
 		/// <summary>
@@ -3811,30 +2642,684 @@ namespace PdfFileWriter
 			}
 
 		////////////////////////////////////////////////////////////////////
+		// Set alpha channel
+		////////////////////////////////////////////////////////////////////
+		private void SetAlpha
+				(
+				double Alpha,
+				string Code
+				)
+			{
+			string AlphaStr = Alpha < 0.001 ? "0" : (Alpha > 0.999 ? "1" : Alpha.ToString("0.0##", NFI.PeriodDecSep));
+			PdfExtGState ExtGState = PdfExtGState.CreateExtGState(Document, Code, AlphaStr);
+			AddToUsedResources(ExtGState);
+			ObjectValueFormat("{0} gs\n", ExtGState.ResourceCode);
+			return;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Color to string
+		////////////////////////////////////////////////////////////////////
+		internal static string ColorToString
+				(
+				Color Color,
+				ColorToStr Code
+				)
+			{
+			// test for no color: transparent
+			if (Color == Color.Empty)
+				{
+				return Code == ColorToStr.Array ? "[]" : "";
+				}
+
+			// test for gray
+			if (Color.R == Color.G && Color.R == Color.B)
+				{
+				string CompStr = ColorComponent(Color.R);
+				switch (Code)
+					{
+					case ColorToStr.Stroking:
+						return CompStr + " G";
+					case ColorToStr.NonStroking:
+						return CompStr + " g";
+					case ColorToStr.Array:
+						return "[" + CompStr + "]";
+					}
+				}
+
+			// color
+			else
+				{
+				string CompRStr = ColorComponent(Color.R);
+				string CompGStr = ColorComponent(Color.G);
+				string CompBStr = ColorComponent(Color.B);
+				switch (Code)
+					{
+					case ColorToStr.Stroking:
+						return CompRStr + " " + CompGStr + " " + CompBStr + " RG";
+					case ColorToStr.NonStroking:
+						return CompRStr + " " + CompGStr + " " + CompBStr + " rg";
+					case ColorToStr.Array:
+						return "[" + CompRStr + " " + CompGStr + " " + CompBStr + "]";
+					}
+				}
+			return "";
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Color components
+		////////////////////////////////////////////////////////////////////
+		internal static string ColorComponent
+				(
+				int Comp
+				)
+			{
+			// black
+			if (Comp <= 0) return "0";
+
+			// white
+			if (Comp >= 255) return "1";
+
+			// all other values 1 to 254
+			return ((double)Comp / 255.0).ToString("0.0###", NFI.PeriodDecSep);
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// set border
+		////////////////////////////////////////////////////////////////////
+		private void SetBorder
+				(
+				PdfDrawCtrl DrawCtrl
+				)
+			{
+			// set border width
+			SetLineWidth(DrawCtrl.BorderWidth);
+
+			// set border color
+			SetColorStroking(DrawCtrl.BorderColor == Color.Empty ? Color.Black : DrawCtrl.BorderColor);
+			return;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// set fill paint
+		////////////////////////////////////////////////////////////////////
+		private void SetFillPaint
+				(
+				PdfDrawCtrl DrawCtrl
+				)
+			{
+			// set fill color with color
+			if (DrawCtrl._BackgroundTextureType == BackgroundTextureType.Color)
+				{
+				if (DrawCtrl.BackgroundAlpha != 1) SetAlphaNonStroking(DrawCtrl.BackgroundAlpha);
+				SetColorNonStroking((DrawCtrl._BackgroundTexture == null || (Color)DrawCtrl._BackgroundTexture == Color.Empty) ?
+					Color.LightGray : (Color)DrawCtrl._BackgroundTexture);
+				return;
+				}
+
+			// set fill color with tiling pattern
+			SetPatternNonStroking((PdfTilingPattern)DrawCtrl._BackgroundTexture);
+			return;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Draw textat current position
+		////////////////////////////////////////////////////////////////////
+		internal double DrawTextNoPos
+				(
+				PdfDrawTextCtrl TextCtrl,
+				string Text
+				)
+			{
+			// set last use glyph index
+			bool GlyphIndexFlag = false;
+
+			// text width
+			int Width = 0;
+
+			// shortcut for font
+			PdfFont Font = TextCtrl.Font;
+
+			// loop for all text characters
+			for (int Ptr = 0; Ptr < Text.Length; Ptr++)
+				{
+				// get character information
+				CharInfo CharInfo = Font.GetCharInfo(Text[Ptr]);
+
+				// set active flag
+				CharInfo.ActiveChar = true;
+
+				// accumulate width
+				Width += CharInfo.DesignWidth;
+
+				// change between 0-255 and 255-65535
+				if (Ptr == 0 || CharInfo.Type0Font != GlyphIndexFlag)
+					{
+					// ")Tj"
+					if (Ptr != 0)
+						{
+						ObjectValueList.Add((byte)')');
+						ObjectValueList.Add((byte)'T');
+						ObjectValueList.Add((byte)'j');
+						}
+
+					// save glyph index
+					GlyphIndexFlag = CharInfo.Type0Font;
+
+					// ouput font resource and font size
+					if (!GlyphIndexFlag)
+						{
+						Font.FontResCodeUsed = true;
+						ObjectValueAppend(TextCtrl.FontResourceCode);
+						}
+					else
+						{
+						if (!Font.FontResGlyphUsed)
+							{
+							Font.GlyphIndexFont = new PdfObject(Document, ObjectType.Dictionary, "/Font");
+							Font.FontResGlyphUsed = true;
+							}
+						ObjectValueAppend(TextCtrl.FontResourceGlyph);
+						}
+					ObjectValueList.Add((byte)'(');
+					}
+
+				// output character code
+				if (!GlyphIndexFlag)
+					{
+					OutputOneByte(CharInfo.CharCode);
+					}
+
+				// output glyph index
+				else
+					{
+					if (CharInfo.NewGlyphIndex < 0)
+						CharInfo.NewGlyphIndex = Font.EmbeddedFont ? Font.NewGlyphIndex++ : CharInfo.GlyphIndex;
+					OutputOneByte(CharInfo.NewGlyphIndex >> 8);
+					OutputOneByte(CharInfo.NewGlyphIndex & 0xff);
+					}
+				}
+
+			// ")Tj"
+			ObjectValueList.Add((byte)')');
+			ObjectValueList.Add((byte)'T');
+			ObjectValueList.Add((byte)'j');
+			ObjectValueList.Add((byte)'\n');
+			return TextCtrl.FontDesignToUserUnits(Width);
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// output one byte of text
+		////////////////////////////////////////////////////////////////////
+		internal void OutputOneByte
+				(
+				int CharCode
+				)
+			{
+			switch (CharCode)
+				{
+				case '\r':
+					ObjectValueList.Add((byte)'\\');
+					ObjectValueList.Add((byte)'r');
+					return;
+				case '\n':
+					ObjectValueList.Add((byte)'\\');
+					ObjectValueList.Add((byte)'n');
+					return;
+				case '(':
+					ObjectValueList.Add((byte)'\\');
+					ObjectValueList.Add((byte)'(');
+					return;
+				case ')':
+					ObjectValueList.Add((byte)'\\');
+					ObjectValueList.Add((byte)')');
+					return;
+				case '\\':
+					ObjectValueList.Add((byte)'\\');
+					ObjectValueList.Add((byte)'\\');
+					return;
+				default:
+					ObjectValueList.Add((byte)CharCode);
+					return;
+				}
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Draw text with kerning
+		////////////////////////////////////////////////////////////////////
+		internal double DrawTextWithKerning
+				(
+				PdfDrawTextCtrl TextCtrl,
+				PdfKerningAdjust[] KerningArray
+				)
+			{
+			// set last use glyph index
+			bool GlyphIndexFlag = false;
+
+			// text width
+			int Width = 0;
+
+			// loop for kerning pairs
+			int Index = 0;
+			for (; ; )
+				{
+				PdfKerningAdjust KA = KerningArray[Index];
+				string Text = KA.Text;
+
+				// loop for all text characters
+				for (int Ptr = 0; Ptr < Text.Length; Ptr++)
+					{
+					// get character information
+					CharInfo CharInfo = TextCtrl.Font.GetCharInfo(Text[Ptr]);
+
+					// set active flag
+					CharInfo.ActiveChar = true;
+
+					// accumulate width
+					Width += CharInfo.DesignWidth;
+
+					// change between 0-255 and 255-65535
+					if (Index == 0 && Ptr == 0 || CharInfo.Type0Font != GlyphIndexFlag)
+						{
+						// close partial string
+						if (Ptr != 0) ObjectValueList.Add((byte)')');
+
+						// close code/glyph area
+						if (Index != 0)
+							{
+							ObjectValueList.Add((byte)']');
+							ObjectValueList.Add((byte)'T');
+							ObjectValueList.Add((byte)'J');
+							}
+
+						// save glyph index
+						GlyphIndexFlag = CharInfo.Type0Font;
+
+						// ouput font resource and font size
+						if (!GlyphIndexFlag)
+							{
+							ObjectValueAppend(TextCtrl.FontResourceCode);
+							}
+						else
+							{
+							ObjectValueAppend(TextCtrl.FontResourceGlyph);
+							}
+
+						ObjectValueList.Add((byte)'[');
+						ObjectValueList.Add((byte)'(');
+						}
+
+					else if (Ptr == 0)
+						{
+						ObjectValueList.Add((byte)'(');
+						}
+
+					// output character code
+					if (!GlyphIndexFlag)
+						{
+						OutputOneByte(CharInfo.CharCode);
+						}
+
+					// output glyph index
+					else
+						{
+						if (CharInfo.NewGlyphIndex < 0)
+							CharInfo.NewGlyphIndex = TextCtrl.Font.EmbeddedFont ? TextCtrl.Font.NewGlyphIndex++ : CharInfo.GlyphIndex;
+						OutputOneByte(CharInfo.NewGlyphIndex >> 8);
+						OutputOneByte(CharInfo.NewGlyphIndex & 0xff);
+						}
+					}
+
+				ObjectValueList.Add((byte)')');
+
+				// test for end of kerning array
+				Index++;
+				if (Index == KerningArray.Length) break;
+
+				// add adjustment
+				ObjectValueFormat("{0}", Round(-KA.Adjust));
+
+				// convert the adjustment width to font design width
+				Width += (int)Math.Round(KA.Adjust * TextCtrl.Font.DesignHeight / 1000.0, 0, MidpointRounding.AwayFromZero);
+				}
+
+			// "]Tj"
+			ObjectValueList.Add((byte)']');
+			ObjectValueList.Add((byte)'T');
+			ObjectValueList.Add((byte)'J');
+			ObjectValueList.Add((byte)'\n');
+			return TextCtrl.FontDesignToUserUnits(Width);
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Draw shape
+		////////////////////////////////////////////////////////////////////
+		private void DrawShape
+				(
+				PdfRectangle Rect,
+				PdfDrawCtrl DrawCtrl,
+				PaintOp PP
+				)
+			{
+			// shape
+			switch (DrawCtrl.Shape)
+				{
+				case PdfFileWriter.DrawShape.Rectangle:
+					ObjectValueFormat("{0} {1} {2} {3} re {4}\n",
+						ToPt(Rect.Left), ToPt(Rect.Bottom), ToPt(Rect.Right - Rect.Left),
+						ToPt(Rect.Top - Rect.Bottom), PaintStr[(int)PP]);
+					return;
+
+				case PdfFileWriter.DrawShape.RoundedRect:
+						{
+						double OriginX = Rect.Left;
+						double OriginY = Rect.Bottom;
+						double Width = Rect.Right - OriginX;
+						double Height = Rect.Top - OriginY;
+
+						// make sure radius is not too big
+						double Radius = DrawCtrl.Radius;
+						double RadiusMax = 0.5 * Math.Min(Width, Height);
+						if (Radius <= 0) Radius = 0.5 * RadiusMax;
+						else if (Radius > RadiusMax) Radius = RadiusMax;
+
+						// draw path and set paint operator
+						MoveTo(new PointD(OriginX + Radius, OriginY));
+						DrawBezier(BezierD.CircleFourthQuarter(OriginX + Width - Radius, OriginY + Radius, Radius), BezierPointOne.LineTo);
+						DrawBezier(BezierD.CircleFirstQuarter(OriginX + Width - Radius, OriginY + Height - Radius, Radius), BezierPointOne.LineTo);
+						DrawBezier(BezierD.CircleSecondQuarter(OriginX + Radius, OriginY + Height - Radius, Radius), BezierPointOne.LineTo);
+						DrawBezier(BezierD.CircleThirdQuarter(OriginX + Radius, OriginY + Radius, Radius), BezierPointOne.LineTo);
+						SetPaintOp(PP);
+						}
+					return;
+
+				case PdfFileWriter.DrawShape.InvRoundedRect:
+						{
+						double OriginX = Rect.Left;
+						double OriginY = Rect.Bottom;
+						double Width = Rect.Right - OriginX;
+						double Height = Rect.Top - OriginY;
+
+						// make sure radius is not too big
+						double Radius = DrawCtrl.Radius;
+						double RadiusMax = 0.5 * Math.Min(Width, Height);
+						if (Radius <= 0) Radius = 0.5 * RadiusMax;
+						else if (Radius > RadiusMax) Radius = RadiusMax;
+
+						// draw path
+						MoveTo(new PointD(OriginX, OriginY + Radius));
+						DrawBezier(BezierD.CircleFourthQuarter(OriginX, OriginY + Height, Radius), BezierPointOne.LineTo);
+						DrawBezier(BezierD.CircleThirdQuarter(OriginX + Width, OriginY + Height, Radius), BezierPointOne.LineTo);
+						DrawBezier(BezierD.CircleSecondQuarter(OriginX + Width, OriginY, Radius), BezierPointOne.LineTo);
+						DrawBezier(BezierD.CircleFirstQuarter(OriginX, OriginY, Radius), BezierPointOne.LineTo);
+						SetPaintOp(PP);
+						}
+					return;
+
+				case PdfFileWriter.DrawShape.Oval:
+						{
+						double Width = 0.5 * (Rect.Right - Rect.Left);
+						double Height = 0.5 * (Rect.Top - Rect.Bottom);
+						double OriginX = Rect.Left + Width;
+						double OriginY = Rect.Bottom + Height;
+						DrawBezier(BezierD.OvalFirstQuarter(OriginX, OriginY, Width, Height), BezierPointOne.MoveTo);
+						DrawBezier(BezierD.OvalSecondQuarter(OriginX, OriginY, Width, Height), BezierPointOne.Ignore);
+						DrawBezier(BezierD.OvalThirdQuarter(OriginX, OriginY, Width, Height), BezierPointOne.Ignore);
+						DrawBezier(BezierD.OvalFourthQuarter(OriginX, OriginY, Width, Height), BezierPointOne.Ignore);
+						SetPaintOp(PP);
+						}
+					return;
+				}
+			return;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Draw one line of text
+		////////////////////////////////////////////////////////////////////
+		private double DrawTextNormal
+				(
+				PdfDrawTextCtrl TextCtrl,
+				double PosX,
+				double PosY,
+				string Text
+				)
+			{
+			// text is null or empty
+			if (string.IsNullOrEmpty(Text)) return 0;
+
+			// add font code to current list of font codes
+			AddToUsedResources(TextCtrl.Font);
+
+			// adjust position
+			switch (TextCtrl.Justify)
+				{
+				// right
+				case TextJustify.Right:
+					PosX -= TextCtrl.TextWidth(Text);
+					break;
+
+				// center
+				case TextJustify.Center:
+					PosX -= 0.5 * TextCtrl.TextWidth(Text);
+					break;
+				}
+
+			// draw text
+			BeginTextMode();
+			SetTextPosition(PosX, PosY);
+			double Width = DrawTextNoPos(TextCtrl, Text);
+			EndTextMode();
+
+			// return text width
+			return Width;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Draw text within text box left justified
+		////////////////////////////////////////////////////////////////////
+		private double DrawText
+				(
+				double PosX,
+				double PosY,
+				PdfTextBoxLine Line,
+				PdfPage Page
+				)
+			{
+			double SegPosX = PosX;
+			foreach(PdfTextBoxSeg Seg in Line.SegArray)
+				{
+				if(Seg.Annotation != null && Page != null) Seg.Annotation.AnnotPage = Page;
+				double SegWidth = DrawText(Seg, SegPosX, PosY, Seg.Text);
+				SegPosX += SegWidth;
+				}
+
+			return SegPosX - PosX;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Draw text within text box center or right justified
+		////////////////////////////////////////////////////////////////////
+		private double DrawText
+				(
+				double PosX,
+				double PosY,
+				double Width,
+				TextBoxJustify Justify,
+				PdfTextBoxLine Line,
+				PdfPage Page
+				)
+			{
+			// line width
+			double LineWidth = 0;
+			foreach (PdfTextBoxSeg Seg in Line.SegArray) LineWidth += Seg.SegWidth;
+
+			// x position
+			double SegPosX = PosX;
+			if (Justify == TextBoxJustify.Right) SegPosX += Width - LineWidth;
+			else SegPosX += 0.5 * (Width - LineWidth);
+
+			foreach (PdfTextBoxSeg Seg in Line.SegArray)
+				{
+				if (Seg.Annotation != null && Page != null) Seg.Annotation.AnnotPage = Page;
+				double SegWidth = DrawText(Seg, SegPosX, PosY, Seg.Text);
+				SegPosX += SegWidth;
+				}
+
+			return SegPosX - PosX;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Draw text justify to width within text box
+		////////////////////////////////////////////////////////////////////
+		private double DrawText
+				(
+				double PosX,
+				double PosY,
+				double Width,
+				PdfTextBoxLine Line,
+				PdfPage Page
+				)
+			{
+			if (!TextFitToWidth(Width, out double WordSpacing, out double CharSpacing, Line))
+				return DrawText(PosX, PosY, Line, Page);
+
+			SaveGraphicsState();
+			SetWordSpacing(WordSpacing);
+			SetCharacterSpacing(CharSpacing);
+
+			double SegPosX = PosX;
+			foreach (PdfTextBoxSeg Seg in Line.SegArray)
+				{
+				double SegWidth = DrawText(Seg, SegPosX, PosY, Seg.Text) + Seg.SpaceCount * WordSpacing + Seg.Text.Length * CharSpacing;
+				if (Seg.Annotation != null)
+					{
+//					if (Page == null) throw new ApplicationException("TextBox with WebLink. You must call DrawText with PdfPage");
+					if(Page != null) Seg.Annotation.AnnotPage = Page;
+					Seg.Annotation.AnnotRect = new PdfRectangle(SegPosX, PosY - Seg.TextDescent,
+						SegPosX + SegWidth, PosY + Seg.TextAscent);
+					}
+				SegPosX += SegWidth;
+				}
+			RestoreGraphicsState();
+			return SegPosX - PosX;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Stretch text to given width
+		////////////////////////////////////////////////////////////////////
+		private bool TextFitToWidth
+				(
+				double ReqWidth,
+				out double WordSpacing,
+				out double CharSpacing,
+				PdfTextBoxLine Line
+				)
+			{
+			WordSpacing = 0;
+			CharSpacing = 0;
+
+			int CharCount = 0;
+			double Width = 0;
+			int SpaceCount = 0;
+			double SpaceWidth = 0;
+			foreach (PdfTextBoxSeg Seg in Line.SegArray)
+				{
+				// accumulate line width
+				CharCount += Seg.Text.Length;
+				Width += Seg.SegWidth;
+
+				// count spaces
+				SpaceCount += Seg.SpaceCount;
+
+				// accumulate space width
+				SpaceWidth += Seg.SpaceCount * Seg.CharWidth(' ');
+				}
+
+			// reduce character count by one
+			CharCount--;
+			if (CharCount <= 0) return false;
+
+			// extra spacing required
+			double ExtraSpace = ReqWidth - Width;
+
+			// highest possible output device resolution (12000 dots per inch)
+			double MaxRes = 0.006 / ScaleFactor;
+
+			// string is too wide
+			if (ExtraSpace < (-MaxRes)) return false;
+
+			// string is just right
+			if (ExtraSpace < MaxRes) return true;
+
+			// String does not have any blank characters
+			if (SpaceCount == 0)
+				{
+				CharSpacing = ExtraSpace / CharCount;
+				return true;
+				}
+
+			// extra space per word
+			WordSpacing = ExtraSpace / SpaceCount;
+
+			// extra space is equal or less than one blank
+			if (WordSpacing <= SpaceWidth / SpaceCount) return true;
+
+			// extra space is larger that one blank
+			// increase character and word spacing
+			CharSpacing = ExtraSpace / (10 * SpaceCount + CharCount);
+			WordSpacing = 10 * CharSpacing;
+			return true;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Draw barcode text
+		////////////////////////////////////////////////////////////////////
+		private void DrawBarcodeText
+				(
+				PdfDrawTextCtrl TextCtrl,
+				double CenterPos,
+				double TopPos,
+				string Text
+				)
+			{
+			// test for non printable characters
+			int Index;
+			for (Index = 0; Index < Text.Length && Text[Index] >= ' ' && Text[Index] <= '~'; Index++) ;
+			if (Index < Text.Length)
+				{
+				StringBuilder Str = new StringBuilder(Text);
+				for (; Index < Text.Length; Index++) if (Str[Index] < ' ' || Str[Index] > '~') Str[Index] = ' ';
+				Text = Str.ToString();
+				}
+
+			// draw the text
+			DrawText(TextCtrl, CenterPos, TopPos - TextCtrl.TextAscent, Text);
+			return;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Add resource to list of used resources
+		////////////////////////////////////////////////////////////////////
+		internal void AddToUsedResources
+				(
+				PdfObject ResObject
+				)
+			{
+			if (ResObjects == null) ResObjects = new List<PdfObject>();
+			int Index = ResObjects.BinarySearch(ResObject);
+			if (Index < 0) ResObjects.Insert(~Index, ResObject);
+			return;
+			}
+
+		////////////////////////////////////////////////////////////////////
 		// close object before writing to PDF file
 		////////////////////////////////////////////////////////////////////
 		internal override void CloseObject()
 			{
 			// build resource dictionary for non page contents
-			if(!PageContents) Dictionary.Add("/Resources", BuildResourcesDictionary(ResObjects, false));
+			if(!PageContents) Dictionary.Add("/Resources", BuildResourcesDictionary(ResObjects));
 
 			// exit
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Set paint operator
-		/// </summary>
-		/// <param name="PP">Paint operator from custom string</param>
-		////////////////////////////////////////////////////////////////////
-		public void SetPaintOp
-				(
-				string PP
-				)
-			{
-			// apply paint operator
-			ObjectValueFormat("{0}\n", PP);
 			return;
 			}
 		}

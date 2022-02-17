@@ -1,20 +1,33 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfRadialShading
 //	PDF radial shading resource class.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -22,9 +35,6 @@
 //	For version history please refer to PdfDocument.cs
 //
 /////////////////////////////////////////////////////////////////////
-
-using System;
-using SysMedia = System.Windows.Media;
 
 namespace PdfFileWriter
 	{
@@ -37,10 +47,10 @@ namespace PdfFileWriter
 	/// </remarks>
 	public class PdfRadialShading : PdfObject
 		{
-		private double BBoxLeft;
-		private double BBoxBottom;
-		private double BBoxRight;
-		private double BBoxTop;
+		/// <summary>
+		/// Bounding box
+		/// </summary>
+		public PdfRectangle BBox { get; set;}
 
 		private MappingMode Mapping;
 		private double StartCenterX;
@@ -58,19 +68,11 @@ namespace PdfFileWriter
 		/// PDF radial shading constructor.
 		/// </summary>
 		/// <param name="Document">Parent PDF document object</param>
-		/// <param name="BBoxLeft">Bounding box left position</param>
-		/// <param name="BBoxBottom">Bounding box bottom position</param>
-		/// <param name="BBoxWidth">Bounding box width</param>
-		/// <param name="BBoxHeight">Bounding box height</param>
 		/// <param name="ShadingFunction">Shading function</param>
 		////////////////////////////////////////////////////////////////////
 		public PdfRadialShading
 				(
 				PdfDocument Document,
-				double BBoxLeft,
-				double BBoxBottom,
-				double BBoxWidth,
-				double BBoxHeight,
 				PdfShadingFunction ShadingFunction
 				) : base(Document)
 			{
@@ -86,11 +88,8 @@ namespace PdfFileWriter
 			// add shading function to shading dictionary
 			Dictionary.AddIndirectReference("/Function", ShadingFunction);
 
-			// bounding box
-			this.BBoxLeft = BBoxLeft;
-			this.BBoxBottom = BBoxBottom;
-			this.BBoxRight = BBoxLeft + BBoxWidth;
-			this.BBoxTop = BBoxBottom + BBoxHeight;
+			// set boundig box to unit matrix
+			BBox = new PdfRectangle(0, 0, 1, 1);
 
 			// assume the direction of color change is along x axis
 			this.Mapping = MappingMode.Relative;
@@ -100,58 +99,6 @@ namespace PdfFileWriter
 			this.EndCenterX = 0.5;
 			this.EndCenterY = 0.5;
 			this.EndRadius = Math.Sqrt(0.5);
-			return;
-			}
-
-		/// <summary>
-		/// PDF radial shading constructor for one unit bounding box
-		/// </summary>
-		/// <param name="Document">Parent PDF document object.</param>
-		/// <param name="ShadingFunction">Shading function.</param>
-		public PdfRadialShading
-				(
-				PdfDocument Document,
-				PdfShadingFunction ShadingFunction
-				) : this(Document, 0.0, 0.0, 1.0, 1.0, ShadingFunction) {}
-
-		/// <summary>
-		/// PDF radial shading constructor for one unit bounding box
-		/// </summary>
-		/// <param name="Document">Parent PDF document object.</param>
-		/// <param name="MediaBrush">System.Windows.Media brush</param>
-		/// <remarks>Support for WPF media</remarks>
-		public PdfRadialShading
-				(
-				PdfDocument Document,
-				SysMedia.RadialGradientBrush MediaBrush
-				) : this(Document, 0.0, 0.0, 1.0, 1.0, new PdfShadingFunction(Document, MediaBrush))
-			{
-			SetGradientDirection(MediaBrush.Center.X, MediaBrush.Center.Y, 0.0,
-				MediaBrush.GradientOrigin.X, MediaBrush.GradientOrigin.Y, 0.5 * (MediaBrush.RadiusX + MediaBrush.RadiusY),
-				MediaBrush.MappingMode == SysMedia.BrushMappingMode.RelativeToBoundingBox ? MappingMode.Relative : MappingMode.Absolute);
-			return;
-			}
-
-		/// <summary>
-		/// Set bounding box
-		/// </summary>
-		/// <param name="BBoxLeft">Bounding box left</param>
-		/// <param name="BBoxBottom">Bounding box bottom</param>
-		/// <param name="BBoxWidth">Bounding box width</param>
-		/// <param name="BBoxHeight">Bounding box height</param>
-		public void SetBoundingBox
-				(
-				double BBoxLeft,
-				double BBoxBottom,
-				double BBoxWidth,
-				double BBoxHeight
-				)
-			{
-			// bounding box
-			this.BBoxLeft = BBoxLeft;
-			this.BBoxBottom = BBoxBottom;
-			this.BBoxRight = BBoxLeft + BBoxWidth;
-			this.BBoxTop = BBoxBottom + BBoxHeight;
 			return;
 			}
 
@@ -225,7 +172,7 @@ namespace PdfFileWriter
 		internal override void CloseObject()
 			{
 			// bounding box
-			Dictionary.AddRectangle("/BBox", BBoxLeft, BBoxBottom, BBoxRight, BBoxTop);
+			Dictionary.AddRectangle("/BBox", BBox);
 
 			// absolute mapping mode
 			if(Mapping == MappingMode.Absolute)
@@ -233,15 +180,16 @@ namespace PdfFileWriter
 				Dictionary.AddFormat("/Coords", "[{0} {1} {2} {3} {4} {5}]",
 					ToPt(StartCenterX), ToPt(StartCenterY), ToPt(StartRadius), ToPt(EndCenterX), ToPt(EndCenterY), ToPt(EndRadius));
 				}
+
 			// relative mapping mode
 			else
 				{
-				double RelStartCenterX = BBoxLeft * (1.0 - StartCenterX) + BBoxRight * StartCenterX;
-				double RelStartCenterY = BBoxBottom * (1.0 - StartCenterY) + BBoxTop * StartCenterY;
-				double BBoxSide = Math.Min(Math.Abs(BBoxRight - BBoxLeft), Math.Abs(BBoxTop - BBoxBottom));
+				double RelStartCenterX = BBox.Left * (1.0 - StartCenterX) + BBox.Right * StartCenterX;
+				double RelStartCenterY = BBox.Bottom * (1.0 - StartCenterY) + BBox.Top * StartCenterY;
+				double BBoxSide = Math.Min(Math.Abs(BBox.Right - BBox.Left), Math.Abs(BBox.Top - BBox.Bottom));
 				double RelStartRadius = BBoxSide * StartRadius;
-				double RelEndCenterX = BBoxLeft * (1.0 - EndCenterX) + BBoxRight * EndCenterX;
-				double RelEndCenterY = BBoxBottom * (1.0 - EndCenterY) + BBoxTop * EndCenterY;
+				double RelEndCenterX = BBox.Left * (1.0 - EndCenterX) + BBox.Right * EndCenterX;
+				double RelEndCenterY = BBox.Bottom * (1.0 - EndCenterY) + BBox.Top * EndCenterY;
 				double RelEndRadius = BBoxSide * EndRadius;
 				Dictionary.AddFormat("/Coords", "[{0} {1} {2} {3} {4} {5}]",
 					ToPt(RelStartCenterX), ToPt(RelStartCenterY), ToPt(RelStartRadius), ToPt(RelEndCenterX), ToPt(RelEndCenterY), ToPt(RelEndRadius));

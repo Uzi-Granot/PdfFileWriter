@@ -1,20 +1,33 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfFontFile
 //	Support Class to embed font with the PDF File.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -23,24 +36,20 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace PdfFileWriter
 	{
 	internal class PdfFontFile : PdfObject
 		{
-		private PdfFont PdfFont;
-		private FontApi FontInfo;
-		private int FirstChar;
-		private int LastChar;
-		private bool GlyphIndexFont;
-		private bool SymbolicFont;
-		private CharInfo[][] CharInfoArray;
+		private readonly PdfFont PdfFont;
+		private readonly PdfFontApi FontInfo;
+		private readonly int FirstChar;
+		private readonly int LastChar;
+		private readonly bool GlyphIndexFont;
+		private readonly bool SymbolicFont;
+		private readonly CharInfo[][] CharInfoArray;
 
 		private FontFileHeader FileHeader;
-		private cmapSubTbl cmapSubTbl;
+		private CmapSubTbl cmapSubTbl;
 		private headTable headTable;
 		private hheaTable hheaTable;
 		private ushort[] hmtxTable;
@@ -65,7 +74,7 @@ namespace PdfFileWriter
 		private const uint prepTag = 0x70726570;    // "prep"
 
 		// this array must be in sorted order
-		private TableRecord[] TableRecordArray = new TableRecord[]
+		private readonly TableRecord[] TableRecordArray = new TableRecord[]
 			{
 			new TableRecord(cmapTag),
 			new TableRecord(cvtTag),
@@ -116,7 +125,7 @@ namespace PdfFileWriter
 			Dictionary.AddInteger("/Length1", ObjectValueArray.Length);
 
 			// debug
-			if(Document.Debug) ObjectValueArray = Document.TextToByteArray("*** FONT FILE PLACE HOLDER ***");
+			if(Document.Debug) ObjectValueArray = TextToByteArray("*** FONT FILE PLACE HOLDER ***");
 
 			// write stream
 			WriteToPdfFile();
@@ -364,12 +373,12 @@ namespace PdfFileWriter
 			if(ReadUInt16BigEndian() != 0)
 				throw new ApplicationException("CMAP table version number is not zero");
 			int NumberOfTables = ReadUInt16BigEndian();
-			cmapSubTbl[] SubTblArray = new cmapSubTbl[NumberOfTables];
+			CmapSubTbl[] SubTblArray = new CmapSubTbl[NumberOfTables];
 
 			// loop for tables
 			for(int Index = 0; Index < NumberOfTables; Index++)
 				{
-				cmapSubTbl SubTbl = new cmapSubTbl();
+				CmapSubTbl SubTbl = new CmapSubTbl();
 				SubTblArray[Index] = SubTbl;
 				SubTbl.PlatformID = ReadUInt16BigEndian();
 				SubTbl.EncodingID = ReadUInt16BigEndian();
@@ -428,13 +437,13 @@ namespace PdfFileWriter
 		////////////////////////////////////////////////////////////////////
 		// Select best sub-table in "cmap" table
 		////////////////////////////////////////////////////////////////////
-		private cmapSubTbl SelectcmapSubTable
+		private CmapSubTbl SelectcmapSubTable
 				(
-				cmapSubTbl[] SubTblArray
+				CmapSubTbl[] SubTblArray
 				)
 			{
 			// search for platform ID = 3 Windows, encoding ID = 0 or 1 Unicode and format 4
-			cmapSubTbl SearchSubTbl = new cmapSubTbl(3, (ushort) (SymbolicFont ? 0 : 1), 4);
+			CmapSubTbl SearchSubTbl = new CmapSubTbl(3, (ushort) (SymbolicFont ? 0 : 1), 4);
 			int Index = Array.BinarySearch(SubTblArray, SearchSubTbl);
 			if(Index >= 0) return SubTblArray[Index];
 
@@ -951,7 +960,7 @@ namespace PdfFileWriter
 		private void BuildCharMapTable()
 			{
 			// create a new cmap sub table
-			cmapSubTbl NewSubTbl = new cmapSubTbl(cmapSubTbl.PlatformID, cmapSubTbl.EncodingID, 4);
+			CmapSubTbl NewSubTbl = new CmapSubTbl(cmapSubTbl.PlatformID, cmapSubTbl.EncodingID, 4);
 			NewSubTbl.Language = cmapSubTbl.Language;
 			NewSubTbl.SegCount = 2;
 			NewSubTbl.SegArray = new cmapSeg[2];
@@ -1279,9 +1288,6 @@ namespace PdfFileWriter
 			Array.Copy(Header, Buffer, Header.Length);
 			BufPtr = Header.Length;
 
-			// we do not need header buffer
-			Header = null;
-
 			// write tables
 			foreach(TableRecord TR in TableRecordArray)
 				{
@@ -1419,7 +1425,7 @@ namespace PdfFileWriter
 		////////////////////////////////////////////////////////////////////
 		// Calculate table checksum
 		////////////////////////////////////////////////////////////////////
-		private uint TableChecksum
+		private static uint TableChecksum
 				(
 				byte[] Table
 				)
@@ -1427,23 +1433,6 @@ namespace PdfFileWriter
 			uint ChkSum = 0;
 			for(int Ptr = 0; Ptr < Table.Length; Ptr++) ChkSum += (uint) Table[Ptr] << (24 - 8 * (Ptr & 3));
 			return ChkSum;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// convert table tag from binary to string
-		////////////////////////////////////////////////////////////////////
-		private static string TagBinToStr
-				(
-				uint BinTag
-				)
-			{
-			StringBuilder StrTag = new StringBuilder("????");
-			for(int Index = 0; Index < 4; Index++)
-				{
-				byte Ch = (byte) (BinTag >> (24 - 8 * Index));
-				if(Ch >= 32 && Ch <= 126) StrTag[Index] = (char) Ch;
-				}
-			return StrTag.ToString();
 			}
 		}
 	}

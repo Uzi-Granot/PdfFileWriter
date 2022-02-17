@@ -1,20 +1,33 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfTable
 //	Data table support.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -22,10 +35,6 @@
 //	For version history please refer to PdfDocument.cs
 //
 /////////////////////////////////////////////////////////////////////
-
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 
 namespace PdfFileWriter
 	{
@@ -470,14 +479,12 @@ namespace PdfFileWriter
 		/// </summary>
 		/// <param name="Page">Current PdfPage.</param>
 		/// <param name="Contents">Current PdfContents.</param>
-		/// <param name="Font">Table's default font.</param>
-		/// <param name="FontSize">Table's default font size.</param>
+		/// <param name="TextCtrl">Draw text control</param>
 		public PdfTable
 				(
 				PdfPage Page,
 				PdfContents Contents,
-				PdfFont Font = null,
-				double FontSize = 9.0
+				PdfDrawTextCtrl TextCtrl = null
 				)
 			{
 			// save arguments
@@ -485,19 +492,34 @@ namespace PdfFileWriter
 			this.Page = Page;
 			this.Contents = Contents;
 
-			// See if at least one font is defined. Make it the default font for the table
-			if(Font == null)
+			// default text control is not defined
+			if(TextCtrl == null)
+				{ 
+				// See if at least one font is defined. Make it the default font for the table
 				foreach(PdfObject Obj in Document.ObjectArray)
+					{ 
 					if(Obj.GetType() == typeof(PdfFont))
 						{
-						Font = (PdfFont) Obj;
+						TextCtrl = new PdfDrawTextCtrl((PdfFont) Obj, 9);
 						break;
 						}
+					}
+
+				// if no font is defined, try Arial
+				if(TextCtrl == null)
+					{
+					try
+						{ 
+						TextCtrl = new PdfDrawTextCtrl(Document, "Arial", FontStyle.Regular, 9);
+						}
+					catch
+						{
+						}
+					}
+				}
 
 			// initialize default cell style
-			DefaultCellStyle = new PdfTableStyle();
-			DefaultCellStyle.Font = Font;
-			DefaultCellStyle.FontSize = FontSize;
+			DefaultCellStyle = new PdfTableStyle(TextCtrl);
 			DefaultCellStyle.Margin.Left = DefaultCellStyle.Margin.Right = 3.0 / Document.ScaleFactor;
 			DefaultCellStyle.Margin.Bottom = DefaultCellStyle.Margin.Top = 1.0 / Document.ScaleFactor;
 
@@ -581,8 +603,7 @@ namespace PdfFileWriter
 		public void PdfTableInitialization()
 			{
 			// initialize table is done
-			if(Active)
-				return;
+			if(Active) return;
 
 			// make sure we have columns width array
 			if(_ColumnWidth == null) throw new ApplicationException("PdfTable: SetColumnWidth array is missing.");
@@ -939,7 +960,8 @@ namespace PdfFileWriter
 		private void DrawBorders()
 			{
 			// draw top border line
-			Contents.DrawLine(BorderLeftPos, BorderYPos[0], BorderRightPos, BorderYPos[0], Borders.TopBorder);
+			LineD TopLine = new LineD(BorderLeftPos, BorderYPos[0], BorderRightPos, BorderYPos[0]);
+			Contents.DrawLine(TopLine, Borders.TopBorder.Width, Borders.TopBorder.Color);
 
 			// row
 			int RowStart = 1;
@@ -948,24 +970,28 @@ namespace PdfFileWriter
 			// draw horizontal header border line
 			if(BorderHeaderActive)
 				{
-				Contents.DrawLine(BorderLeftPos, BorderYPos[1], BorderRightPos, BorderYPos[1], Borders.HeaderHorBorder);
+				LineD HeaderLine = new LineD(BorderLeftPos, BorderYPos[1], BorderRightPos, BorderYPos[1]);
+				Contents.DrawLine(HeaderLine, Borders.HeaderHorBorder.Width, Borders.HeaderHorBorder.Color);
 				RowStart++;
 				}
 
 			// draw horizontal cells border lines
 			for(int Row = RowStart; Row < RowEnd; Row++)
 				{
-				Contents.DrawLine(BorderLeftPos, BorderYPos[Row], BorderRightPos, BorderYPos[Row], Borders.CellHorBorder);
+				LineD HorLine = new LineD(BorderLeftPos, BorderYPos[Row], BorderRightPos, BorderYPos[Row]);
+				Contents.DrawLine(HorLine, Borders.CellHorBorder.Width, Borders.CellHorBorder.Color);
 				}
 
 			// draw horizontal bottom border line
-			Contents.DrawLine(BorderLeftPos, BorderRowTopPos, BorderRightPos, BorderRowTopPos, Borders.BottomBorder);
+			LineD BotLine = new LineD(BorderLeftPos, BorderRowTopPos, BorderRightPos, BorderRowTopPos);
+			Contents.DrawLine(BotLine, Borders.BottomBorder.Width, Borders.BottomBorder.Color);
 
 			// draw each vertical border line for header style
 			if(BorderHeaderActive && Borders.HeaderVertBorderActive)
 				for(int Col = 0; Col <= Columns; Col++)
 					{
-					Contents.DrawLine(ColumnPosition[Col], BorderYPos[0], ColumnPosition[Col], BorderYPos[1], Borders.HeaderVertBorder[Col]);
+					LineD VertLine = new LineD(ColumnPosition[Col], BorderYPos[0], ColumnPosition[Col], BorderYPos[1]);
+					Contents.DrawLine(VertLine, Borders.HeaderVertBorder[Col].Width, Borders.HeaderVertBorder[Col].Color);
 					}
 
 			// draw each vertical line between cells
@@ -974,7 +1000,8 @@ namespace PdfFileWriter
 				double Top = BorderHeaderActive ? BorderYPos[1] : BorderYPos[0];
 				for(int Col = 0; Col <= Columns; Col++)
 					{
-					Contents.DrawLine(ColumnPosition[Col], Top, ColumnPosition[Col], BorderRowTopPos, Borders.CellVertBorder[Col]);
+					LineD VertLine = new LineD(ColumnPosition[Col], Top, ColumnPosition[Col], BorderRowTopPos);
+					Contents.DrawLine(VertLine, Borders.CellVertBorder[Col].Width, Borders.CellVertBorder[Col].Color);
 					}
 				}
 			return;

@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "TestPdfFileWriter": {
-      "commandName": "Project",
-      "workingDirectory": "$(ProjectDir)Work"
-    }
-  }
-}

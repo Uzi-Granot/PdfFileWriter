@@ -1,20 +1,33 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfShadingFunction
 //	Support class for both axial and radial shading resources.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -22,10 +35,6 @@
 //	For version history please refer to PdfDocument.cs
 //
 /////////////////////////////////////////////////////////////////////
-
-using System;
-using System.Drawing;
-using SysMedia = System.Windows.Media;
 
 namespace PdfFileWriter
 	{
@@ -62,30 +71,6 @@ namespace PdfFileWriter
 				ObjectValueList.Add(Color.R);   // red
 				ObjectValueList.Add(Color.G);   // green
 				ObjectValueList.Add(Color.B);   // blue
-				}
-			return;
-			}
-
-		/// <summary>
-		/// PDF Shading function constructor
-		/// </summary>
-		/// <param name="Document">Document object parent of this function.</param>
-		/// <param name="Brush">System.Windows.Media gradient brush</param>
-		public PdfShadingFunction
-				(
-				PdfDocument Document,
-				SysMedia.GradientBrush Brush
-				) : base(Document, ObjectType.Stream)
-			{
-			// build dictionary
-			Constructorhelper(Brush.GradientStops.Count);
-
-			// add color array to contents stream
-			foreach(System.Windows.Media.GradientStop Stop in Brush.GradientStops)
-				{
-				ObjectValueList.Add(Stop.Color.R);  // red
-				ObjectValueList.Add(Stop.Color.G);  // green
-				ObjectValueList.Add(Stop.Color.B);  // blue
 				}
 			return;
 			}

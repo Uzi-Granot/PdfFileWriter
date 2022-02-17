@@ -1,20 +1,33 @@
 /////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfImage
 //	PDF Image resource.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -23,11 +36,7 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
 using System.Runtime.InteropServices;
 
 namespace PdfFileWriter
@@ -69,7 +78,7 @@ namespace PdfFileWriter
 	/// <a href="http://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version#DrawImage">For example of drawing image see 3.9. Draw Image and Clip it</a>
 	/// </para>
 	/// </remarks>
-	public class PdfImage : PdfObject, IDisposable
+	public class PdfImage : PdfObject
 		{
 		/// <summary>
 		/// Save image as
@@ -252,11 +261,14 @@ namespace PdfFileWriter
 
 			// set save as to BWImage
 			SaveAs = SaveImageAs.BWImage;
+
+			// write to output file
+			SaveImageObject();
 			return;
 			}
 
 		/// <summary>
-		/// Load image fro Pdf417Encoder
+		/// Load image from Pdf417Encoder
 		/// </summary>
 		/// <param name="Pdf417Encoder">Pdf417 encoder</param>
 		public void LoadImage
@@ -288,7 +300,7 @@ namespace PdfFileWriter
 		/// <param name="QREncoder">QRCode encoder</param>
 		public void LoadImage
 				(
-				QREncoder QREncoder
+				PdfQREncoder QREncoder
 				)
 			{
 			// barcode width and height
@@ -599,11 +611,15 @@ namespace PdfFileWriter
 					break;
 				}
 
-			// dispose picture
-			Dispose();
+			// release bitmap
+			if (DisposePicture && Picture != null)
+				{
+				Picture.Dispose();
+				Picture = null;
+				}
 
 			// debug
-			if(Document.Debug) ObjectValueArray = Document.TextToByteArray("*** IMAGE PLACE HOLDER ***");
+			if (Document.Debug) ObjectValueArray = TextToByteArray("*** IMAGE PLACE HOLDER ***");
 
 			// write to pdf file
 			WriteToPdfFile();
@@ -641,7 +657,6 @@ namespace PdfFileWriter
 
 			// close and dispose memory stream
 			MS.Close();
-			MS = null;
 
 			// no deflate compression
 			NoCompression = true;
@@ -847,7 +862,7 @@ namespace PdfFileWriter
 				ColorByteArray = Document.Encryption.EncryptByteArray(ObjectNumber, ColorByteArray);
 
 			// convert byte array to PDF string format
-			string ColorStr = Document.ByteArrayToPdfString(ColorByteArray);
+			string ColorStr = ByteArrayToPdfString(ColorByteArray);
 
 			// add items to dictionary
 			Dictionary.AddFormat("/ColorSpace", "[/Indexed /DeviceRGB {0} {1}]", ColorArray.Count - 1, ColorStr);   // R G B
@@ -1009,113 +1024,12 @@ namespace PdfFileWriter
 		////////////////////////////////////////////////////////////////////
 		// Write object to PDF file
 		////////////////////////////////////////////////////////////////////
-		private ImageCodecInfo GetEncoderInfo(string mimeType)
+		private static ImageCodecInfo GetEncoderInfo(string mimeType)
 			{
 			ImageCodecInfo[] EncoderArray = ImageCodecInfo.GetImageEncoders();
 			foreach(ImageCodecInfo Encoder in EncoderArray)
 				if(Encoder.MimeType == mimeType) return Encoder;
 			throw new ApplicationException("GetEncoderInfo: image/jpeg encoder does not exist");
-			;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Calculates image size to preserve aspect ratio.
-		/// </summary>
-		/// <param name="InputSize">Image display area.</param>
-		/// <returns>Adjusted image display area.</returns>
-		/// <remarks>
-		/// Calculates best fit to preserve aspect ratio.
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public SizeD ImageSize
-				(
-				SizeD InputSize
-				)
-			{
-			return ImageSizePos.ImageSize(WidthPix, HeightPix, InputSize.Width, InputSize.Height);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Calculates image size to preserve aspect ratio.
-		/// </summary>
-		/// <param name="Width">Image display width.</param>
-		/// <param name="Height">Image display height.</param>
-		/// <returns>Adjusted image display area.</returns>
-		/// <remarks>
-		/// Calculates best fit to preserve aspect ratio.
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public SizeD ImageSize
-				(
-				double Width,
-				double Height
-				)
-			{
-			return ImageSizePos.ImageSize(WidthPix, HeightPix, Width, Height);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Calculates image size to preserve aspect ratio and sets position.
-		/// </summary>
-		/// <param name="InputSize">Image display area</param>
-		/// <param name="Alignment">Content alignment</param>
-		/// <returns>Adjusted image size and position within area.</returns>
-		/// <remarks>
-		/// Calculates best fit to preserve aspect ratio and adjust
-		/// position according to content alignment argument.
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public PdfRectangle ImageSizePosition
-				(
-				SizeD InputSize,
-				ContentAlignment Alignment
-				)
-			{
-			return ImageSizePos.ImageArea(WidthPix, HeightPix, 0.0, 0.0, InputSize.Width, InputSize.Height, Alignment);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Calculates image size to preserve aspect ratio and sets position.
-		/// </summary>
-		/// <param name="Width">Image display width</param>
-		/// <param name="Height">Image display height</param>
-		/// <param name="Alignment">Content alignment</param>
-		/// <returns>Adjusted image size and position within area.</returns>
-		/// <remarks>
-		/// Calculates best fit to preserve aspect ratio and adjust
-		/// position according to content alignment argument.
-		/// </remarks>
-		////////////////////////////////////////////////////////////////////
-		public PdfRectangle ImageSizePosition
-				(
-				double Width,
-				double Height,
-				ContentAlignment Alignment
-				)
-			{
-			return ImageSizePos.ImageArea(WidthPix, HeightPix, 0.0, 0.0, Width, Height, Alignment);
-			}
-
-		////////////////////////////////////////////////////////////////////
-		/// <summary>
-		/// Dispose unmanaged resources
-		/// </summary>
-		////////////////////////////////////////////////////////////////////
-		public void Dispose()
-			{
-			// release bitmap
-			if(DisposePicture && Picture != null)
-				{
-				Picture.Dispose();
-				Picture = null;
-				}
-
-			// exit
-			return;
 			}
 		}
 	}

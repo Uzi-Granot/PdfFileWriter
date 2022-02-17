@@ -1,20 +1,32 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
-//	PdfLayers
-//	PDF document information dictionary.
+//	PdfLayers class
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -23,8 +35,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace PdfFileWriter
@@ -138,13 +148,13 @@ namespace PdfFileWriter
 				if(!string.IsNullOrWhiteSpace(Layer.RadioButton)) RadioButtons.Add(Layer);
 				}
 			AllLayers.Length--;
-			AllLayers.Append("]");
+			AllLayers.Append(']');
 
 			// add all layers array to the dictionary
 			Dictionary.Add("/OCGs", AllLayers.ToString());
 
 			// create default /D dictionary
-			PdfDictionary DefaultDict = new PdfDictionary(Document);
+			PdfDictionary DefaultDict = new PdfDictionary(this);
 
 			// name
 			DefaultDict.AddPdfString("/Name", Name);
@@ -156,7 +166,7 @@ namespace PdfFileWriter
 			LockedLayers.Length--;
 			if(LockedLayers.Length != 0)
 				{ 
-				LockedLayers.Append("]");
+				LockedLayers.Append(']');
 				DefaultDict.Add("/Locked", LockedLayers.ToString());
 				}
 
@@ -176,18 +186,18 @@ namespace PdfFileWriter
 						}
 					else if(Item.GetType() == typeof(string))
 						{
-						if(OrderArray[OrderArray.Length - 1] == ' ') OrderArray.Length--;
-						OrderArray.Append("[");
-						if((string) Item != "") OrderArray.Append(Document.TextToPdfString((string) Item, this));
+						if(OrderArray[^1] == ' ') OrderArray.Length--;
+						OrderArray.Append('[');
+						if((string) Item != "") OrderArray.Append(TextToPdfString((string) Item, this));
 						}
 					else if(Item.GetType() == typeof(int) && ((int) Item) == 0)
 						{
-						if(OrderArray[OrderArray.Length - 1] == ' ') OrderArray.Length--;
-						OrderArray.Append("]");
+						if(OrderArray[^1] == ' ') OrderArray.Length--;
+						OrderArray.Append(']');
 						}
 					}
-				if(OrderArray[OrderArray.Length - 1] == ' ') OrderArray.Length--;
-				OrderArray.Append("]");
+				if(OrderArray[^1] == ' ') OrderArray.Length--;
+				OrderArray.Append(']');
 				DefaultDict.Add("/Order", OrderArray.ToString());
 				}
 
@@ -210,7 +220,7 @@ namespace PdfFileWriter
 					if(Ptr1 - Ptr < 2) continue;
 
 					// build array of layers with the same radio button name
-					RBArray.Append("[");
+					RBArray.Append('[');
 					int Ptr3 = -1;
 					for(int Ptr2 = Ptr; Ptr2 < Ptr1; Ptr2++)
 						{
@@ -228,11 +238,11 @@ namespace PdfFileWriter
 							}
 						}
 					RBArray.Length--;
-					RBArray.Append("]");
+					RBArray.Append(']');
 					}
 				if(RBArray.Length > 1)
 					{ 
-					RBArray.Append("]");
+					RBArray.Append(']');
 					DefaultDict.Add("/RBGroups", RBArray.ToString());
 					}
 				}
@@ -247,7 +257,7 @@ namespace PdfFileWriter
 			OffLayers.Length--;
 			if(OffLayers.Length != 0)
 				{ 
-				OffLayers.Append("]");
+				OffLayers.Append(']');
 				DefaultDict.Add("/OFF", OffLayers.ToString());
 				}
 

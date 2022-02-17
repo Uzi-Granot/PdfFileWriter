@@ -1,20 +1,33 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfTableStyle
 //	Data table style support.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -23,8 +36,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Drawing;
 using System.Globalization;
 
 namespace PdfFileWriter
@@ -37,7 +48,7 @@ namespace PdfFileWriter
 	/// For more information go to <a href="http://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version#DataTableSupport">2.12 Data Table Support</a>
 	/// </para>
 	/// </remarks>
-	public class PdfTableStyle
+	public class PdfTableStyle : PdfDrawTextCtrl
 		{
 		/// <summary>
 		/// Gets or sets content alignment.
@@ -57,20 +68,13 @@ namespace PdfFileWriter
 		public Color BackgroundColor { get; set; }
 
 		/// <summary>
-		/// Gets or sets barcode narrow bar width
+		/// Draw barcode control
 		/// </summary>
 		/// <remarks>
-		/// The width of the bar code narrow bar.
+		/// Contains the width of the bar code narrow bar.
+		/// and the height of the barcode
 		/// </remarks>
-		public double BarcodeBarWidth { get; set; }
-
-		/// <summary>
-		/// Gets or sets barcode height
-		/// </summary>
-		/// <remarks>
-		/// The height of the barcode excluding optional text.
-		/// </remarks>
-		public double BarcodeHeight { get; set; }
+		public PdfDrawBarcodeCtrl BarcodeCtrl;
 
 		/// <summary>
 		/// Gets or sets first line indent for text box items.
@@ -112,27 +116,6 @@ namespace PdfFileWriter
 		public TextBoxJustify TextBoxTextJustify { get; set; }
 
 		/// <summary>
-		/// Gets or sets font.
-		/// </summary>
-		/// <remarks>
-		/// If cell's value type is barcode, a null font signal no text under the barcode.
-		/// </remarks>
-		public PdfFont Font { get; set; }
-
-		/// <summary>
-		/// Gets or sets font size.
-		/// </summary>
-		public double FontSize { get; set; }
-
-		/// <summary>
-		/// Gets or sets foreground color.
-		/// </summary>
-		/// <remarks>
-		/// Foreground color is used for text and Barcode.
-		/// </remarks>
-		public Color ForegroundColor { get; set; }
-
-		/// <summary>
 		/// Gets or sets format string.
 		/// </summary>
 		/// <remarks>
@@ -167,11 +150,6 @@ namespace PdfFileWriter
 		/// With this flag you can control which columns call the draw cell event handler.
 		/// </remarks>
 		public bool RaiseCustomDrawCellEvent { get; set; }
-
-		/// <summary>
-		/// Gets or sets text draw style.
-		/// </summary>
-		public DrawStyle TextDrawStyle { get; set; }
 
 		/// <summary>
 		/// Gets or sets minimum cell height.
@@ -210,59 +188,19 @@ namespace PdfFileWriter
 		public NumberFormatInfo NumberFormatInfo { get; set; }
 
 		/// <summary>
-		/// Gets font ascent for current font and font size.
-		/// </summary>
-		public double FontAscent
-			{
-			get
-				{
-				if(Font == null) throw new ApplicationException("PdfTableStyle: Font is not defined.");
-				return Font.AscentPlusLeading(FontSize);
-				}
-			}
-
-		/// <summary>
-		/// Gets font descent for current font and font size.
-		/// </summary>
-		public double FontDescent
-			{
-			get
-				{
-				if(Font == null) throw new ApplicationException("PdfTableStyle: Font is not defined.");
-				return Font.DescentPlusLeading(FontSize);
-				}
-			}
-
-		/// <summary>
-		/// Gets font line spacing for current font and font size.
-		/// </summary>
-		public double FontLineSpacing
-			{
-			get
-				{
-				if(Font == null) throw new ApplicationException("PdfTableStyle: Font is not defined.");
-				return Font.LineSpacing(FontSize);
-				}
-			}
-
-		/// <summary>
 		/// PDF table style default constructor.
 		/// </summary>
-		/// <param name="Font">Font</param>
+		/// <param name="TextCtrl">Font</param>
 		public PdfTableStyle
 				(
-				PdfFont Font = null
-				)
+				PdfDrawTextCtrl TextCtrl
+				) : base(TextCtrl)
 			{
 			Alignment = ContentAlignment.TopLeft;
 			BackgroundColor = Color.Empty;
 			TextBoxLineBreakFactor = 0.5;
 			TextBoxTextJustify = TextBoxJustify.Left;
-			this.Font = Font;
-			FontSize = 9.0;
 			Margin = new PdfRectangle();
-			ForegroundColor = Color.Black;
-			TextDrawStyle = DrawStyle.Normal;
 			return;
 			}
 
@@ -273,7 +211,7 @@ namespace PdfFileWriter
 		public PdfTableStyle
 				(
 				PdfTable Table
-				)
+				) : base(Table.DefaultCellStyle)
 			{
 			Copy(Table.DefaultCellStyle);
 			return;
@@ -286,7 +224,7 @@ namespace PdfFileWriter
 		public PdfTableStyle
 				(
 				PdfTableStyle Other
-				)
+				) : base(Other)
 			{
 			Copy(Other);
 			return;
@@ -296,33 +234,28 @@ namespace PdfFileWriter
 		/// <summary>
 		/// Copy one style to another 
 		/// </summary>
-		/// <param name="SourceStyle">Source style</param>
+		/// <param name="Other">Source style</param>
 		////////////////////////////////////////////////////////////////////
 		public void Copy
 				(
-				PdfTableStyle SourceStyle
+				PdfTableStyle Other
 				)
 			{
-			Alignment = SourceStyle.Alignment;
-			BackgroundColor = SourceStyle.BackgroundColor;
-			BarcodeBarWidth = SourceStyle.BarcodeBarWidth;
-			BarcodeHeight = SourceStyle.BarcodeHeight;
-			Font = SourceStyle.Font;
-			FontSize = SourceStyle.FontSize;
-			ForegroundColor = SourceStyle.ForegroundColor;
-			Format = SourceStyle.Format;
-			Margin = new PdfRectangle(SourceStyle.Margin);
-			MinHeight = SourceStyle.MinHeight;
-			MultiLineText = SourceStyle.MultiLineText;
-			NumberFormatInfo = SourceStyle.NumberFormatInfo;
-			RaiseCustomDrawCellEvent = SourceStyle.RaiseCustomDrawCellEvent;
-			TextBoxFirstLineIndent = SourceStyle.TextBoxFirstLineIndent;
-			TextBoxLineBreakFactor = SourceStyle.TextBoxLineBreakFactor;
-			TextBoxLineExtraSpace = SourceStyle.TextBoxLineExtraSpace;
-			TextBoxPageBreakLines = SourceStyle.TextBoxPageBreakLines;
-			TextBoxParagraphExtraSpace = SourceStyle.TextBoxParagraphExtraSpace;
-			TextBoxTextJustify = SourceStyle.TextBoxTextJustify;
-			TextDrawStyle = SourceStyle.TextDrawStyle;
+			Alignment = Other.Alignment;
+			BackgroundColor = Other.BackgroundColor;
+			BarcodeCtrl = Other.BarcodeCtrl;
+			Format = Other.Format;
+			Margin = new PdfRectangle(Other.Margin);
+			MinHeight = Other.MinHeight;
+			MultiLineText = Other.MultiLineText;
+			NumberFormatInfo = Other.NumberFormatInfo;
+			RaiseCustomDrawCellEvent = Other.RaiseCustomDrawCellEvent;
+			TextBoxFirstLineIndent = Other.TextBoxFirstLineIndent;
+			TextBoxLineBreakFactor = Other.TextBoxLineBreakFactor;
+			TextBoxLineExtraSpace = Other.TextBoxLineExtraSpace;
+			TextBoxPageBreakLines = Other.TextBoxPageBreakLines;
+			TextBoxParagraphExtraSpace = Other.TextBoxParagraphExtraSpace;
+			TextBoxTextJustify = Other.TextBoxTextJustify;
 			return;
 			}
 		}

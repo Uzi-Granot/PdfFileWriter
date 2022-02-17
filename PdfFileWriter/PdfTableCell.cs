@@ -1,20 +1,33 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfTableCell
 //	Data table cell support.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -23,8 +36,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Drawing;
 using System.Globalization;
 
 namespace PdfFileWriter
@@ -160,7 +171,7 @@ namespace PdfFileWriter
 		/// TextBox will be set if Value is a String and Style.MultiLine is true,
 		/// or Value is a TextBox.
 		/// </remarks>
-		public TextBox TextBox { get; internal set; }
+		public PdfTextBox TextBox { get; internal set; }
 
 		/// <summary>
 		/// Text box height including extra space
@@ -229,24 +240,25 @@ namespace PdfFileWriter
 		/// <summary>
 		/// Gets barcode if type is Barcode
 		/// </summary>
-		public Barcode Barcode { get; internal set; }
+		public PdfBarcode Barcode { get; internal set; }
 
-		// total barcode plus text height
-		private BarcodeBox BarcodeBox;
+		// bounding box for barcode plus text
+		// the bottom left corner of the barcode is at (0, 0)
+		private PdfRectangle BarcodeBox;
 
 		/// <summary>
 		/// Sets a web link for this cell.
 		/// </summary>
 		/// <remarks>
 		/// <para>
-		/// The web ling string is converted to AnnotAction object.
+		/// The web link string is converted to Annotation object.
 		/// </para>
 		/// </remarks>
 		public string WebLink
 			{
 			set
 				{
-				AnnotAction = new AnnotWebLink(value);
+				Annotation = new PdfAnnotWebLink(Parent.Document, value);
 				}
 			}
 
@@ -256,14 +268,8 @@ namespace PdfFileWriter
 		/// <remarks>
 		/// <para>The user can activate the annotation action by clicking anywhere in the cell area.
 		/// Right click for attached file.</para>
-		/// <list type="table">
-		/// <item><description>Weblink action to activate web browser.</description></item>
-		/// <item><description>Go to action to jump to another page in the document.</description></item>
-		/// <item><description>Display media action to isplay video or play sound.</description></item>
-		/// <item><description>File attachment to save or view embedded file.</description></item>
-		/// </list>
 		/// </remarks>
-		public AnnotAction AnnotAction { get; set; }
+		public PdfAnnotation Annotation { get; set; }
 
 		/// <summary>
 		/// Gets cell's frame left side (grid line).
@@ -367,10 +373,10 @@ namespace PdfFileWriter
 		/// to the returned TextBox value;
 		/// </para>
 		/// </remarks>
-		public TextBox CreateTextBox()
+		public PdfTextBox CreateTextBox()
 			{
-			Value = new TextBox(ClientWidth, Style.TextBoxFirstLineIndent, Style.TextBoxLineBreakFactor);
-			return (TextBox) Value;
+			Value = new PdfTextBox(ClientWidth, Style.TextBoxFirstLineIndent, Style.TextBoxLineBreakFactor);
+			return (PdfTextBox) Value;
 			}
 
 		////////////////////////////////////////////////////////////////////
@@ -401,8 +407,8 @@ namespace PdfFileWriter
 					if(Style.MultiLineText)
 						{
 						// convert string to TextBox
-						TextBox = new TextBox(ClientRight - ClientLeft, Style.TextBoxFirstLineIndent, Style.TextBoxLineBreakFactor);
-						TextBox.AddText(Style.Font, Style.FontSize, Style.ForegroundColor, (string) Value);
+						TextBox = new PdfTextBox(ClientRight - ClientLeft, Style.TextBoxFirstLineIndent, Style.TextBoxLineBreakFactor);
+						TextBox.AddText(Style, (string) Value);
 
 						// textbox initialization
 						TextBoxInitialization();
@@ -415,15 +421,15 @@ namespace PdfFileWriter
 						FormattedText = (string) Value;
 
 						// add line spacing
-						CellHeight += Style.FontLineSpacing;
+						CellHeight += Style.LineSpacing;
 						}
 					}
 
 				// value is text box
-				else if(ValueType == typeof(TextBox))
+				else if(ValueType == typeof(PdfTextBox))
 					{
 					// set TextBox
-					TextBox = (TextBox) Value;
+					TextBox = (PdfTextBox) Value;
 
 					// test width
 					if(TextBox.BoxWidth - (ClientRight - ClientLeft) > Parent.Epsilon)
@@ -475,20 +481,20 @@ namespace PdfFileWriter
 					}
 
 				// value is a derived class of barcode
-				else if(ValueType.BaseType == typeof(Barcode))
+				else if(ValueType.BaseType == typeof(PdfBarcode))
 					{
 					// set barcode
-					Barcode = (Barcode) Value;
+					Barcode = (PdfBarcode) Value;
 
 					// test barcode height
-					if(Style.BarcodeHeight <= 0.0)
+					if(Style.BarcodeCtrl.Height <= 0.0)
 						throw new ApplicationException("PdfTableStyle: BarcodeHeight must be defined.");
 
-					// calculate total barcode height
-					BarcodeBox = Barcode.GetBarcodeBox(Style.BarcodeBarWidth, Style.BarcodeHeight, Style.Font, Style.FontSize);
+					// calculate barcode bounding box
+					BarcodeBox = Barcode.GetBarcodeBox(Style.BarcodeCtrl);
 
 					// adjust cell's height
-					CellHeight += BarcodeBox.TotalHeight;
+					CellHeight += BarcodeBox.Height;
 
 					// set type to barcode
 					Type = CellType.Barcode;
@@ -531,14 +537,15 @@ namespace PdfFileWriter
 						throw new ApplicationException("PdfTableCell: Unknown object type");
 
 					// add line spacing
-					CellHeight += Style.FontLineSpacing;
+					CellHeight += Style.LineSpacing;
 					}
 				}
 
 			// value is null and textbox continuation is required
 			else if(Type == CellType.TextBox && TextBoxLineNo != 0)
 				{
-				CellHeight += TextBox.BoxHeightExtra(ref TextBoxLineNo, out int LineEnd,
+				// note: LineEnd is not required
+				CellHeight += TextBox.BoxHeightExtra(ref TextBoxLineNo, out _,
 					Parent._RowTopPosition - Parent.TableBottomLimit - (Style.Margin.Top + Style.Margin.Bottom),
 						Style.TextBoxLineExtraSpace, Style.TextBoxParagraphExtraSpace);
 				TextBoxCellHeight = CellHeight;
@@ -596,11 +603,14 @@ namespace PdfFileWriter
 			// draw background color
 			if(Style.BackgroundColor != Color.Empty)
 				{
-				Parent.Contents.SaveGraphicsState();
-				Parent.Contents.SetColorNonStroking(Style.BackgroundColor);
-				Parent.Contents.DrawRectangle(Parent._ColumnPosition[Index], Parent.RowBottomPosition,
-					Parent._ColumnWidth[Index], Header ? Parent.HeaderHeight : Parent.RowHeight, PaintOp.Fill);
-				Parent.Contents.RestoreGraphicsState();
+				PdfRectangle Rect = new PdfRectangle(Parent._ColumnPosition[Index],
+					Parent.RowBottomPosition,
+					Parent._ColumnPosition[Index] + Parent._ColumnWidth[Index],
+					Parent.RowBottomPosition + (Header ? Parent.HeaderHeight : Parent.RowHeight));
+				PdfDrawCtrl DrawCtrl = new PdfDrawCtrl();
+				DrawCtrl.Paint = DrawPaint.Fill;
+				DrawCtrl.BackgroundTexture = Style.BackgroundColor;
+				Parent.Contents.DrawGraphics(DrawCtrl, Rect);
 				}
 
 			// switch based on cell type
@@ -609,22 +619,22 @@ namespace PdfFileWriter
 				// one line of text
 				case CellType.Text:
 					TextJustify TextJustify;
-					Parent.Contents.DrawText(Style.Font, Style.FontSize, TextHorPos(out TextJustify), TextVerPos(),
-						TextJustify, Style.TextDrawStyle, Style.ForegroundColor, FormattedText);
+					double PosX = TextHorPos(out TextJustify);
+					Style.Justify = TextJustify;
+					Parent.Contents.DrawText(Style, PosX, TextVerPos(), FormattedText);
 					break;
 
 				// text box
 				case CellType.TextBox:
 					// calculate textbox size and position
-					int LineEnd;
 					if(TextBoxLineNo != 0 || TextBoxHeight > ClientTop - ClientBottom + Parent.Epsilon)
-						TextBoxHeight = TextBox.BoxHeightExtra(ref TextBoxLineNo, out LineEnd,
+						TextBoxHeight = TextBox.BoxHeightExtra(ref TextBoxLineNo, out _,
 							ClientTop - ClientBottom + Parent.Epsilon, Style.TextBoxLineExtraSpace, Style.TextBoxParagraphExtraSpace);
 					double YPos = TopPos(TextBoxHeight);
 
 					// draw textbox
 					Parent.Contents.SaveGraphicsState();
-					LineEnd = Parent.Contents.DrawText(LeftPos(TextBox.BoxWidth), ref YPos, ClientBottom - Parent.Epsilon, TextBoxLineNo,
+					int LineEnd = Parent.Contents.DrawText(LeftPos(TextBox.BoxWidth), ref YPos, ClientBottom - Parent.Epsilon, TextBoxLineNo,
 						Style.TextBoxLineExtraSpace, Style.TextBoxParagraphExtraSpace, Style.TextBoxTextJustify, TextBox);
 					Parent.Contents.RestoreGraphicsState();
 
@@ -643,21 +653,28 @@ namespace PdfFileWriter
 
 				// image
 				case CellType.Image:
-					Parent.Contents.DrawImage(Image, LeftPos(ImageWidth), TopPos(ImageHeight) - ImageHeight, ImageWidth, ImageHeight);
+					PdfRectangle ImageRect = new PdfRectangle(0, 0, ImageWidth, ImageHeight);
+					ImageRect = ImageRect.Move(LeftPos(ImageWidth), TopPos(ImageHeight) - ImageHeight);
+					Parent.Contents.DrawImage(Image, ImageRect);
 					break;
 
 				// barcode
 				case CellType.Barcode:
-					Parent.Contents.DrawBarcode(LeftPos(BarcodeBox.TotalWidth) + BarcodeBox.OriginX,
-						TopPos(BarcodeBox.TotalHeight) - BarcodeBox.TotalHeight + BarcodeBox.OriginY,
-							TextJustify.Left, Style.BarcodeBarWidth, Style.BarcodeHeight, Style.ForegroundColor, Barcode, Style.Font, Style.FontSize);
-					;
+					double BarcodeLeft = LeftPos(BarcodeBox.Width) - BarcodeBox.Left;
+					double BarcodeBottom = TopPos(BarcodeBox.Height) - BarcodeBox.Top;
+					BarcodeJustify Save = Style.BarcodeCtrl.Justify;
+					Style.BarcodeCtrl.Justify = BarcodeJustify.Left;
+					Parent.Contents.DrawBarcode(Style.BarcodeCtrl, BarcodeLeft, BarcodeBottom, Barcode);
+					Style.BarcodeCtrl.Justify = Save;
 					break;
 				}
 
-			// cell has a web link
-			if(AnnotAction != null)
-				Parent.Page.AddAnnotation(new PdfRectangle(ClientLeft, ClientBottom, ClientRight, ClientTop), AnnotAction);
+			// cell has annotation action
+			if(Annotation != null)
+				{
+				if(Parent.Page != null) Annotation.AnnotPage = Parent.Page;
+				Annotation.AnnotRect = new PdfRectangle(ClientLeft, ClientBottom, ClientRight, ClientTop);
+				}
 			return;
 			}
 
@@ -711,12 +728,12 @@ namespace PdfFileWriter
 		private double TextVerPos()
 			{
 			if((Style.Alignment & (ContentAlignment.TopLeft | ContentAlignment.TopCenter | ContentAlignment.TopRight)) != 0)
-				return ClientTop - Style.FontAscent;
+				return ClientTop - Style.TextAscent;
 			if((Style.Alignment & (ContentAlignment.BottomLeft | ContentAlignment.BottomCenter | ContentAlignment.BottomRight)) != 0)
-				return ClientBottom + Style.FontDescent;
+				return ClientBottom + Style.TextDescent;
 			if((Style.Alignment & (ContentAlignment.MiddleLeft | ContentAlignment.MiddleCenter | ContentAlignment.MiddleRight)) != 0)
-				return 0.5 * (ClientTop + ClientBottom - Style.FontAscent + Style.FontDescent);
-			return ClientTop - Style.FontAscent;
+				return 0.5 * (ClientTop + ClientBottom - Style.TextAscent + Style.TextDescent);
+			return ClientTop - Style.TextAscent;
 			}
 
 		////////////////////////////////////////////////////////////////////
@@ -742,7 +759,7 @@ namespace PdfFileWriter
 		internal void Reset()
 			{
 			Value = null;
-			AnnotAction = null;
+			Annotation = null;
 			ImageWidth = 0.0;
 			ImageHeight = 0.0;
 			return;

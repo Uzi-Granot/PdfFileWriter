@@ -1,20 +1,33 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfEmbeddedFile
 //	PDF embedded file class. 
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -22,10 +35,6 @@
 //	For version history please refer to PdfDocument.cs
 //
 /////////////////////////////////////////////////////////////////////
-
-using System;
-using System.IO;
-using System.Collections.Generic;
 
 namespace PdfFileWriter
 	{
@@ -85,7 +94,7 @@ namespace PdfFileWriter
 			EmbeddedFile.ObjectValueArray = new byte[FileLength];
 
 			// load all the file's data
-			FileStream DataStream = null;
+			FileStream DataStream;
 			try
 				{
 				// open the file
@@ -107,7 +116,7 @@ namespace PdfFileWriter
 
 			// debug
 			if(Document.Debug)
-				EmbeddedFile.ObjectValueArray = Document.TextToByteArray("*** MEDIA FILE PLACE HOLDER ***");
+				EmbeddedFile.ObjectValueArray = TextToByteArray("*** MEDIA FILE PLACE HOLDER ***");
 
 			// write stream
 			EmbeddedFile.WriteToPdfFile();
@@ -187,7 +196,7 @@ namespace PdfFileWriter
 				PdfEmbeddedFile Other
 				)
 			{
-			return string.Compare(this.FileName, Other.FileName, true);
+			return string.Compare(FileName, Other.FileName, true);
 			}
 		}
 
@@ -229,7 +238,7 @@ namespace PdfFileWriter
 			return string.Compare(this.Ext, Other.Ext, true);
 			}
 
-		private static ExtToMime[] ExtToMimeArray =
+		private static readonly ExtToMime[] ExtToMimeArray =
 			{
 			new ExtToMime(".avi", "video/avi"),			// Covers most Windows-compatible formats including .avi and .divx
 			new ExtToMime(".divx", "video/avi"),		// Covers most Windows-compatible formats including .avi and .divx

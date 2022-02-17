@@ -1,40 +1,31 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net472;netcoreapp3.1;net5.0-windows;net6.0-windows</TargetFrameworks>
-		<AssemblyProduct>PdfFileWriter</AssemblyProduct>
-		<AssemblyName>PdfFileWriter</AssemblyName>
-		<AssemblyVersion>1.28.0</AssemblyVersion>
-		<AssemblyTitle>PDF File Writer C# Class Library</AssemblyTitle>
-		<Authors>Uzi Granot</Authors>
-		<Description>PDF File Writer C# Class Library</Description>
-		<Product>PdfFileWriter Version 1.28.0</Product>
-		<Copyright>Copyright © 2013-2021 Uzi Granot. All rights reserved.</Copyright>
-		<Company>Uzi Granot</Company>
-		<FileVersion>1.28.0</FileVersion>
-		<Version>1.28.0</Version>
-		<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-		<PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-		<PackageProjectUrl>https://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version-1-28</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/Uzi-Granot/PdfFileWriter</RepositoryUrl>
-		<RepositoryType>GIT</RepositoryType>
-		<PackageTags>PDF</PackageTags>
-		<UseWPF>true</UseWPF>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<Nullable>disable</Nullable>
 		<UseWindowsForms>true</UseWindowsForms>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Authors>Uzi Granot</Authors>
+		<Copyright>Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved</Copyright>
+		<Description>PDF File Writer C# Class Library for VS2022 and .NET6</Description>
+		<AssemblyVersion>2.0.0.0</AssemblyVersion>
+		<FileVersion>2.0.0.0</FileVersion>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Version>2.0.0</Version>
+		<PackageId>PdfFileWriterII</PackageId>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseExpression>CPOL-1.02</PackageLicenseExpression>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net472' Or '$(TargetFramework)' == 'net48'">
-		<Reference Include="System.Windows.Forms.DataVisualization" />
-	</ItemGroup>
-	<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1' Or '$(TargetFramework)' == 'net5.0-windows' Or '$(TargetFramework)' == 'net6.0-windows'">
-		<PackageReference Include="System.Windows.Forms.DataVisualization" Version="1.0.0-prerelease.20110.1" />
-	</ItemGroup>
+	<PropertyGroup>
+		<NoWarn>1701;1702;</NoWarn>
+	</PropertyGroup>
 
 	<ItemGroup>
-		<None Include="..\LICENSE.md">
+		<None Include="..\README.md">
 			<Pack>True</Pack>
-			<PackagePath></PackagePath>
+			<PackagePath>\</PackagePath>
 		</None>
 	</ItemGroup>
-
 </Project>

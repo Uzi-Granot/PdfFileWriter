@@ -1,20 +1,33 @@
 /////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfXObject
 //	PDF X Object resource class.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -30,88 +43,11 @@ namespace PdfFileWriter
 	/// </summary>
 	public class PdfXObject : PdfContents
 		{
-		/// <summary>
-		/// Bounding box rectangle
-		/// </summary>
-		public PdfRectangle Rect
-			{
-			get
-				{
-				return new PdfRectangle(BBox);
-				}
-			set
-				{
-				BBox = value;
-				Dictionary.AddRectangle("/BBox", BBox);
-				}
-			}
-
-		/// <summary>
-		/// Bounding box left side
-		/// </summary>
-		public double Left
-			{
-			get
-				{
-				return BBox.Left;
-				}
-			set
-				{
-				BBox.Left = value;
-				Dictionary.AddRectangle("/BBox", BBox);
-				}
-			}
-
-		/// <summary>
-		/// Bounding box bottom side
-		/// </summary>
-		public double Bottom
-			{
-			get
-				{
-				return BBox.Bottom;
-				}
-			set
-				{
-				BBox.Bottom = value;
-				Dictionary.AddRectangle("/BBox", BBox);
-				}
-			}
-
-		/// <summary>
-		/// Bounding box right side
-		/// </summary>
-		public double Right
-			{
-			get
-				{
-				return BBox.Right;
-				}
-			set
-				{
-				BBox.Right = value;
-				Dictionary.AddRectangle("/BBox", BBox);
-				}
-			}
-
-		/// <summary>
-		/// Bounding box top side
-		/// </summary>
-		public double Top
-			{
-			get
-				{
-				return BBox.Top;
-				}
-			set
-				{
-				BBox.Top = value;
-				Dictionary.AddRectangle("/BBox", BBox);
-				}
-			}
-
 		// bounding rectangle
-		internal PdfRectangle BBox;
+		/// <summary>
+		/// XObject bounding rectangle
+		/// </summary>
+		public PdfRectangle BBox { get;}
 
 		/// <summary>
 		/// PDF X Object constructor
@@ -131,11 +67,11 @@ namespace PdfFileWriter
 
 			// add subtype to dictionary
 			Dictionary.Add("/Subtype", "/Form");
+//			Dictionary.Add("/FormType", "1");
+//			Dictionary.Add("/Matrix", "[1 0 0 1 0 0]");
 
 			// set boundig box rectangle
-			BBox = new PdfRectangle(0.0, 0.0, Width, Height);
-
-			// bounding box
+			BBox = new PdfRectangle(0, 0, Width, Height);
 			Dictionary.AddRectangle("/BBox", BBox);
 			return;
 			}

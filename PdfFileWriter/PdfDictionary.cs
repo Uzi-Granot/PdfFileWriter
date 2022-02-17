@@ -1,20 +1,32 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
-//	Barcode
-//	Single diminsion barcode class.
+//	PdfDictionary
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -23,8 +35,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace PdfFileWriter
@@ -48,26 +58,24 @@ namespace PdfFileWriter
 		{
 		internal List<PdfKeyValue> KeyValue;
 		internal PdfObject Parent;
-		internal PdfDocument Document;
 
 		internal PdfDictionary
 				(
 				PdfObject Parent
 				)
 			{
-			KeyValue = new List<PdfKeyValue>();
+			if(Parent == null) throw new ApplicationException("PdfDictionary must have PdfObject as parent");
 			this.Parent = Parent;
-			this.Document = Parent.Document;
+			KeyValue = new List<PdfKeyValue>();
 			return;
 			}
 
-		internal PdfDictionary
+		internal void SetParent
 				(
-				PdfDocument Document
+				PdfObject Parent
 				)
 			{
-			KeyValue = new List<PdfKeyValue>();
-			this.Document = Document;
+			this.Parent = Parent;
 			return;
 			}
 
@@ -122,13 +130,42 @@ namespace PdfFileWriter
 		internal void AddInteger
 				(
 				string Key, // key (first character must be forward slash /)
-				int Integer
+				int Value
 				)
 			{
-			Add(Key, Integer.ToString(), ValueType.Other);
+			Add(Key, Value.ToString(), ValueType.Other);
 			return;
 			}
 
+/*
+		////////////////////////////////////////////////////////////////////
+		// Add key value pair to dictionary.
+		// The value is string format
+		////////////////////////////////////////////////////////////////////
+		internal void AddUnsignedInteger
+				(
+				string Key, // key (first character must be forward slash /)
+				uint Value
+				)
+			{
+			Add(Key, Value.ToString(), ValueType.Other);
+			return;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Add key value pair to dictionary.
+		// The value is string format
+		////////////////////////////////////////////////////////////////////
+		internal void AddLongInteger
+				(
+				string Key, // key (first character must be forward slash /)
+				long Value
+				)
+			{
+			Add(Key, Value.ToString(), ValueType.Other);
+			return;
+			}
+*/
 		////////////////////////////////////////////////////////////////////
 		// Add key value pair to dictionary.
 		// The value is string format
@@ -169,25 +206,9 @@ namespace PdfFileWriter
 				PdfRectangle Rect
 				)
 			{
-			AddRectangle(Key, Rect.Left, Rect.Bottom, Rect.Right, Rect.Top);
-			return;
-			}
-
-		////////////////////////////////////////////////////////////////////
-		// Add key value pair to dictionary.
-		// The value is string format
-		////////////////////////////////////////////////////////////////////
-		internal void AddRectangle
-				(
-				string Key, // key (first character must be forward slash /)
-				double Left,
-				double Bottom,
-				double Right,
-				double Top
-				)
-			{
+			if(Parent == null) throw new ApplicationException("Add rectangle. Parent undefined");
 			Add(Key, string.Format(NFI.PeriodDecSep, "[{0} {1} {2} {3}]",
-				Parent.ToPt(Left), Parent.ToPt(Bottom), Parent.ToPt(Right), Parent.ToPt(Top)));
+				Parent.ToPt(Rect.Left), Parent.ToPt(Rect.Bottom), Parent.ToPt(Rect.Right), Parent.ToPt(Rect.Top)));
 			return;
 			}
 
@@ -250,6 +271,20 @@ namespace PdfFileWriter
 
 		////////////////////////////////////////////////////////////////////
 		// Add key value pair to dictionary.
+		// The value is a reference to indirect object number.
+		////////////////////////////////////////////////////////////////////
+		internal void AddRefNo
+				(
+				string Key, // key (first character must be forward slash /)
+				int RefNo // The method creates an indirect reference "n 0 R" to the object.
+				)
+			{
+			Add(Key, string.Format("{0} 0 R", RefNo), ValueType.Other);
+			return;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Add key value pair to dictionary.
 		// If dictionary does not exist, create it.
 		// If key is not found, add the pair as new entry.
 		// If key is found, replace old pair with new one.
@@ -270,6 +305,29 @@ namespace PdfFileWriter
 		// If key is not found, add the pair as new entry.
 		// If key is found, replace old pair with new one.
 		////////////////////////////////////////////////////////////////////
+		internal PdfDictionary GetOrAddDictionary
+				(
+				string Key // key (first character must be forward slash /)
+				)
+			{
+			// search for existing key
+			int Index = Find(Key);
+
+			// found
+			if(Index >= 0) return (PdfDictionary) KeyValue[Index].Value;
+
+			// not found - create a dictionary and add it
+			PdfDictionary Dict = new PdfDictionary(Parent);
+			AddDictionary(Key, Dict);
+			return Dict;
+			}
+
+		////////////////////////////////////////////////////////////////////
+		// Add key value pair to dictionary.
+		// If key value does not exist, create it.
+		// If key is not found, add the pair as new entry.
+		// If key is found, replace old pair with new one.
+		////////////////////////////////////////////////////////////////////
 		private void Add
 				(
 				string Key, // key (first character must be forward slash /)
@@ -281,7 +339,10 @@ namespace PdfFileWriter
 			int Index = Find(Key);
 
 			// not found - add new pair
-			if(Index < 0) KeyValue.Add(new PdfKeyValue(Key, Value, Type));
+			if(Index < 0)
+				{
+				KeyValue.Add(new PdfKeyValue(Key, Value, Type));
+				}
 
 			// found replace value
 			else
@@ -295,10 +356,10 @@ namespace PdfFileWriter
 			}
 
 		////////////////////////////////////////////////////////////////////
-		// Get dictionary value
+		// Get value from the dictionary
 		// Return string if key is found, null if not
 		////////////////////////////////////////////////////////////////////
-		internal PdfKeyValue GetValue
+		internal PdfKeyValue GetKeyValue
 				(
 				string Key // key (first character must be forward slash /)
 				)
@@ -367,7 +428,7 @@ namespace PdfFileWriter
 
 					// PDF string special case
 					case ValueType.String:
-						Str.Append(Document.TextToPdfString((string) KeyValueItem.Value, Parent));
+						Str.Append(Parent.TextToPdfString((string) KeyValueItem.Value, Parent));
 						break;
 
 					// all other key value pairs
@@ -390,9 +451,9 @@ namespace PdfFileWriter
 
 	internal class PdfKeyValue
 		{
-		internal string Key;        // key first character must be forward slash ?
-		internal object Value;      // value associated with key
-		internal ValueType Type;        // value is a PDF string
+		internal string Key; // key first character must be forward slash ?
+		internal object Value; // value associated with key
+		internal ValueType Type; // value is a PDF string
 
 		////////////////////////////////////////////////////////////////////
 		// Constructor

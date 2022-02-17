@@ -1,20 +1,33 @@
 ﻿/////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfEncryption
 //	Support for AES-128 encryption
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -23,8 +36,6 @@
 //
 /////////////////////////////////////////////////////////////////////
 
-using System;
-using System.IO;
 using System.Security.Cryptography;
 
 namespace PdfFileWriter
@@ -60,47 +71,47 @@ namespace PdfFileWriter
 		/// <summary>
 		/// Low quality print (bit 3)
 		/// </summary>
-		LowQalityPrint = 4,     // bit 3
+		LowQalityPrint = 4,
 
 		/// <summary>
 		/// Modify contents (bit 4)
 		/// </summary>
-		ModifyContents = 8,     // bit 4
+		ModifyContents = 8,
 
 		/// <summary>
 		/// Extract contents (bit 5)
 		/// </summary>
-		ExtractContents = 0x10, // bit 5
+		ExtractContents = 0x10,
 
 		/// <summary>
 		/// Annotation (bit 6)
 		/// </summary>
-		Annotation = 0x20,      // bit 6
+		Annotation = 0x20,
 
 		/// <summary>
 		/// Interactive (bit 9)
 		/// </summary>
-		Interactive = 0x100,    // bit 9
+		Interactive = 0x100,
 
 		/// <summary>
 		/// Accessibility (bit 10)
 		/// </summary>
-		Accessibility = 0x200,  // bit 10
+		Accessibility = 0x200,
 
 		/// <summary>
 		/// Assemble document (bit 11)
 		/// </summary>
-		AssembleDoc = 0x400,    // bit 11
+		AssembleDoc = 0x400,
 
 		/// <summary>
 		/// Print (bit 12 plus bit 3)
 		/// </summary>
-		Print = 0x804,          // bit 12 + bit 3
+		Print = 0x804,
 
 		/// <summary>
-		/// All permission bits
+		/// All permission bits (3, 4, 5, 6, 9, 10, 11, 12)
 		/// </summary>
-		All = 0xf3c,            // bits 3, 4, 5, 6, 9, 10, 11, 12
+		All = 0xf3c,
 		}
 
 	////////////////////////////////////////////////////////////////////
@@ -121,11 +132,9 @@ namespace PdfFileWriter
 		internal EncryptionType EncryptionType;
 		internal byte[] MasterKey;
 		internal MD5 MD5 = MD5.Create();
-#if NET6_0_OR_GREATER
+		
+		//internal AesCryptoServiceProvider AES = new AesCryptoServiceProvider();
 		internal Aes AES = Aes.Create();
-#else
-		internal AesCryptoServiceProvider AES = new AesCryptoServiceProvider();
-#endif
 
 		private static readonly byte[] PasswordPad =
 			{
@@ -165,7 +174,7 @@ namespace PdfFileWriter
 
 			// convert owner string password to byte array
 			if(string.IsNullOrEmpty(OwnerPassword))
-				OwnerPassword = BitConverter.ToUInt64(PdfDocument.RandomByteArray(8), 0).ToString();
+				OwnerPassword = BitConverter.ToUInt64(PdfByteArrayMethods.RandomByteArray(8), 0).ToString();
 			byte[] OwnerBinaryPassword = ProcessPassword(OwnerPassword);
 
 			// calculate owner key for crypto dictionary
@@ -178,8 +187,8 @@ namespace PdfFileWriter
 			// build dictionary
 			Dictionary.Add("/Filter", "/Standard");
 			Dictionary.Add("/Length", "128");
-			Dictionary.Add("/O", Document.ByteArrayToPdfHexString(OwnerKey));
-			Dictionary.Add("/U", Document.ByteArrayToPdfHexString(UserKey));
+			Dictionary.Add("/O", PdfByteArrayMethods.ByteArrayToPdfHexString(OwnerKey));
+			Dictionary.Add("/U", PdfByteArrayMethods.ByteArrayToPdfHexString(UserKey));
 
 			// encryption type
 			this.EncryptionType = EncryptionType;
@@ -217,9 +226,6 @@ namespace PdfFileWriter
 
 			if(EncryptionType == EncryptionType.Aes128)
 				{
-				MemoryStream OutputStream = null;
-				CryptoStream CryptoStream = null;
-
 				// generate new initialization vector IV 
 				AES.GenerateIV();
 
@@ -232,8 +238,8 @@ namespace PdfFileWriter
 				AES.Key = EncryptionKey;
 
 				// Create the streams used for encryption.
-				OutputStream = new MemoryStream();
-				CryptoStream = new CryptoStream(OutputStream, AES.CreateEncryptor(), CryptoStreamMode.Write);
+				MemoryStream OutputStream = new MemoryStream();
+				CryptoStream CryptoStream = new CryptoStream(OutputStream, AES.CreateEncryptor(), CryptoStreamMode.Write);
 
 				// write plain text byte array
 				CryptoStream.Write(PlainText, 0, PlainText.Length);
@@ -262,7 +268,7 @@ namespace PdfFileWriter
 		////////////////////////////////////////////////////////////////////
 		// Process Password
 		////////////////////////////////////////////////////////////////////
-		private byte[] ProcessPassword
+		private static byte[] ProcessPassword
 				(
 				string StringPassword
 				)
@@ -391,7 +397,7 @@ namespace PdfFileWriter
 		////////////////////////////////////////////////////////////////////
 		// RC4 Encryption
 		////////////////////////////////////////////////////////////////////
-		private void EncryptRC4
+		private static void EncryptRC4
 				(
 				byte[] Key,
 				byte[] Data

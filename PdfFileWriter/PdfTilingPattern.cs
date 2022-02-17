@@ -1,20 +1,33 @@
 /////////////////////////////////////////////////////////////////////
 //
-//	PdfFileWriter
+//	PdfFileWriter II
 //	PDF File Write C# Class Library.
 //
 //	PdfTilingPattern
 //	PDF tiling pattern resource class.
 //
-//	Uzi Granot
-//	Version: 1.0
+//	Author: Uzi Granot
+//	Original Version: 1.0
 //	Date: April 1, 2013
-//	Copyright (C) 2013-2019 Uzi Granot. All Rights Reserved
+//	Major rewrite Version: 2.0
+//	Date: February 1, 2022
+//	Copyright (C) 2013-2022 Uzi Granot. All Rights Reserved
 //
 //	PdfFileWriter C# class library and TestPdfFileWriter test/demo
-//  application are free software.
-//	They is distributed under the Code Project Open License (CPOL).
-//	The document PdfFileWriterReadmeAndLicense.pdf contained within
+//  application are free software. They are distributed under the
+//  Code Project Open License (CPOL-1.02).
+//
+//	The main points of CPOL-1.02 subject to the terms of the License are:
+//
+//	Source Code and Executable Files can be used in commercial applications;
+//	Source Code and Executable Files can be redistributed; and
+//	Source Code can be modified to create derivative works.
+//	No claim of suitability, guarantee, or any warranty whatsoever is
+//	provided. The software is provided "as-is".
+//	The Article accompanying the Work may not be distributed or republished
+//	without the Author's consent
+//
+//	The document PdfFileWriterLicense.pdf contained within
 //	the distribution specify the license agreement and other
 //	conditions and notes. You must read this document and agree
 //	with the conditions specified in order to use this software.
@@ -22,8 +35,6 @@
 //	For version history please refer to PdfDocument.cs
 //
 /////////////////////////////////////////////////////////////////////
-
-using System.Drawing;
 
 namespace PdfFileWriter
 	{
@@ -273,8 +284,8 @@ namespace PdfFileWriter
 		/// </summary>
 		/// <param name="Document">Current document object.</param>
 		/// <param name="Scale">Scale factor.</param>
-		/// <param name="Stroking">Stroking color.</param>
-		/// <param name="NonStroking">Non-stroking color.</param>
+		/// <param name="BorderColor">Stroking color.</param>
+		/// <param name="FillColor">Non-stroking color.</param>
 		/// <returns>PDF tiling pattern</returns>
 		/// <remarks>
 		/// <para>
@@ -301,20 +312,34 @@ namespace PdfFileWriter
 				(
 				PdfDocument Document,
 				double Scale,
-				Color Stroking,
-				Color NonStroking
+				Color BorderColor,
+				Color FillColor
 				)
 			{
+			// create tilling pattern
 			PdfTilingPattern Pattern = new PdfTilingPattern(Document);
+
+			// set scale
 			Pattern.SetScale(Scale);
-			Pattern.SaveGraphicsState();
-			Pattern.SetLineWidth(0.05);
-			Pattern.SetColorStroking(Stroking);
-			Pattern.SetColorNonStroking(NonStroking);
-			Pattern.DrawRectangle(0.025, 0.025, 0.95, 0.45, PaintOp.CloseFillStroke);
-			Pattern.DrawRectangle(-0.475, 0.525, 0.95, 0.45, PaintOp.CloseFillStroke);
-			Pattern.DrawRectangle(0.525, 0.525, 0.95, 0.45, PaintOp.CloseFillStroke);
-			Pattern.RestoreGraphicsState();
+
+			// draw rectrangle control
+			PdfDrawCtrl DrawCtrl = new PdfDrawCtrl();
+			DrawCtrl.Paint = DrawPaint.BorderAndFill;
+			DrawCtrl.BorderWidth = 0.05;
+			DrawCtrl.BorderColor = BorderColor;
+			DrawCtrl.BackgroundTexture = FillColor;
+
+			// draw rectangle 1
+			PdfRectangle Rect1 = new PdfRectangle(0.025, 0.025, 0.975, 0.475);
+			Pattern.DrawGraphics(DrawCtrl, Rect1);
+
+			// draw rectangle 2
+			PdfRectangle Rect2 = new PdfRectangle(-0.475, 0.525, 0.475, 0.975);
+			Pattern.DrawGraphics(DrawCtrl, Rect2);
+
+			// draw rectangle 3
+			PdfRectangle Rect3 = new PdfRectangle(0.525, 0.525, 1.475, 0.975);
+			Pattern.DrawGraphics(DrawCtrl, Rect3);
 			return Pattern;
 			}
 
@@ -346,31 +371,75 @@ namespace PdfFileWriter
 				Color Vertical
 				)
 			{
+			// constants
 			const double RectSide1 = 4.0 / 6.0;
 			const double RectSide2 = 2.0 / 6.0;
 			const double LineWidth = 0.2 / 6.0;
 			const double HalfWidth = 0.5 * LineWidth;
+			const double OneSixthPlusHalf = (1.0 / 6.0) + HalfWidth;
+			const double ThreeSixthPlusHalf = (3.0 / 6.0) + HalfWidth;
+			const double ThreeSixthMinusHalf = (3.0 / 6.0) - HalfWidth;
+			const double FourSixthPlusHalf = (4.0 / 6.0) + HalfWidth;
 
+			// create tilling patterd object
 			PdfTilingPattern Pattern = new PdfTilingPattern(Document);
+
+			// set scale
 			Pattern.SetScale(Scale);
-			Pattern.SaveGraphicsState();
 			Pattern.SetTileBox(1.0);
-			Pattern.SetColorNonStroking(Background);
-			Pattern.DrawRectangle(0.0, 0.0, 1.0, 1.0, PaintOp.Fill);
-			Pattern.SetLineWidth(LineWidth);
-			Pattern.SetColorStroking(Background);
 
-			Pattern.SetColorNonStroking(Horizontal);
-			Pattern.DrawRectangle(HalfWidth, 1.0 / 6.0 + HalfWidth, RectSide1 - LineWidth, RectSide2 - LineWidth, PaintOp.CloseFillStroke);
-			Pattern.DrawRectangle(-(3.0 / 6.0 - HalfWidth), 4.0 / 6.0 + HalfWidth, RectSide1 - LineWidth, RectSide2 - LineWidth, PaintOp.CloseFillStroke);
-			Pattern.DrawRectangle(3.0 / 6.0 + HalfWidth, 4.0 / 6.0 + HalfWidth, RectSide1 - LineWidth, RectSide2 - LineWidth, PaintOp.CloseFillStroke);
+			// create draw rectangle control
+			PdfDrawCtrl DrawCtrl = new PdfDrawCtrl();
+			DrawCtrl.Paint = DrawPaint.Fill;
+			DrawCtrl.BackgroundTexture = Background;
 
-			Pattern.SetColorNonStroking(Vertical);
-			Pattern.DrawRectangle(4.0 / 6.0 + HalfWidth, HalfWidth, RectSide2 - LineWidth, RectSide1 - LineWidth, PaintOp.CloseFillStroke);
-			Pattern.DrawRectangle(1.0 / 6.0 + HalfWidth, -(3.0 / 6.0 - HalfWidth), RectSide2 - LineWidth, RectSide1 - LineWidth, PaintOp.CloseFillStroke);
-			Pattern.DrawRectangle(1.0 / 6.0 + HalfWidth, 3.0 / 6.0 + HalfWidth, RectSide2 - LineWidth, RectSide1 - LineWidth, PaintOp.CloseFillStroke);
+			// fill the entire area with background color
+			PdfRectangle Rect1 = new PdfRectangle(0.0, 0.0, 1.0, 1.0);
+			Pattern.DrawGraphics(DrawCtrl, Rect1);
 
-			Pattern.RestoreGraphicsState();
+			// adjust draw rectangle contrl
+			DrawCtrl.Paint = DrawPaint.BorderAndFill;
+			DrawCtrl.BorderWidth = LineWidth;
+			DrawCtrl.BorderColor = Background;
+			DrawCtrl.BackgroundTexture = Horizontal;
+
+			// draw rectangle 2
+			PdfRectangle Rect2 = new PdfRectangle(HalfWidth, OneSixthPlusHalf,
+				RectSide1 - HalfWidth, OneSixthPlusHalf + RectSide2 - LineWidth);
+			Pattern.DrawGraphics(DrawCtrl, Rect2);
+
+			// draw rectangle 3
+			PdfRectangle Rect3 = new PdfRectangle(-ThreeSixthMinusHalf, FourSixthPlusHalf,
+				-ThreeSixthMinusHalf + RectSide1 - LineWidth,
+				FourSixthPlusHalf + RectSide2 - LineWidth);
+			Pattern.DrawGraphics(DrawCtrl, Rect3);
+
+			// draw rectangle 4
+			PdfRectangle Rect4 = new PdfRectangle(ThreeSixthPlusHalf, FourSixthPlusHalf,
+				ThreeSixthPlusHalf + RectSide1 - LineWidth,
+				FourSixthPlusHalf + RectSide2 - LineWidth);
+			Pattern.DrawGraphics(DrawCtrl, Rect4);
+
+			// adjust draw rectangle control
+			DrawCtrl.BackgroundTexture = Vertical;
+
+			// Draw rectangle 5
+			PdfRectangle Rect5 = new PdfRectangle(FourSixthPlusHalf, HalfWidth,
+				FourSixthPlusHalf + RectSide2 - LineWidth,
+				HalfWidth + RectSide1 - LineWidth);
+			Pattern.DrawGraphics(DrawCtrl, Rect5);
+
+			// draw rectangle 6
+			PdfRectangle Rect6 = new PdfRectangle(OneSixthPlusHalf, -ThreeSixthMinusHalf,
+				OneSixthPlusHalf + RectSide2 - LineWidth,
+				-ThreeSixthMinusHalf + RectSide1 - LineWidth);
+			Pattern.DrawGraphics(DrawCtrl, Rect6);
+
+			// draw rectangle 7
+			PdfRectangle Rect7 = new PdfRectangle(OneSixthPlusHalf, ThreeSixthPlusHalf,
+				OneSixthPlusHalf + RectSide2 - LineWidth,
+				ThreeSixthPlusHalf + RectSide1 - LineWidth);
+			Pattern.DrawGraphics(DrawCtrl, Rect7);
 			return Pattern;
 			}
 		}
