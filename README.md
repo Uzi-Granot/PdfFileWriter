@@ -1,9 +1,14 @@
-# PdfFileWriter
+# PdfFileWriter II
 
-# Version 1.25.0 2019/07/15
+# Version 2.0.0 2022/02/01
 
-The PDF File Writer C# class library PdfFileWriter allows you to create PDF files directly from your .net application. The library shields you from the details of the PDF file structure.
+PDF File Writer is a C# .NET class library allowing applications to create PDF files. 
+The code was developed for VS 2022 and .NET 6.0 The latest update is a major upgrade.
 
-Version 1.25.0 enhancements: Support for font collections and for non-ASCII font names. This mainly applies to Japanese, Chinese and Korean fonts.
+The PDF File Writer C# class library gives .NET applications the ability to produce PDF documents. 
+The library shields the application from the details of the PDF file structure. 
+The library supports: forms, text, images, tables, graphics, barcodes, web links, charts, 
+sticky notes, encryption and more. The attached source code provides detailed documentation.
 
-For documentation and further information visit <a href="https://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version">PDF File Writer C# Class Library (Version 1.25.0)</a>
+For documentation and further information visit 
+<a href="https://www.codeproject.com/Articles/570682/PDF-File-Writer-Csharp-Class-Library-Version">PDF File Writer C# Class Library (Version 2.0.0)</a>
