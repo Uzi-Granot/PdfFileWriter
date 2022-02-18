@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup />
+  <ItemGroup>
+    <Compile Update="CustomDataGridView.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Update="DrawGlyphForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="EnumFontFamilies.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="FontInfoForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="TestPdfFileWriter.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+</Project>
