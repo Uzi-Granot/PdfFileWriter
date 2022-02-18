@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31912.275
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestPdfFileWriter", "TestPdfFileWriter\TestPdfFileWriter.csproj", "{BDAD97D6-2BC7-4EFA-A59E-4D1273E423A7}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PdfFileWriter", "PdfFileWriter\PdfFileWriter.csproj", "{6CB91D6C-55D9-4999-864E-E5B77F7A4BD4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C2A2E0D9-8C4D-43F0-9B80-8864666BEE1D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BDAD97D6-2BC7-4EFA-A59E-4D1273E423A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDAD97D6-2BC7-4EFA-A59E-4D1273E423A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDAD97D6-2BC7-4EFA-A59E-4D1273E423A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDAD97D6-2BC7-4EFA-A59E-4D1273E423A7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CB91D6C-55D9-4999-864E-E5B77F7A4BD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CB91D6C-55D9-4999-864E-E5B77F7A4BD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CB91D6C-55D9-4999-864E-E5B77F7A4BD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CB91D6C-55D9-4999-864E-E5B77F7A4BD4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {6AE23CE6-F910-4D5A-907B-EEE7C5332D68}
+	EndGlobalSection
+EndGlobal
